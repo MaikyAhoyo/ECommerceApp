@@ -1,0 +1,14 @@
+﻿@model IEnumerable<ECommerce.Models.Entities.Product>
+<h2>Search Results</h2>
+@if (!Model.Any())
+{
+    <p>No products found.</p>
+}
+<div class="row">
+    @foreach (var product in Model)
+    {
+        <div class="col-md-3">
+            @await Html.PartialAsync("_ProductCardPartial", product)
+        </div>
+    }
+</div>

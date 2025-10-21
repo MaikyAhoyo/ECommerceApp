@@ -1,0 +1,13 @@
+﻿@model IEnumerable<ECommerce.Models.Entities.Product>
+@{
+    ViewBag.Title = "Home";
+}
+<h1>Featured Products</h1>
+<div class="row">
+    @foreach (var product in Model)
+    {
+        <div class="col-md-3">
+            @await Html.PartialAsync("_ProductCardPartial", product)
+        </div>
+    }
+</div>

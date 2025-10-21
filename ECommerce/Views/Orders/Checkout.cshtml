@@ -1,0 +1,21 @@
+﻿@model ECommerce.Models.ViewModels.CheckoutViewModel
+<h2>Checkout</h2>
+<form asp-action="Checkout" method="post">
+    <div class="mb-3">
+        <label>Address Line 1</label>
+        <input asp-for="ShippingAddress.AddressLine1" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>City</label>
+        <input asp-for="ShippingAddress.City" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Payment Method</label>
+        <select asp-for="Payment.Method" class="form-control">
+            <option>Card</option>
+            <option>PayPal</option>
+            <option>Transfer</option>
+        </select>
+    </div>
+    <button class="btn btn-primary" type="submit">Confirm Order</button>
+</form>

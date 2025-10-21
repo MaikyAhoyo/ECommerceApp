@@ -1,0 +1,13 @@
+﻿@model ECommerce.Models.ViewModels.ProductDetailViewModel
+<h2>@Model.Product.Name</h2>
+<img src="@Model.Product.ImageUrl" class="img-fluid" />
+<p>@Model.Product.Description</p>
+<p>Price: $@Model.Product.Price</p>
+
+<h4>Reviews</h4>
+@foreach (var review in Model.Reviews)
+{
+    <div>
+        <strong>@review.UserId</strong>: @review.Comment (Rating: @review.Rating)
+    </div>
+}
