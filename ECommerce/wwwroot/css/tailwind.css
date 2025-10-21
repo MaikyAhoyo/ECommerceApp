@@ -1,0 +1,11 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.text-gold {
+    color: hsl(45, 80%, 55%);
+}
+
+.font-playfair {
+    font-family: 'Playfair Display', serif;
+}

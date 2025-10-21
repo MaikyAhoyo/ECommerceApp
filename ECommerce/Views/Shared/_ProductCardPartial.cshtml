@@ -1,9 +1,16 @@
 ﻿@model ECommerce.Models.Entities.Product
-<div class="card mb-3" style="width: 18rem;">
-    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name">
-    <div class="card-body">
-        <h5 class="card-title">@Model.Name</h5>
-        <p class="card-text">$@Model.Price</p>
-        <a href="@Url.Action("Details", "Products", new { id = Model.Id })" class="btn btn-primary">View</a>
+
+<div class="product-card group overflow-hidden border border-gray-200 rounded-lg hover:shadow-elegant transition-all duration-500 bg-white">
+    <div class="relative aspect-square overflow-hidden bg-cream">
+        <img src="@Model.ImageUrl" alt="@Model.Name" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    </div>
+    <div class="p-6 text-center">
+        <p class="text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">Rings</p>
+        <h3 class="font-playfair text-xl mb-3">@Model.Name</h3>
+        <p class="text-gold font-semibold text-lg mb-4">@Model.Price</p>
+        <button class="w-full border border-gray-200 hover:border-gold px-4 py-2 rounded-md text-sm transition-all duration-300">
+            View Details
+        </button>
     </div>
 </div>

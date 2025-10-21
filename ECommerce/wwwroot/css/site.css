@@ -1,22 +1,86 @@
 html {
   font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+  position: relative;
+  min-height: 100%;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
   margin-bottom: 60px;
+}
+
+:root {
+    --gold: 45 80% 55%;
+    --gold-light: 45 85% 70%;
+    --gold-dark: 38 70% 45%;
+    --emerald: 158 64% 52%;
+    --cream: 40 40% 96%;
+}
+
+* {
+    font-family: 'Inter', sans-serif;
+}
+
+.font-playfair {
+    font-family: 'Playfair Display', serif;
+}
+
+.text-gold {
+    color: hsl(var(--gold));
+}
+
+.bg-gold {
+    background-color: hsl(var(--gold));
+}
+
+.border-gold {
+    border-color: hsl(var(--gold));
+}
+
+.bg-cream {
+    background-color: hsl(var(--cream));
+}
+
+.hover\:text-gold-dark:hover {
+    color: hsl(var(--gold-dark));
+}
+
+.shadow-elegant {
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+.btn-luxury {
+    background: linear-gradient(to right, hsl(var(--gold-dark)), hsl(var(--gold)), hsl(var(--gold-dark)));
+    transition: all 0.5s;
+}
+
+    .btn-luxury:hover {
+        box-shadow: 0 8px 32px rgba(217, 175, 93, 0.35);
+    }
+
+.animate-fade-in {
+    animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-card:hover img {
+    transform: scale(1.1);
+}
+
+.product-card img {
+    transition: transform 0.7s ease;
 }

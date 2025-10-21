@@ -1,13 +1,84 @@
 ﻿@model IEnumerable<ECommerce.Models.Entities.Product>
+
 @{
     ViewBag.Title = "Home";
 }
-<h1>Featured Products</h1>
-<div class="row">
-    @foreach (var product in Model)
-    {
-        <div class="col-md-3">
-            @await Html.PartialAsync("_ProductCardPartial", product)
+
+<partial name="_HeroPartial" />
+
+<section class="py-24 bg-gradient-to-b from-white to-cream">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="font-playfair text-4xl md:text-5xl font-bold mb-4">
+                Our Collections
+            </h2>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                Discover pieces that speak to your style and story
+            </p>
         </div>
-    }
-</div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="group relative bg-white rounded-lg p-8 border border-gray-200 hover:border-gold transition-all duration-500 hover:shadow-elegant">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                <h3 class="font-playfair text-2xl font-bold mb-3">
+                    Engagement
+                </h3>
+                <p class="text-gray-600 mb-6">
+                    Celebrate your love story
+                </p>
+                <button class="text-gold hover:text-gold-dark font-medium">
+                    Explore Collection →
+                </button>
+            </div>
+
+            <div class="group relative bg-white rounded-lg p-8 border border-gray-200 hover:border-gold transition-all duration-500 hover:shadow-elegant">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                <h3 class="font-playfair text-2xl font-bold mb-3">
+                    Everyday Luxury
+                </h3>
+                <p class="text-gray-600 mb-6">
+                    Elegant pieces for daily wear
+                </p>
+                <button class="text-gold hover:text-gold-dark font-medium">
+                    Explore Collection →
+                </button>
+            </div>
+
+            <div class="group relative bg-white rounded-lg p-8 border border-gray-200 hover:border-gold transition-all duration-500 hover:shadow-elegant">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                <h3 class="font-playfair text-2xl font-bold mb-3">
+                    Statement Pieces
+                </h3>
+                <p class="text-gray-600 mb-6">
+                    Bold designs that turn heads
+                </p>
+                <button class="text-gold hover:text-gold-dark font-medium">
+                    Explore Collection →
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-24 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="font-playfair text-4xl md:text-5xl font-bold mb-4">
+                Featured Pieces
+            </h2>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                Each piece is carefully crafted with attention to detail and timeless design
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @foreach (var product in Model)
+            {
+                <partial name="_ProductCardPartial" model="product"/>
+            }
+        </div>
+    </div>
+</section>
