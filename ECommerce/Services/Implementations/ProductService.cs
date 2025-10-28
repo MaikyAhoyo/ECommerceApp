@@ -2,6 +2,7 @@
 using ECommerce.Data;
 using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
+using System.Data;
 
 namespace ECommerce.Services.Implementations
 {
@@ -36,6 +37,20 @@ namespace ECommerce.Services.Implementations
             var sql = "SELECT * FROM Products";
             return await connection.QueryAsync<Product>(sql);
         }
+
+        public async Task<IEnumerable<Product>> GetTop3Async()
+        {
+            using var connection = _context.CreateConnection();
+            var procedureName = "GetTop3PopularProducts";
+
+            var result = await connection.QueryAsync<Product>(
+                procedureName,
+                commandType: CommandType.StoredProcedure
+            );
+
+            return result;
+        }
+
 
         public async Task<IEnumerable<Product>> GetByVendorIdAsync(int vendorId)
         {

@@ -13,5 +13,8 @@ namespace ECommerce.Services.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<bool> ChangePasswordAsync(int id, string currentPassword, string newPassword);
         Task<IEnumerable<User>> GetVendorsAsync();
+        Task<int> GetTotalUsersCountAsync();
+        Task<int> GetCustomersCountAsync();
+        Task<int> GetVendorsCountAsync();
     }
 }

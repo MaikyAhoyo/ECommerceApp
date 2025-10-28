@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using ECommerce.Models.Entities;
-using ECommerce.Services.Implementations;
+﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -82,6 +80,21 @@ namespace ECommerce.Controllers
             if (string.IsNullOrEmpty(request.Status))
                 return BadRequest(new { message = "Status is required" });
 
+            var success = await _orderService.UpdateStatusAsync(id, request.Status);
+
+            if (!success)
+                return NotFound(new { message = "Order not found" });
+
+            return Ok(new { message = "Order status updated successfully" });
+        }
+
+        // POST: api/orders/{id}/items
+        [HttpPost("{id}/items")]
+        public async Task<IActionResult> AddItem(int id, [FromBody] OrderItem item)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var success = await _orderService.AddItemToOrderAsync(id, item);
 
             if (!success)
@@ -159,6 +172,7 @@ namespace ECommerce.Controllers
         }
     }
 
+    // Request Models
     public class UpdateStatusRequest
     {
         public string Status { get; set; } = null!;
@@ -168,19 +182,4 @@ namespace ECommerce.Controllers
     {
         public int Quantity { get; set; }
     }
-}.UpdateStatusAsync(id, request.Status);
-
-if (!success)
-    return NotFound(new { message = "Order not found" });
-
-return Ok(new { message = "Order status updated successfully" });
-        }
-
-        // POST: api/orders/{id}/items
-        [HttpPost("{id}/items")]
-public async Task<IActionResult> AddItem(int id, [FromBody] OrderItem item)
-{
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
-
-    var success = await _orderService
+}

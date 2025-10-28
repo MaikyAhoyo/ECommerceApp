@@ -339,4 +339,93 @@ namespace ECommerce.Controllers
 
             foreach (var product in products)
             {
-                var reviews =
+                var reviews = await _reviewService.GetByProductIdAsync(product.Id);
+                allReviews.AddRange(reviews);
+            }
+
+            return View(allReviews.OrderByDescending(r => r.CreatedAt));
+        }
+
+        #endregion
+
+        #region Reports
+
+        // GET: /vendor/reports/sales
+        [HttpGet("reports/sales")]
+        public async Task<IActionResult> SalesReport()
+        {
+            int vendorId = GetCurrentVendorId();
+            var products = await _productService.GetByVendorIdAsync(vendorId);
+            var productIds = products.Select(p => p.Id).ToList();
+
+            var allOrders = await _orderService.GetAllAsync();
+            var vendorOrders = new List<Order>();
+            decimal totalRevenue = 0;
+
+            foreach (var order in allOrders)
+            {
+                if (order.Status == "Cart" || order.Status == "Cancelled") continue;
+
+                var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(order.Id);
+                if (orderWithDetails != null && orderWithDetails.OrderItems.Any(oi => productIds.Contains(oi.ProductId)))
+                {
+                    // Calcular solo el revenue de productos del vendedor
+                    var vendorItems = orderWithDetails.OrderItems.Where(oi => productIds.Contains(oi.ProductId));
+                    totalRevenue += vendorItems.Sum(oi => oi.Quantity * oi.UnitPrice);
+                    vendorOrders.Add(orderWithDetails);
+                }
+            }
+
+            var model = new VendorSalesReportViewModel
+            {
+                TotalRevenue = totalRevenue,
+                TotalOrders = vendorOrders.Count,
+                TotalProductsSold = vendorOrders.SelectMany(o => o.OrderItems).Where(oi => productIds.Contains(oi.ProductId)).Sum(oi => oi.Quantity),
+                Orders = vendorOrders.OrderByDescending(o => o.OrderDate).ToList()
+            };
+
+            return View(model);
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private int GetCurrentVendorId()
+        {
+            // TODO: Obtener el ID del vendedor desde Claims/Session
+            // Por ahora retornamos un ID de ejemplo
+            return 2;
+        }
+
+        #endregion
+    }
+
+    // ViewModels
+    public class VendorDashboardViewModel
+    {
+        public int VendorId { get; set; }
+        public int TotalProducts { get; set; }
+        public int TotalStock { get; set; }
+        public decimal TotalInventoryValue { get; set; }
+        public int LowStockProducts { get; set; }
+        public int OutOfStockProducts { get; set; }
+        public List<Order> RecentOrders { get; set; } = new List<Order>();
+        public List<Product> TopProducts { get; set; } = new List<Product>();
+    }
+
+    public class VendorInventoryViewModel
+    {
+        public List<Product> AllProducts { get; set; } = new List<Product>();
+        public List<Product> LowStockProducts { get; set; } = new List<Product>();
+        public List<Product> OutOfStockProducts { get; set; } = new List<Product>();
+    }
+
+    public class VendorSalesReportViewModel
+    {
+        public decimal TotalRevenue { get; set; }
+        public int TotalOrders { get; set; }
+        public int TotalProductsSold { get; set; }
+        public List<Order> Orders { get; set; } = new List<Order>();
+    }
+}

@@ -16,7 +16,7 @@ namespace ECommerce.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var products = await _productService.GetAllAsync();
+            var products = await _productService.GetTop3Async();
             var categories = await _categoryService.GetAllAsync();
             ViewBag.Categories = categories;
             return View(products);

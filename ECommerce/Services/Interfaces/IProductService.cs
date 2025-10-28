@@ -7,6 +7,7 @@ namespace ECommerce.Services.Interfaces
         Task<int> CreateAsync(Product product);
         Task<Product?> GetByIdAsync(int id);
         Task<IEnumerable<Product>> GetAllAsync();
+        Task<IEnumerable<Product>> GetTop3Async();
         Task<IEnumerable<Product>> GetByVendorIdAsync(int vendorId);
         Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId);
         Task<IEnumerable<Product>> SearchByNameAsync(string name);

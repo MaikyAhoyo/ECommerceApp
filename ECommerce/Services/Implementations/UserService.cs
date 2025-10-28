@@ -95,5 +95,26 @@ namespace ECommerce.Services.Implementations
             var sql = "SELECT * FROM Users WHERE Role = 'Vendor'";
             return await connection.QueryAsync<User>(sql);
         }
+
+        public async Task<int> GetTotalUsersCountAsync()
+        {
+            using var connection = _context.CreateConnection();
+            var sql = "SELECT COUNT(*) FROM Users";
+            return await connection.ExecuteScalarAsync<int>(sql);
+        }
+
+        public async Task<int> GetCustomersCountAsync()
+        {
+            using var connection = _context.CreateConnection();
+            var sql = "SELECT COUNT(*) FROM Users WHERE Role = 'Customer'";
+            return await connection.ExecuteScalarAsync<int>(sql);
+        }
+
+        public async Task<int> GetVendorsCountAsync()
+        {
+            using var connection = _context.CreateConnection();
+            var sql = "SELECT COUNT(*) FROM Users WHERE Role = 'Vendor'";
+            return await connection.ExecuteScalarAsync<int>(sql);
+        }
     }
 }
