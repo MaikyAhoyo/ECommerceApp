@@ -4,11 +4,18 @@ namespace ECommerce.Services.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<Product>> GetAllAsync();
-        Task<Product?> GetByIdAsync(int id);
-        Task<IEnumerable<Product>> SearchAsync(string keyword);
         Task<int> CreateAsync(Product product);
+        Task<Product?> GetByIdAsync(int id);
+        Task<IEnumerable<Product>> GetAllAsync();
+        Task<IEnumerable<Product>> GetByVendorIdAsync(int vendorId);
+        Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId);
+        Task<IEnumerable<Product>> SearchByNameAsync(string name);
+        Task<IEnumerable<Product>> FilterByMetalAsync(string metal);
         Task<bool> UpdateAsync(Product product);
         Task<bool> DeleteAsync(int id);
+        Task<bool> UpdateStockAsync(int id, int quantity);
+        Task<bool> AddCategoryToProductAsync(int productId, int categoryId);
+        Task<bool> RemoveCategoryFromProductAsync(int productId, int categoryId);
+        Task<IEnumerable<Category>> GetProductCategoriesAsync(int productId);
     }
 }

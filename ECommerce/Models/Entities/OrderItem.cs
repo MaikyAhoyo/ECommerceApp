@@ -7,5 +7,9 @@
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
+
+        // Relationships
+        public Order Order { get; set; } = null!;
+        public Product Product { get; set; } = null!;
     }
 }
