@@ -9,6 +9,9 @@ namespace ECommerce.Services.Interfaces
         Task<Order?> GetOrderWithDetailsAsync(int id);
         Task<IEnumerable<Order>> GetAllAsync();
         Task<IEnumerable<Order>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Order>> GetOrdersByStatusAsync(string status);
+        Task<int> GetTotalOrdersCountAsync();
+        Task<decimal> GetTotalRevenueAsync();
         Task<Order?> GetActiveCartAsync(int userId);
         Task<bool> UpdateStatusAsync(int id, string status);
         Task<bool> UpdateAsync(Order order);

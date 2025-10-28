@@ -227,5 +227,28 @@ namespace ECommerce.Services.Implementations
 
             return rowsAffected > 0;
         }
+
+        public async Task<IEnumerable<Order>> GetOrdersByStatusAsync(string status)
+        {
+            using var connection = _context.CreateConnection();
+            var sql = "SELECT * FROM Orders WHERE Status = @Status ORDER BY OrderDate DESC";
+            return await connection.QueryAsync<Order>(sql, new { Status = status });
+        }
+
+        public async Task<int> GetTotalOrdersCountAsync()
+        {
+            using var connection = _context.CreateConnection();
+            var sql = "SELECT COUNT(*) FROM Orders WHERE Status != 'Cart'";
+            return await connection.ExecuteScalarAsync<int>(sql);
+        }
+
+        public async Task<decimal> GetTotalRevenueAsync()
+        {
+            using var connection = _context.CreateConnection();
+            var sql = @"SELECT ISNULL(SUM(Total), 0) 
+                        FROM Orders 
+                        WHERE Status IN ('Confirmed', 'Shipped', 'Delivered')";
+            return await connection.ExecuteScalarAsync<decimal>(sql);
+        }
     }
 }
