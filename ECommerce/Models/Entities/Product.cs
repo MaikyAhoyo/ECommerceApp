@@ -18,6 +18,6 @@ namespace ECommerce.Models.Entities
         public User Vendor { get; set; } = null!;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public ICollection<ProductCategory> ProductCategories { get; set; } = new List<ProductCategory>();
+        public string CategoryNames { get; set; } = null!;
     }
 }
