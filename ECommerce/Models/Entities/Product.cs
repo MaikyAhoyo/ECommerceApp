@@ -8,6 +8,8 @@ namespace ECommerce.Models.Entities
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
         public decimal Price { get; set; }
+        public decimal OriginalPrice { get; set; }
+        public int Discount { get; set; }
         public int Stock { get; set; }
         public int VendorId { get; set; }
         public string ImageUrl { get; set; } = null!;

@@ -18,8 +18,8 @@ namespace ECommerce.Services.Implementations
         public async Task<int> CreateAsync(Product product)
         {
             using var connection = _context.CreateConnection();
-            var sql = @"INSERT INTO Products (Name, Description, Price, Stock, VendorId, ImageUrl, Metal, Purity)
-                        VALUES (@Name, @Description, @Price, @Stock, @VendorId, @ImageUrl, @Metal, @Purity);
+            var sql = @"INSERT INTO Products (Name, Description, Price, OriginalPrice, Discount, Stock, VendorId, ImageUrl, Metal, Purity)
+                        VALUES (@Name, @Description, @Price, @OriginalPrice, @Discount, @Stock, @VendorId, @ImageUrl, @Metal, @Purity);
                         SELECT CAST(SCOPE_IDENTITY() as int)";
             return await connection.ExecuteScalarAsync<int>(sql, product);
         }
@@ -86,8 +86,8 @@ namespace ECommerce.Services.Implementations
         {
             using var connection = _context.CreateConnection();
             var sql = @"UPDATE Products 
-                        SET Name = @Name, Description = @Description, Price = @Price, 
-                            Stock = @Stock, ImageUrl = @ImageUrl, Metal = @Metal, Purity = @Purity
+                        SET Name = @Name, Description = @Description, Price = @Price, OriginalPrice = @OriginalPrice,
+                            Discount = @Discount, Stock = @Stock, ImageUrl = @ImageUrl, Metal = @Metal, Purity = @Purity
                         WHERE Id = @Id";
             var rowsAffected = await connection.ExecuteAsync(sql, product);
             return rowsAffected > 0;
