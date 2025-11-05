@@ -1,0 +1,224 @@
+﻿@model ECommerce.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Registrarse";
+    Layout = "_AuthLayout";
+}
+
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <h2>Crear Cuenta</h2>
+            <p>Únete a nuestra tienda de joyería</p>
+        </div>
+
+        <form asp-action="Register" method="post" class="register-form">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Name">
+                    <i class="fas fa-user"></i> Nombre Completo
+                </label>
+                <input asp-for="Name" class="form-control" placeholder="Juan Pérez" autofocus />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input asp-for="Email" class="form-control" placeholder="tu@email.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password">
+                    <i class="fas fa-lock"></i> Contraseña
+                </label>
+                <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+                <small class="form-text text-muted">Mínimo 6 caracteres</small>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ConfirmPassword">
+                    <i class="fas fa-lock"></i> Confirmar Contraseña
+                </label>
+                <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check">
+                <input asp-for="RegisterAsVendor" class="form-check-input" />
+                <label asp-for="RegisterAsVendor" class="form-check-label">
+                    <i class="fas fa-store"></i> Registrarme como vendedor
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-user-plus"></i> Crear Cuenta
+            </button>
+        </form>
+
+        <div class="register-footer">
+            <p>¿Ya tienes cuenta? <a asp-action="Login">Inicia sesión aquí</a></p>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+            .register-header h2 {
+                color: #333;
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 10px;
+            }
+
+            .register-header p {
+                color: #666;
+                font-size: 14px;
+            }
+
+        .register-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .register-form label {
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+            .register-form label i {
+                margin-right: 5px;
+                color: #667eea;
+            }
+
+        .register-form .form-control {
+            height: 50px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+            .register-form .form-control:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+
+        .form-check {
+            padding-left: 1.5rem;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-check-input {
+            margin-top: 0.4rem;
+        }
+
+        .form-check-label i {
+            color: #ffc107;
+        }
+
+        .btn-primary {
+            height: 50px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            }
+
+        .register-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+            .register-footer p {
+                color: #666;
+                margin: 0;
+            }
+
+            .register-footer a {
+                color: #667eea;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+                .register-footer a:hover {
+                    text-decoration: underline;
+                }
+
+        .alert-danger {
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .text-danger {
+            font-size: 13px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .form-text {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

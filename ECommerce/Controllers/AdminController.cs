@@ -1,9 +1,12 @@
 ﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
+using ECommerce.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.Controllers
 {
+    [Authorize(Policy = "AdminOnly")]
     [Route("admin")]
     public class AdminController : Controller
     {

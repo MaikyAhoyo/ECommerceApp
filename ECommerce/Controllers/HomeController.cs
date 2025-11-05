@@ -1,30 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
-using ECommerce.Services.Interfaces;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IProductService _productService;
-        private readonly ICategoryService _categoryService;
-
-        public HomeController(IProductService productService, ICategoryService categoryService)
+        [HttpGet("/")]
+        public IActionResult Index()
         {
-            _productService = productService;
-            _categoryService = categoryService;
-        }
-
-        public async Task<IActionResult> Index()
-        {
-            var products = await _productService.GetTop3Async();
-            var categories = await _categoryService.GetAllAsync();
-            ViewBag.Categories = categories;
-            return View(products);
-        }
-
-        public IActionResult About()
-        {
-            return View();
+            return RedirectToAction("Login", "Auth");
         }
     }
 }

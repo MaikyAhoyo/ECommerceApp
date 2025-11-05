@@ -1,5 +1,289 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<ECommerce.Models.Entities.Product>
 @{
+    ViewData["Title"] = "Gestión de Productos";
+    Layout = "_AdminLayout";
+}
+
+<!-- Page Header -->
+<div class="page-header-actions">
+    <div>
+        <h1><i class="fas fa-box me-2"></i>Productos</h1>
+        <p class="text-muted">Gestiona el catálogo de productos</p>
+    </div>
+    <div>
+        <a href="/admin/products/create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nuevo Producto
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Buscar productos...">
+            </div>
+            <div class="col-md-3">
+                <select name="metal" class="form-select">
+                    <option value="">Todos los metales</option>
+                    <option value="Gold">Oro</option>
+                    <option value="Silver">Plata</option>
+                    <option value="Platinum">Platino</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="stock" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="instock">En stock</option>
+                    <option value="lowstock">Stock bajo</option>
+                    <option value="outofstock">Sin stock</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-search me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card">
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Producto</th>
+                            <th>Metal/Pureza</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Vendedor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="product-image">
+                                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                        {
+                                            <img src="@product.ImageUrl" alt="@product.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="no-image">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong>@product.Name</strong>
+                                    <br />
+                                    <small class="text-muted">ID: @product.Id</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-@GetMetalClass(product.Metal)">
+                                        @GetMetalName(product.Metal)
+                                    </span>
+                                    <br />
+                                    <small>@product.Purity</small>
+                                </td>
+                                <td><strong class="text-success">$@product.Price.ToString("N2")</strong></td>
+                                <td>
+                                    @if (product.Stock == 0)
+                                    {
+                                        <span class="badge bg-danger">Sin stock</span>
+                                    }
+                                    else if (product.Stock < 5)
+                                    {
+                                        <span class="badge bg-warning">@product.Stock unidades</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">@product.Stock unidades</span>
+                                    }
+                                </td>
+                                <td>
+                                    <small>@product.Vendor?.Name</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/admin/products/edit/@product.Id" class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteProduct(@product.Id)" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <p>No hay productos disponibles</p>
+                <a href="/admin/products/create" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-2"></i>Crear Primer Producto
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetMetalClass(string metal)
+    {
+        return metal switch
+        {
+            "Gold" => "gold",
+            "Silver" => "silver",
+            "Platinum" => "platinum",
+            _ => "secondary"
+        };
+    }
+
+    string GetMetalName(string metal)
+    {
+        return metal switch
+        {
+            "Gold" => "Oro",
+            "Silver" => "Plata",
+            "Platinum" => "Platino",
+            _ => metal
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .page-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+            .page-header-actions h1 {
+                font-size: 28px;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+            .product-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .no-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 24px;
+        }
+
+        .badge-gold {
+            background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+            color: white;
+        }
+
+        .badge-silver {
+            background: linear-gradient(135deg, #bdc3c7 0%, #ecf0f1 100%);
+            color: #2c3e50;
+        }
+
+        .badge-platinum {
+            background: linear-gradient(135deg, #95a5a6 0%, #bdc3c7 100%);
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+            .empty-state i {
+                font-size: 80px;
+                color: #dfe6e9;
+                margin-bottom: 20px;
+            }
+
+            .empty-state p {
+                color: #7f8c8d;
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+        @@media (max-width: 768px) {
+            .page-header-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function deleteProduct(id) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const form = document.getElementById('deleteForm');
+            form.action = '/admin/products/delete/' + id;
+            modal.show();
+        }
+    </script>
 }

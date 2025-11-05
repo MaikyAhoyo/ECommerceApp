@@ -1,0 +1,235 @@
+﻿@model IEnumerable<ECommerce.Models.Entities.Category>
+@{
+    ViewData["Title"] = "Gestión de Categorías";
+    Layout = "_AdminLayout";
+}
+
+<!-- Page Header -->
+<div class="page-header-actions">
+    <div>
+        <h1><i class="fas fa-tags me-2"></i>Categorías</h1>
+        <p class="text-muted">Gestiona las categorías de productos</p>
+    </div>
+    <div>
+        <a href="/admin/categories/create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nueva Categoría
+        </a>
+    </div>
+</div>
+
+<!-- Categories Grid -->
+@if (Model.Any())
+{
+    <div class="row g-4">
+        @foreach (var category in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="category-card">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <h5>@category.Name</h5>
+                    </div>
+                    <div class="category-body">
+                        <p class="category-description">
+                            @if (!string.IsNullOrEmpty(category.Description))
+                            {
+                                @category.Description
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sin descripción</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="category-footer">
+                        <a href="/admin/categories/edit/@category.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i>Editar
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCategory(@category.Id, '@category.Name')">
+                            <i class="fas fa-trash me-1"></i>Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="empty-state">
+                <i class="fas fa-tags"></i>
+                <p>No hay categorías disponibles</p>
+                <a href="/admin/categories/create" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-2"></i>Crear Primera Categoría
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar la categoría <strong id="categoryName"></strong>?</p>
+                <p class="text-danger mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Esta acción eliminará también la relación con los productos.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .page-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+            .page-header-actions h1 {
+                font-size: 28px;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .category-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            }
+
+        .category-header {
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+        }
+
+        .category-header h5 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .category-body {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .category-description {
+            color: #7f8c8d;
+            margin: 0;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .category-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #f1f3f5;
+            display: flex;
+            gap: 10px;
+        }
+
+            .category-footer .btn {
+                flex: 1;
+            }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+            .empty-state i {
+                font-size: 80px;
+                color: #dfe6e9;
+                margin-bottom: 20px;
+            }
+
+            .empty-state p {
+                color: #7f8c8d;
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                opacity: 0.9;
+            }
+
+        @@media (max-width: 768px) {
+            .page-header-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function deleteCategory(id, name) {
+            document.getElementById('categoryName').textContent = name;
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const form = document.getElementById('deleteForm');
+            form.action = '/admin/categories/delete/' + id;
+            modal.show();
+        }
+    </script>
+}
