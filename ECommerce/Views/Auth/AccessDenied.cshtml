@@ -1,134 +1,43 @@
 ﻿@{
-    ViewData["Title"] = "Acceso Denegado";
+    ViewData["Title"] = "Access Denied";
     Layout = "_AuthLayout";
 }
 
-<div class="access-denied-container">
-    <div class="access-denied-card">
-        <div class="icon-container">
-            <i class="fas fa-lock"></i>
+<section class="min-h-screen w-full flex items-center justify-center bg-cream px-4 py-12">
+    <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100 text-center">
+
+        <!-- Icon -->
+        <div class="mb-6">
+            <div class="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c.928 0 1.521-.597 1.521-1.293V6.293C19 5.597 18.403 5 17.707 5H6.293C5.597 5 5 5.597 5 6.293v11.414C5 18.403 5.597 19 6.293 19z" />
+                </svg>
+            </div>
         </div>
-        <h1>Acceso Denegado</h1>
-        <p>No tienes permiso para acceder a esta página.</p>
-        <div class="actions">
-            <a href="javascript:history.back()" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Volver
+
+        <!-- Content -->
+        <h1 class="font-playfair text-3xl font-bold text-gray-900 mb-3">Access Denied</h1>
+        <p class="text-gray-600 mb-8">
+            You don't have permission to access this page. Please contact your administrator if you believe this is an error.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="/auth/login"
+               class="inline-flex items-center justify-center px-6 py-3 bg-gold hover:bg-gold-dark text-white font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Back to Login
             </a>
-            <a asp-action="Login" class="btn btn-primary">
-                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-            </a>
+
+            <button onclick="history.back()"
+                    class="inline-flex items-center justify-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Go Back
+            </button>
         </div>
     </div>
-</div>
-
-@section Styles {
-    <style>
-        .access-denied-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-
-        .access-denied-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: 500px;
-            width: 100%;
-            padding: 60px 40px;
-            text-align: center;
-            animation: slideUp 0.5s ease;
-        }
-
-        @@keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .icon-container {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            border-radius: 50%;
-            margin: 0 auto 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse 2s infinite;
-        }
-
-            .icon-container i {
-                font-size: 50px;
-                color: white;
-            }
-
-        @@keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .access-denied-card h1 {
-            color: #333;
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .access-denied-card p {
-            color: #666;
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-            .actions .btn {
-                padding: 12px 30px;
-                border-radius: 8px;
-                font-weight: 600;
-                text-decoration: none;
-                transition: all 0.3s ease;
-            }
-
-            .actions .btn-secondary {
-                background: #6c757d;
-                border: none;
-                color: white;
-            }
-
-                .actions .btn-secondary:hover {
-                    background: #5a6268;
-                    transform: translateY(-2px);
-                }
-
-            .actions .btn-primary {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border: none;
-                color: white;
-            }
-
-                .actions .btn-primary:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-                }
-    </style>
-}
+</section>

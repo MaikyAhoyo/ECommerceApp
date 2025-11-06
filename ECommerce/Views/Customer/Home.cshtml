@@ -1,0 +1,257 @@
+﻿@model ECommerce.ViewModels.CustomerHomeViewModel
+@{
+    ViewData["Title"] = "Home";
+    Layout = "_CustomerLayout";
+}
+
+<!-- Hero Section -->
+@await Html.PartialAsync("~/Views/Customer/_HeroPartial.cshtml")
+
+<!-- Categories Section -->
+@if (Model.Categories != null && Model.Categories.Any())
+{
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-playfair text-4xl md:text-5xl font-bold text-primary mb-4">
+                    Shop by Category
+                </h2>
+                <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                    Find the perfect piece for every occasion
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach (var category in Model.Categories.Take(3))
+                {
+                    <a href="/customer/products?categoryId=@category.Id" class="group relative bg-white rounded-2xl p-10 border border-gray-200 hover:border-gold transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="w-20 h-20 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <i class="ph-fill ph-tag text-white text-3xl"></i>
+                            </div>
+                            
+                            <h4 class="font-playfair text-2xl font-bold text-primary mb-3 group-hover:text-gold transition-colors">
+                                @category.Name
+                            </h4>
+                            
+                            @if (!string.IsNullOrEmpty(category.Description))
+                            {
+                                <p class="text-gray-600 mb-4">@category.Description</p>
+                            }
+                            
+                            <span class="inline-flex items-center space-x-2 text-gold font-semibold group-hover:translate-x-2 transition-transform">
+                                <span>View Products</span>
+                                <i class="ph ph-arrow-right"></i>
+                            </span>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Featured Products -->
+@if (Model.FeaturedProducts != null && Model.FeaturedProducts.Any())
+{
+    <section class="py-20 bg-gradient-to-b from-cream to-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="font-playfair text-4xl md:text-5xl font-bold text-primary mb-4">
+                    Featured Collection
+                </h2>
+                <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                    The finest pieces from our exclusive collection
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                @foreach (var product in Model.FeaturedProducts)
+                {
+                    <div class="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-gold transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
+                        <a href="/customer/product-details/@product.Id" class="block">
+                            <div class="relative aspect-square bg-gray-100 overflow-hidden">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.Name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                }
+                                else
+                                {
+                                    <div class="w-full h-full flex items-center justify-center text-gray-300">
+                                        <i class="ph ph-image text-8xl"></i>
+                                    </div>
+                                }
+                                
+                                <div class="absolute top-4 right-4 bg-gold/95 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs font-bold">
+                                    @GetMetalName(product.Metal)
+                                </div>
+                            </div>
+                            
+                            <div class="p-5">
+                                <h5 class="font-semibold text-lg text-primary mb-2 line-clamp-2 group-hover:text-gold transition-colors">
+                                    @product.Name
+                                </h5>
+                                
+                                <p class="text-gray-600 text-sm mb-4">
+                                    @GetMetalName(product.Metal) @product.Purity
+                                </p>
+                                
+                                <div class="flex justify-between items-center">
+                                    <span class="font-playfair text-2xl font-bold text-green-600">
+                                        $@product.Price.ToString("N2")
+                                    </span>
+                                    <span class="inline-flex items-center space-x-1 bg-gold text-white px-4 py-2 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span>View</span>
+                                        <i class="ph ph-arrow-right"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="/customer/products" class="inline-flex items-center space-x-2 bg-white hover:bg-gold hover:text-white border-2 border-gold text-gold px-10 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <span>View All Products</span>
+                    <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <section class="py-20 bg-cream">
+        <div class="container mx-auto px-4 text-center">
+            <i class="ph ph-package text-8xl text-gray-300 mb-4"></i>
+            <p class="text-gray-600 text-lg">No products available at the moment</p>
+        </div>
+    </section>
+}
+
+<!-- Metal Collections -->
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="font-playfair text-4xl md:text-5xl font-bold text-primary mb-4">
+                Shop by Metal
+            </h2>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                Each metal tells its own unique story
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Gold -->
+            <div class="group relative bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-2xl p-12 text-white overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full"></div>
+                <div class="relative z-10 text-center">
+                    <div class="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="ph-fill ph-crown text-5xl"></i>
+                    </div>
+                    <h3 class="font-playfair text-3xl font-bold mb-4">Gold</h3>
+                    <p class="text-white/90 mb-8">Timeless elegance in 14k, 18k and 24k</p>
+                    <a href="/customer/products?metal=Gold" class="inline-flex items-center space-x-2 bg-white text-yellow-600 hover:bg-yellow-50 px-8 py-3 rounded-full font-semibold transition-all duration-300">
+                        <span>View Collection</span>
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Silver -->
+            <div class="group relative bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500 rounded-2xl p-12 text-primary overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-bl-full"></div>
+                <div class="relative z-10 text-center">
+                    <div class="w-24 h-24 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="ph-fill ph-star text-5xl"></i>
+                    </div>
+                    <h3 class="font-playfair text-3xl font-bold mb-4">Silver</h3>
+                    <p class="text-primary/80 mb-8">Brilliant sophistication in 925 sterling</p>
+                    <a href="/customer/products?metal=Silver" class="inline-flex items-center space-x-2 bg-primary text-white hover:bg-primary/90 px-8 py-3 rounded-full font-semibold transition-all duration-300">
+                        <span>View Collection</span>
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Platinum -->
+            <div class="group relative bg-gradient-to-br from-slate-400 via-slate-500 to-slate-600 rounded-2xl p-12 text-white overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full"></div>
+                <div class="relative z-10 text-center">
+                    <div class="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="ph-fill ph-gem text-5xl"></i>
+                    </div>
+                    <h3 class="font-playfair text-3xl font-bold mb-4">Platinum</h3>
+                    <p class="text-white/90 mb-8">Exclusive luxury in 950 platinum</p>
+                    <a href="/customer/products?metal=Platinum" class="inline-flex items-center space-x-2 bg-white text-slate-600 hover:bg-slate-50 px-8 py-3 rounded-full font-semibold transition-all duration-300">
+                        <span>View Collection</span>
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-24 bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white">
+    <div class="container mx-auto px-4 text-center">
+        <div class="max-w-3xl mx-auto">
+            <i class="ph-fill ph-sparkle text-6xl text-gold mb-6 inline-block"></i>
+            <h2 class="font-playfair text-4xl md:text-5xl font-bold mb-6">
+                Begin Your Journey
+            </h2>
+            <p class="text-xl text-white/90 mb-10 leading-relaxed">
+                Explore our exclusive collection and discover pieces that celebrate life's most precious moments
+            </p>
+            <a href="/customer/products" class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                <span>Explore Collection</span>
+                <i class="ph ph-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+@functions {
+    string GetMetalName(string metal)
+    {
+        return metal switch
+        {
+            "Gold" => "Gold",
+            "Silver" => "Silver",
+            "Platinum" => "Platinum",
+            _ => metal
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .shadow-elegant {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+}

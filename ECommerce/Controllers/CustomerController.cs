@@ -1,6 +1,8 @@
 ﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using ECommerce.ViewModels;
+
 
 namespace ECommerce.Controllers
 {
@@ -614,13 +616,5 @@ namespace ECommerce.Controllers
         }
 
         #endregion
-    }
-
-    // ViewModels
-    public class CustomerHomeViewModel
-    {
-        public List<Product> FeaturedProducts { get; set; } = new List<Product>();
-        public List<Category> Categories { get; set; } = new List<Category>();
-        public List<Product> NewArrivals { get; set; } = new List<Product>();
     }
 }

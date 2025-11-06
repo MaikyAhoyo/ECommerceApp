@@ -1,23 +1,30 @@
-﻿<section class="relative min-h-screen flex items-center justify-center overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center"
-         style="background-image: url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=80');">
-        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80"></div>
-    </div>
+﻿<section class="relative h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary/70 to-primary/60">
+    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1200')] bg-cover bg-center opacity-30"></div>
 
-    <div class="relative z-10 container mx-auto px-4 text-center pt-20">
-        <h1 class="font-playfair text-5xl md:text-7xl lg:text-8xl font-bold mb-6 text-white animate-fade-in">
-            Timeless Elegance
-        </h1>
-        <p class="text-lg md:text-xl lg:text-2xl text-gray-200 max-w-2xl mx-auto mb-10 font-light">
-            Discover our curated collection of fine jewelry, handcrafted to celebrate life's precious moments
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <button class="btn-luxury text-white px-8 py-3 rounded-md text-base font-medium tracking-wide">
-                Explore Collection
-            </button>
-            <button class="border border-white bg-white/10 text-white hover:bg-white/20 px-8 py-3 rounded-md text-base transition-all duration-300">
-                Our Story
-            </button>
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="text-white">
+                <h1 class="font-playfair text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                    Timeless <span class="text-gold">Elegance</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-white/90">
+                    Discover the perfect piece for every precious moment
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="/customer/products" class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                        <span>Shop Now</span>
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                    <a href="/customer/products" class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border-2 border-white px-8 py-4 rounded-full font-semibold transition-all duration-300">
+                        <span>View Collection</span>
+                    </a>
+                </div>
+            </div>
+            <div class="hidden md:flex justify-center items-center">
+                <div class="text-white/10 animate-float">
+                    <i class="ph-fill ph-gem" style="font-size: 200px;"></i>
+                </div>
+            </div>
         </div>
     </div>
 </section>

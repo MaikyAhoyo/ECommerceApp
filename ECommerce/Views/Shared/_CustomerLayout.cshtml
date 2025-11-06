@@ -1,5 +1,4 @@
-﻿﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -11,6 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+    <!-- Phosphor Icons -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/fill/style.css" />
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -19,6 +22,7 @@
             theme: {
                 extend: {
                     colors: {
+                        primary: "#2C2621",
                         gold: "hsl(45, 80%, 55%)",
                         "gold-dark": "hsl(38, 70%, 45%)",
                         cream: "hsl(40, 40%, 96%)"
@@ -32,107 +36,327 @@
         }
     </script>
 
+    <style>
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+
+        /* Smooth transitions */
+        * {
+            scroll-behavior: smooth;
+        }
+    </style>
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="bg-white text-gray-900">
-    <header>
-        <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-            <div class="container mx-auto px-4">
-                <div class="flex items-center justify-between h-20">
-                    <button class="md:hidden">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+<body class="bg-white text-gray-900 font-sans">
 
-                    <div class="flex-1 flex justify-center md:justify-start">
-                        <h1 class="font-playfair text-2xl md:text-3xl font-bold tracking-tight">
-                            Lumière
-                        </h1>
-                    </div>
-
-                    <div class="flex items-center space-x-8">
-                        <div class="hidden md:flex items-center space-x-8">
-                            <a href="#" class="hover:text-gold transition-colors duration-300 font-medium">Collections</a>
-                            <a href="#" class="hover:text-gold transition-colors duration-300 font-medium">About</a>
-                            <a href="#" class="hover:text-gold transition-colors duration-300 font-medium">Contact</a>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <button class="hidden md:flex p-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
-                            <button class="p-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+    <!-- Top Bar -->
+    <div class="bg-primary text-white/90 py-2.5 text-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-6">
+                    <a href="tel:+526621234567" class="flex items-center space-x-2 hover:text-gold transition-colors">
+                        <i class="ph ph-phone text-base"></i>
+                        <span>+52 662 123 4567</span>
+                    </a>
+                    <a href="mailto:contacto@lumiere.com" class="hidden sm:flex items-center space-x-2 hover:text-gold transition-colors">
+                        <i class="ph ph-envelope text-base"></i>
+                        <span>contacto@lumiere.com</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="flex items-center space-x-2">
+                            <i class="ph ph-user text-base"></i>
+                            <span>Welcome, @User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</span>
+                        </span>
+                    }
+                    else
+                    {
+                        <a href="/auth/login" class="flex items-center space-x-1 hover:text-gold transition-colors">
+                            <i class="ph ph-sign-in text-base"></i>
+                            <span>Sign In</span>
+                        </a>
+                        <span class="text-white/40">|</span>
+                        <a href="/auth/register" class="flex items-center space-x-1 hover:text-gold transition-colors">
+                            <i class="ph ph-user-plus text-base"></i>
+                            <span>Register</span>
+                        </a>
+                    }
                 </div>
             </div>
-        </nav>
-    </header>
-
-    <div class="w-full">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </div>
     </div>
 
-    <footer class="py-16 bg-[#2C2621] text-white">
+    <!-- Main Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-20">
+
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+
+                <!-- Logo -->
+                <div class="flex-1 flex justify-center md:justify-start">
+                    <a href="/customer/home" class="flex items-center space-x-2 group">
+                        <i class="ph-fill ph-gem text-gold text-2xl group-hover:scale-110 transition-transform"></i>
+                        <h1 class="font-playfair text-2xl md:text-3xl font-bold tracking-tight hover:text-gold transition-colors">
+                            Lumière
+                        </h1>
+                    </a>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8 flex-1 justify-center">
+                    <a href="/customer/home" class="hover:text-gold transition-colors duration-300 font-medium">Home</a>
+                    <a href="/customer/products" class="hover:text-gold transition-colors duration-300 font-medium">Products</a>
+                    <a href="/customer/products?metal=Gold" class="hover:text-gold transition-colors duration-300 font-medium">Gold</a>
+                    <a href="/customer/products?metal=Silver" class="hover:text-gold transition-colors duration-300 font-medium">Silver</a>
+                    <a href="/customer/products?metal=Platinum" class="hover:text-gold transition-colors duration-300 font-medium">Platinum</a>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center space-x-4 flex-1 justify-end">
+
+                    <!-- Search (Desktop only) -->
+                    <button class="hidden md:flex p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="ph ph-magnifying-glass text-xl"></i>
+                    </button>
+
+                    <!-- Cart -->
+                    <a href="/customer/cart" class="relative p-2 hover:bg-gray-100 rounded-lg transition-colors group">
+                        <i class="ph ph-shopping-cart text-xl group-hover:text-gold transition-colors"></i>
+                        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </a>
+
+                    <!-- User Menu -->
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center text-white font-semibold text-sm">
+                                    @User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value.Substring(0, 1).ToUpper()
+                                </div>
+                                <i class="ph ph-caret-down text-sm hidden md:block"></i>
+                            </button>
+
+                            <!-- Dropdown -->
+                            <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-100">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-sm font-semibold text-gray-900">@User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</p>
+                                    <p class="text-xs text-gray-500">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</p>
+                                </div>
+                                <a href="/customer/orders" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                    <i class="ph ph-package text-lg text-gray-600"></i>
+                                    <span class="text-sm text-gray-700">My Orders</span>
+                                </a>
+                                <a href="/customer/reviews" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                    <i class="ph ph-star text-lg text-gray-600"></i>
+                                    <span class="text-sm text-gray-700">My Reviews</span>
+                                </a>
+                                <a href="/customer/addresses" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                    <i class="ph ph-map-pin text-lg text-gray-600"></i>
+                                    <span class="text-sm text-gray-700">Addresses</span>
+                                </a>
+                                <div class="border-t border-gray-100 mt-2 pt-2">
+                                    <form method="post" action="/auth/logout" class="px-4 py-2.5">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="flex items-center space-x-3 text-red-600 hover:text-red-700 transition-colors w-full">
+                                            <i class="ph ph-sign-out text-lg"></i>
+                                            <span class="text-sm font-medium">Logout</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-200 bg-white">
+            <div class="container mx-auto px-4 py-4 space-y-2">
+                <a href="/customer/home" class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Home</a>
+                <a href="/customer/products" class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Products</a>
+                <a href="/customer/products?metal=Gold" class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Gold</a>
+                <a href="/customer/products?metal=Silver" class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Silver</a>
+                <a href="/customer/products?metal=Platinum" class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Platinum</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Notifications -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="toast fixed top-24 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-green-500 shadow-xl rounded-xl px-4 py-3 w-80 animate-slideIn">
+            <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <i class="ph-fill ph-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div class="flex-1 text-sm font-medium text-gray-900">@TempData["Success"]</div>
+            <button class="text-gray-400 hover:text-gray-700 transition-colors" onclick="this.parentElement.remove()">
+                <i class="ph ph-x text-lg"></i>
+            </button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="toast fixed top-24 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-red-500 shadow-xl rounded-xl px-4 py-3 w-80 animate-slideIn">
+            <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="ph-fill ph-warning-circle text-red-600 text-xl"></i>
+            </div>
+            <div class="flex-1 text-sm font-medium text-gray-900">@TempData["Error"]</div>
+            <button class="text-gray-400 hover:text-gray-700 transition-colors" onclick="this.parentElement.remove()">
+                <i class="ph ph-x text-lg"></i>
+            </button>
+        </div>
+    }
+
+    <!-- Main Content -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-16 bg-primary text-white">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+
+                <!-- Brand -->
                 <div>
-                    <h3 class="font-playfair text-2xl font-bold mb-4">Lumière</h3>
-                    <p class="text-white/80 text-md">
-                        Timeless elegance in every piece. Handcrafted jewelry that celebrates life's precious moments.
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="ph-fill ph-gem text-gold text-2xl"></i>
+                        <h3 class="font-playfair text-2xl font-bold">Lumière</h3>
+                    </div>
+                    <p class="text-white/80 text-sm mb-6 leading-relaxed">
+                        The finest jewelry in gold, silver and platinum. Quality and elegance in every piece.
                     </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-gold rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <i class="ph-fill ph-facebook-logo text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-gold rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <i class="ph-fill ph-instagram-logo text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-gold rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <i class="ph-fill ph-twitter-logo text-lg"></i>
+                        </a>
+                    </div>
                 </div>
 
+                <!-- Shop -->
                 <div>
-                    <h4 class="font-semibold mb-4 tracking-wide">Shop</h4>
-                    <ul class="space-y-2 text-md text-white/80">
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Rings</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Necklaces</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Earrings</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Bracelets</a></li>
+                    <h4 class="font-semibold mb-4 tracking-wide text-gold">Shop</h4>
+                    <ul class="space-y-2.5 text-sm text-white/80">
+                        <li><a href="/customer/products" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>All Products</span></a></li>
+                        <li><a href="/customer/products?metal=Gold" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Gold</span></a></li>
+                        <li><a href="/customer/products?metal=Silver" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Silver</span></a></li>
+                        <li><a href="/customer/products?metal=Platinum" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Platinum</span></a></li>
                     </ul>
                 </div>
 
+                <!-- My Account -->
                 <div>
-                    <h4 class="font-semibold mb-4 tracking-wide">About</h4>
-                    <ul class="space-y-2 text-md text-white/80">
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Our Story</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Craftsmanship</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Sustainability</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Contact</a></li>
+                    <h4 class="font-semibold mb-4 tracking-wide text-gold">My Account</h4>
+                    <ul class="space-y-2.5 text-sm text-white/80">
+                        <li><a href="/customer/orders" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>My Orders</span></a></li>
+                        <li><a href="/customer/cart" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Shopping Cart</span></a></li>
+                        <li><a href="/customer/reviews" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>My Reviews</span></a></li>
+                        <li><a href="/customer/addresses" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Addresses</span></a></li>
                     </ul>
                 </div>
 
+                <!-- Contact -->
                 <div>
-                    <h4 class="font-semibold mb-4 tracking-wide">Customer Care</h4>
-                    <ul class="space-y-2 text-md text-white/80">
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Shipping</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Returns</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Size Guide</a></li>
-                        <li><a href="#" class="hover:text-gold transition-colors duration-300">FAQ</a></li>
+                    <h4 class="font-semibold mb-4 tracking-wide text-gold">Contact</h4>
+                    <ul class="space-y-3 text-sm text-white/80">
+                        <li class="flex items-start space-x-3">
+                            <i class="ph ph-map-pin text-lg text-gold mt-0.5"></i>
+                            <span>Hermosillo, Sonora, México</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <i class="ph ph-phone text-lg text-gold"></i>
+                            <a href="tel:+526621234567" class="hover:text-gold transition-colors">+52 662 123 4567</a>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <i class="ph ph-envelope text-lg text-gold"></i>
+                            <a href="mailto:contacto@lumiere.com" class="hover:text-gold transition-colors">contacto@lumiere.com</a>
+                        </li>
                     </ul>
                 </div>
             </div>
 
-            <div class="border-t border-primary pt-8 text-center">
-                <p class="text-md text-white/60">
-                    © 2025 Lumière. All rights reserved.
+            <!-- Footer Bottom -->
+            <div class="border-t border-white/10 pt-8 text-center">
+                <p class="text-sm text-white/60">
+                    © @DateTime.Now.Year <span class="text-gold font-semibold">Lumière</span>. All rights reserved.
                 </p>
             </div>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        // Auto-hide toasts
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(t => {
+                setTimeout(() => {
+                    t.classList.add('fade-out');
+                    setTimeout(() => t.remove(), 500);
+                }, 5000);
+            });
+        });
+
+        // Update cart count from localStorage
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const badge = document.getElementById('cartCount');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+        updateCartCount();
+
+        // Update cart count on storage change
+        window.addEventListener('storage', updateCartCount);
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

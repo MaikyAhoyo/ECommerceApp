@@ -1,0 +1,511 @@
+﻿@model ECommerce.ViewModels.CustomerCartViewModel
+@{
+    ViewData["Title"] = "Carrito de Compras";
+    Layout = "_CustomerLayout";
+}
+
+<div class="cart-page">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-shopping-cart me-3"></i>Carrito de Compras
+        </h1>
+
+        @if (Model.Items != null && Model.Items.Any())
+        {
+            <div class="row g-4">
+                <!-- Cart Items -->
+                <div class="col-lg-8">
+                    <div class="cart-items-section">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="cart-item" data-item-id="@item.Id">
+                                <div class="item-image">
+                                    @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                    {
+                                        <img src="@item.ProductImageUrl" alt="@item.ProductName">
+                                    }
+                                    else
+                                    {
+                                        <div class="no-image">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="item-details">
+                                    <h5>@item.ProductName</h5>
+                                    <p class="item-metal">@GetMetalName(item.Metal) @item.Purity</p>
+                                    <div class="item-actions-mobile">
+                                        <span class="item-price-mobile">$@item.UnitPrice.ToString("N2")</span>
+                                        <button type="button" class="btn-remove" onclick="removeItem(@item.Id)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="item-quantity">
+                                    <button type="button" class="qty-btn" onclick="updateQuantity(@item.Id, @item.Quantity - 1)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" value="@item.Quantity" min="1" max="@item.MaxStock" readonly>
+                                    <button type="button" class="qty-btn" onclick="updateQuantity(@item.Id, @item.Quantity + 1)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                <div class="item-price">
+                                    <span class="unit-price">$@item.UnitPrice.ToString("N2")</span>
+                                </div>
+
+                                <div class="item-subtotal">
+                                    <span class="subtotal-amount">$@item.Subtotal.ToString("N2")</span>
+                                </div>
+
+                                <div class="item-remove">
+                                    <button type="button" class="btn-remove" onclick="removeItem(@item.Id)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Continue Shopping -->
+                    <div class="continue-shopping">
+                        <a href="/customer/products" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="col-lg-4">
+                    <div class="order-summary">
+                        <h4>Resumen del Pedido</h4>
+
+                        <div class="summary-row">
+                            <span>Subtotal (@Model.ItemCount items)</span>
+                            <span>$@Model.Subtotal.ToString("N2")</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Envío</span>
+                            <span>
+                                @if (Model.Shipping == 0)
+                                {
+                                    <span class="text-success">Gratis</span>
+                                }
+                                else
+                                {
+                                    <span>$@Model.Shipping.ToString("N2")</span>
+                                }
+                            </span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>IVA (16%)</span>
+                            <span>$@Model.Tax.ToString("N2")</span>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-total">
+                            <span>Total</span>
+                            <span>$@Model.Total.ToString("N2")</span>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-checkout w-100" onclick="goToCheckout()">
+                            <i class="fas fa-lock me-2"></i>Proceder al Pago
+                        </button>
+
+                        <!-- Trust Badges -->
+                        <div class="trust-badges">
+                            <div class="badge-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Pago Seguro</span>
+                            </div>
+                            <div class="badge-item">
+                                <i class="fas fa-truck"></i>
+                                <span>Envío Gratis</span>
+                            </div>
+                            <div class="badge-item">
+                                <i class="fas fa-undo"></i>
+                                <span>Devolución Fácil</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Tu carrito está vacío</h3>
+                <p>Agrega productos para comenzar tu compra</p>
+                <a href="/customer/products" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-bag me-2"></i>Explorar Productos
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    string GetMetalName(string metal)
+    {
+        return metal switch
+        {
+            "Gold" => "Oro",
+            "Silver" => "Plata",
+            "Platinum" => "Platino",
+            _ => metal
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .cart-page {
+            padding: 60px 0;
+            background: #f8f9fa;
+            min-height: 70vh;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        /* Cart Items */
+        .cart-items-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 100px 1fr 120px 120px 120px 50px;
+            gap: 20px;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .cart-item:last-child {
+                border-bottom: none;
+            }
+
+        .item-image {
+            width: 100px;
+            height: 100px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+            .item-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .no-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 36px;
+        }
+
+        .item-details h5 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .item-metal {
+            color: #7f8c8d;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .item-actions-mobile {
+            display: none;
+        }
+
+        /* Quantity */
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .qty-btn {
+            background: #f8f9fa;
+            border: none;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            color: #2c3e50;
+            transition: all 0.3s;
+        }
+
+            .qty-btn:hover {
+                background: #f39c12;
+                color: white;
+            }
+
+        .item-quantity input {
+            width: 50px;
+            height: 35px;
+            text-align: center;
+            border: none;
+            font-weight: 600;
+        }
+
+        /* Price */
+        .item-price, .item-subtotal {
+            text-align: center;
+        }
+
+        .unit-price {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .subtotal-amount {
+            color: #27ae60;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .btn-remove:hover {
+                color: #c0392b;
+                transform: scale(1.2);
+            }
+
+        /* Continue Shopping */
+        .continue-shopping {
+            margin-top: 20px;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 100px;
+        }
+
+            .order-summary h4 {
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 25px;
+            }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .summary-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 20px 0;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .btn-checkout {
+            height: 56px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        /* Trust Badges */
+        .trust-badges {
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .badge-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+            .badge-item i {
+                color: #27ae60;
+                font-size: 18px;
+            }
+
+        /* Empty Cart */
+        .empty-cart {
+            background: white;
+            border-radius: 15px;
+            padding: 100px 40px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+            .empty-cart i {
+                font-size: 100px;
+                color: #dfe6e9;
+                margin-bottom: 30px;
+            }
+
+            .empty-cart h3 {
+                font-size: 28px;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 15px;
+            }
+
+            .empty-cart p {
+                color: #7f8c8d;
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+            }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .cart-item {
+                grid-template-columns: 80px 1fr;
+                gap: 15px;
+            }
+
+            .item-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .item-quantity,
+            .item-price,
+            .item-subtotal,
+            .item-remove {
+                display: none;
+            }
+
+            .item-actions-mobile {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 10px;
+            }
+
+            .item-price-mobile {
+                color: #27ae60;
+                font-weight: 700;
+                font-size: 18px;
+            }
+
+            .order-summary {
+                position: static;
+            }
+
+            .empty-cart {
+                padding: 60px 20px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function updateQuantity(itemId, newQuantity) {
+            if (newQuantity < 1) return;
+
+            fetch(`/customer/cart/update/${itemId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ quantity: newQuantity })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar la cantidad');
+            });
+        }
+
+        function removeItem(itemId) {
+            if (!confirm('¿Eliminar este producto del carrito?')) return;
+
+            fetch(`/customer/cart/remove/${itemId}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al eliminar el producto');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar el producto');
+            });
+        }
+
+        function goToCheckout() {
+            window.location.href = '/customer/checkout';
+        }
+    </script>
+}

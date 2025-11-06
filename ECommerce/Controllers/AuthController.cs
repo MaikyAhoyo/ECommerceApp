@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using BCrypt.Net;
 
 namespace ECommerce.Controllers
 {
@@ -22,7 +23,6 @@ namespace ECommerce.Controllers
         [HttpGet("login")]
         public IActionResult Login(string? returnUrl = null)
         {
-            // Si ya está autenticado, redirigir según su rol
             if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToRoleDashboard();
@@ -41,17 +41,31 @@ namespace ECommerce.Controllers
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(model);
-
-            var user = await _userService.LoginAsync(model.Email, model.Password);
-
-            if (user == null)
             {
-                ModelState.AddModelError("", "Email o contraseña incorrectos");
+                Console.WriteLine("ModelState is invalid");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Error: {error.ErrorMessage}");
+                }
                 return View(model);
             }
 
-            // Crear claims
+            var user = await _userService.GetByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Invalid email or password");
+                return View(model);
+            }
+
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
+
+            if (!isPasswordValid)
+            {
+                ModelState.AddModelError("", "Invalid email or password");
+                return View(model);
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -74,9 +88,8 @@ namespace ECommerce.Controllers
                 principal,
                 authProperties);
 
-            TempData["Success"] = $"¡Bienvenido {user.Name}!";
+            TempData["Success"] = $"Welcome back, {user.Name}!";
 
-            // Redirigir según returnUrl o rol
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
 
@@ -88,6 +101,7 @@ namespace ECommerce.Controllers
                 _ => RedirectToAction("Login")
             };
         }
+
 
         // GET: /auth/register
         [HttpGet("register")]
@@ -109,19 +123,20 @@ namespace ECommerce.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Verificar si el email ya existe
             var existingUser = await _userService.GetByEmailAsync(model.Email);
             if (existingUser != null)
             {
-                ModelState.AddModelError("Email", "Este email ya está registrado");
+                ModelState.AddModelError("Email", "This email is already registered");
                 return View(model);
             }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
             var user = new User
             {
                 Name = model.Name,
                 Email = model.Email,
-                PasswordHash = model.Password, // TODO: Hashear la contraseña con BCrypt
+                PasswordHash = hashedPassword,
                 Role = model.RegisterAsVendor ? "Vendor" : "Customer",
                 CreatedAt = DateTime.UtcNow
             };
@@ -130,23 +145,27 @@ namespace ECommerce.Controllers
 
             if (userId > 0)
             {
-                TempData["Success"] = "Registro exitoso. Por favor inicia sesión.";
+                TempData["Success"] = "Registration successful. Please log in.";
                 return RedirectToAction(nameof(Login));
             }
 
-            ModelState.AddModelError("", "Error al registrar el usuario");
+            ModelState.AddModelError("", "Error registering user");
             return View(model);
         }
+
 
         // POST: /auth/logout
         [HttpPost("logout")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            Console.WriteLine("Logout method reached.");
+
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            TempData["Success"] = "Sesión cerrada exitosamente";
-            return RedirectToAction(nameof(Login));
+            TempData["Success"] = "Session closed successfully";
+            return RedirectToAction("Login", "Auth");
         }
+
 
         // GET: /auth/access-denied
         [HttpGet("access-denied")]

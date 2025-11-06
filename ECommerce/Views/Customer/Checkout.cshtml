@@ -1,0 +1,609 @@
+﻿@model ECommerce.ViewModels.CustomerCheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "_CustomerLayout";
+}
+
+<div class="checkout-page">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-lock me-3"></i>Checkout Seguro
+        </h1>
+
+        <form asp-action="ProcessCheckout" method="post" id="checkoutForm">
+            <div class="row g-4">
+                <!-- Checkout Steps -->
+                <div class="col-lg-8">
+                    <!-- Step 1: Shipping Address -->
+                    <div class="checkout-section">
+                        <div class="section-header">
+                            <span class="step-number">1</span>
+                            <h4>Dirección de Envío</h4>
+                        </div>
+
+                        @if (Model.Addresses != null && Model.Addresses.Any())
+                        {
+                            <div class="addresses-grid">
+                                @foreach (var address in Model.Addresses)
+                                {
+                                    <div class="address-card">
+                                        <input type="radio"
+                                               name="SelectedAddressId"
+                                               value="@address.Id"
+                                               id="address_@address.Id"
+                                               required>
+                                        <label for="address_@address.Id">
+                                            <div class="address-info">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                <div>
+                                                    <p class="address-line">@address.AddressLine1</p>
+                                                    @if (!string.IsNullOrEmpty(address.AddressLine2))
+                                                    {
+                                                        <p class="address-line">@address.AddressLine2</p>
+                                                    }
+                                                    <p class="address-line">
+                                                        @address.City, @address.State, @address.PostalCode
+                                                    </p>
+                                                    <p class="address-line">@address.Country</p>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-check-circle check-icon"></i>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="add-address-link">
+                                <a href="/customer/addresses/create?returnUrl=/customer/checkout">
+                                    <i class="fas fa-plus-circle me-2"></i>Agregar Nueva Dirección
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No tienes direcciones guardadas.
+                                <a href="/customer/addresses/create?returnUrl=/customer/checkout">Agregar una dirección</a>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Step 2: Payment Method -->
+                    <div class="checkout-section">
+                        <div class="section-header">
+                            <span class="step-number">2</span>
+                            <h4>Método de Pago</h4>
+                        </div>
+
+                        <div class="payment-methods">
+                            <div class="payment-option">
+                                <input type="radio"
+                                       name="SelectedPaymentMethod"
+                                       value="Card"
+                                       id="payment_card"
+                                       checked
+                                       required>
+                                <label for="payment_card">
+                                    <div class="payment-info">
+                                        <i class="fas fa-credit-card"></i>
+                                        <div>
+                                            <strong>Tarjeta de Crédito/Débito</strong>
+                                            <p>Pago seguro con tu tarjeta</p>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                </label>
+                            </div>
+
+                            <div class="payment-option">
+                                <input type="radio"
+                                       name="SelectedPaymentMethod"
+                                       value="PayPal"
+                                       id="payment_paypal">
+                                <label for="payment_paypal">
+                                    <div class="payment-info">
+                                        <i class="fab fa-paypal"></i>
+                                        <div>
+                                            <strong>PayPal</strong>
+                                            <p>Paga con tu cuenta PayPal</p>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                </label>
+                            </div>
+
+                            <div class="payment-option">
+                                <input type="radio"
+                                       name="SelectedPaymentMethod"
+                                       value="Transfer"
+                                       id="payment_transfer">
+                                <label for="payment_transfer">
+                                    <div class="payment-info">
+                                        <i class="fas fa-university"></i>
+                                        <div>
+                                            <strong>Transferencia Bancaria</strong>
+                                            <p>Pago por transferencia</p>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Order Review -->
+                    <div class="checkout-section">
+                        <div class="section-header">
+                            <span class="step-number">3</span>
+                            <h4>Revisar Pedido</h4>
+                        </div>
+
+                        <div class="order-items-review">
+                            @if (Model.Cart != null && Model.Cart.OrderItems != null)
+                            {
+                                @foreach (var item in Model.Cart.OrderItems)
+                                {
+                                    <div class="review-item">
+                                        <div class="item-image">
+                                            @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                            {
+                                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name">
+                                            }
+                                            else
+                                            {
+                                                <div class="no-image">
+                                                    <i class="fas fa-image"></i>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="item-details">
+                                            <h6>@item.Product?.Name</h6>
+                                            <p>Cantidad: @item.Quantity</p>
+                                        </div>
+                                        <div class="item-price">
+                                            <span>$@((item.Quantity * item.UnitPrice).ToString("N2"))</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="col-lg-4">
+                    <div class="summary-card">
+                        <h4>Resumen del Pedido</h4>
+
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>$@Model.Subtotal.ToString("N2")</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Envío</span>
+                            <span>
+                                @if (Model.Shipping == 0)
+                                {
+                                    <span class="text-success">Gratis</span>
+                                }
+                                else
+                                {
+                                    <span>$@Model.Shipping.ToString("N2")</span>
+                                }
+                            </span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>IVA (16%)</span>
+                            <span>$@Model.Tax.ToString("N2")</span>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-total">
+                            <span>Total a Pagar</span>
+                            <span>$@Model.Total.ToString("N2")</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-place-order">
+                            <i class="fas fa-lock me-2"></i>Realizar Pedido
+                        </button>
+
+                        <!-- Security Badges -->
+                        <div class="security-info">
+                            <div class="security-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Pago 100% Seguro</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-lock"></i>
+                                <span>Conexión Encriptada</span>
+                            </div>
+                            <div class="security-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Garantía de Satisfacción</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .checkout-page {
+            padding: 60px 0;
+            background: #f8f9fa;
+            min-height: 70vh;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        /* Checkout Sections */
+        .checkout-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .section-header h4 {
+            margin: 0;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* Addresses */
+        .addresses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .address-card {
+            position: relative;
+        }
+
+            .address-card input[type="radio"] {
+                position: absolute;
+                opacity: 0;
+            }
+
+            .address-card label {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                padding: 20px;
+                border: 2px solid #e9ecef;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .address-card input[type="radio"]:checked + label {
+                border-color: #f39c12;
+                background: #fff9f0;
+            }
+
+            .address-card label:hover {
+                border-color: #f39c12;
+            }
+
+        .address-info {
+            display: flex;
+            gap: 15px;
+        }
+
+            .address-info i {
+                font-size: 24px;
+                color: #f39c12;
+                margin-top: 5px;
+            }
+
+        .address-line {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .check-icon {
+            color: #f39c12;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .address-card input[type="radio"]:checked + label .check-icon {
+            opacity: 1;
+        }
+
+        .add-address-link {
+            margin-top: 15px;
+        }
+
+            .add-address-link a {
+                color: #f39c12;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+                .add-address-link a:hover {
+                    text-decoration: underline;
+                }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .payment-option {
+            position: relative;
+        }
+
+            .payment-option input[type="radio"] {
+                position: absolute;
+                opacity: 0;
+            }
+
+            .payment-option label {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+                border: 2px solid #e9ecef;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .payment-option input[type="radio"]:checked + label {
+                border-color: #f39c12;
+                background: #fff9f0;
+            }
+
+            .payment-option label:hover {
+                border-color: #f39c12;
+            }
+
+        .payment-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+            .payment-info i {
+                font-size: 32px;
+                color: #f39c12;
+            }
+
+            .payment-info strong {
+                display: block;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+
+            .payment-info p {
+                margin: 0;
+                color: #7f8c8d;
+                font-size: 13px;
+            }
+
+        .payment-option input[type="radio"]:checked + label .check-icon {
+            opacity: 1;
+        }
+
+        /* Order Review */
+        .order-items-review {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .review-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+            .review-item .item-image {
+                width: 60px;
+                height: 60px;
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+                .review-item .item-image img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+            .review-item .no-image {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #adb5bd;
+                font-size: 24px;
+            }
+
+            .review-item .item-details {
+                flex: 1;
+            }
+
+            .review-item h6 {
+                margin: 0 0 5px 0;
+                font-size: 14px;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+            .review-item p {
+                margin: 0;
+                font-size: 13px;
+                color: #7f8c8d;
+            }
+
+            .review-item .item-price {
+                font-weight: 700;
+                color: #27ae60;
+                font-size: 16px;
+            }
+
+        /* Summary Card */
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 100px;
+        }
+
+            .summary-card h4 {
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 25px;
+            }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .summary-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 20px 0;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .btn-place-order {
+            height: 56px;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        /* Security Info */
+        .security-info {
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .security-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+
+            .security-item i {
+                color: #27ae60;
+                font-size: 16px;
+            }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+            }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .addresses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-card {
+                position: static;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            const addressSelected = document.querySelector('input[name="SelectedAddressId"]:checked');
+            const paymentSelected = document.querySelector('input[name="SelectedPaymentMethod"]:checked');
+
+            if (!addressSelected) {
+                e.preventDefault();
+                alert('Por favor selecciona una dirección de envío');
+                return false;
+            }
+
+            if (!paymentSelected) {
+                e.preventDefault();
+                alert('Por favor selecciona un método de pago');
+                return false;
+            }
+
+            // Mostrar loading
+            const btn = document.querySelector('.btn-place-order');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+            btn.disabled = true;
+        });
+    </script>
+}

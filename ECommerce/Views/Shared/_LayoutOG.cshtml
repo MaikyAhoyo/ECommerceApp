@@ -1,0 +1,137 @@
+﻿﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Lumière</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: "hsl(45, 80%, 55%)",
+                        "gold-dark": "hsl(38, 70%, 45%)",
+                        cream: "hsl(40, 40%, 96%)"
+                    },
+                    fontFamily: {
+                        playfair: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="bg-white text-gray-900">
+    <header>
+        <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center justify-between h-20">
+                    <button class="md:hidden">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    <div class="flex-1 flex justify-center md:justify-start">
+                        <h1 class="font-playfair text-2xl md:text-3xl font-bold tracking-tight">
+                            Lumière
+                        </h1>
+                    </div>
+
+                    <div class="flex items-center space-x-8">
+                        <div class="hidden md:flex items-center space-x-8">
+                            <a href="#" class="hover:text-gold transition-colors duration-300 font-medium">Collections</a>
+                            <a href="#" class="hover:text-gold transition-colors duration-300 font-medium">About</a>
+                            <a href="#" class="hover:text-gold transition-colors duration-300 font-medium">Contact</a>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button class="hidden md:flex p-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                            <button class="p-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="w-full">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="py-16 bg-[#2C2621] text-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <h3 class="font-playfair text-2xl font-bold mb-4">Lumière</h3>
+                    <p class="text-white/80 text-md">
+                        Timeless elegance in every piece. Handcrafted jewelry that celebrates life's precious moments.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4 tracking-wide">Shop</h4>
+                    <ul class="space-y-2 text-md text-white/80">
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Rings</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Necklaces</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Earrings</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Bracelets</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4 tracking-wide">About</h4>
+                    <ul class="space-y-2 text-md text-white/80">
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Our Story</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Craftsmanship</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Sustainability</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4 tracking-wide">Customer Care</h4>
+                    <ul class="space-y-2 text-md text-white/80">
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Shipping</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Returns</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">Size Guide</a></li>
+                        <li><a href="#" class="hover:text-gold transition-colors duration-300">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-primary pt-8 text-center">
+                <p class="text-md text-white/60">
+                    © 2025 Lumière. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

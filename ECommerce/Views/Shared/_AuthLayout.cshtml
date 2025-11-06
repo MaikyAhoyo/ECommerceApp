@@ -3,91 +3,109 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Joyería Elegante</title>
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <title>@ViewData["Title"] - Lumière</title>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: "#e6b944",
+                        "gold-dark": "#c9a536",
+                        cream: "#faf7f2"
+                    },
+                    fontFamily: {
+                        playfair: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            overflow-x: hidden;
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
         }
 
-        .btn-block {
-            width: 100%;
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
         }
     </style>
 
-    @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
-    <!-- TempData Messages -->
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-cream to-white text-gray-800">
+
     @if (TempData["Success"] != null)
     {
-        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-            <div class="toast show" role="alert">
-                <div class="toast-header bg-success text-white">
-                    <i class="fas fa-check-circle me-2"></i>
-                    <strong class="me-auto">Éxito</strong>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    @TempData["Success"]
-                </div>
-            </div>
+        <div class="toast fixed top-4 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-gold shadow-lg rounded-xl px-4 py-3 w-80 animate-slideIn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div class="flex-1 text-sm font-medium">@TempData["Success"]</div>
+            <button class="text-gray-400 hover:text-gray-700" onclick="this.parentElement.remove()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     }
 
     @if (TempData["Error"] != null)
     {
-        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-            <div class="toast show" role="alert">
-                <div class="toast-header bg-danger text-white">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <strong class="me-auto">Error</strong>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    @TempData["Error"]
-                </div>
-            </div>
+        <div class="toast fixed top-4 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-red-500 shadow-lg rounded-xl px-4 py-3 w-80 animate-slideIn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c.928 0 1.521-.597 1.521-1.293V6.293C19 5.597 18.403 5 17.707 5H6.293C5.597 5 5 5.597 5 6.293v11.414C5 18.403 5.597 19 6.293 19z" />
+            </svg>
+            <div class="flex-1 text-sm font-medium">@TempData["Error"]</div>
+            <button class="text-gray-400 hover:text-gray-700" onclick="this.parentElement.remove()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     }
 
-    <!-- Main Content -->
-    <main>
+    <main class="flex flex-1 flex-col justify-center items-center px-4">
         @RenderBody()
     </main>
 
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="text-center text-gray-500 text-sm py-6">
+        © @DateTime.Now.Year <span class="text-gold font-semibold">Lumière</span> — Todos los derechos reservados
+    </footer>
 
-    <!-- jQuery (for validation) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Auto-hide toasts -->
     <script>
-        // Auto-hide toasts after 5 seconds
-        setTimeout(function() {
-            var toasts = document.querySelectorAll('.toast');
-            toasts.forEach(function(toast) {
-                var bsToast = new bootstrap.Toast(toast);
-                bsToast.hide();
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(t => {
+                setTimeout(() => {
+                    t.classList.add('fade-out');
+                    setTimeout(() => t.remove(), 500);
+                }, 5000);
             });
-        }, 5000);
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

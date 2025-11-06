@@ -389,47 +389,5 @@ namespace ECommerce.Controllers
         }
 
         #endregion
-
-        #region Reports
-
-        // GET: /admin/reports/sales
-        [HttpGet("reports/sales")]
-        public async Task<IActionResult> SalesReport()
-        {
-            var totalRevenue = await _orderService.GetTotalRevenueAsync();
-            var totalOrders = await _orderService.GetTotalOrdersCountAsync();
-            var orders = await _orderService.GetAllAsync();
-
-            var model = new SalesReportViewModel
-            {
-                TotalRevenue = totalRevenue,
-                TotalOrders = totalOrders,
-                Orders = orders.Where(o => o.Status != "Cart").ToList()
-            };
-
-            return View(model);
-        }
-
-        #endregion
-    }
-
-    // ViewModels
-    public class AdminDashboardViewModel
-    {
-        public int TotalProducts { get; set; }
-        public int TotalOrders { get; set; }
-        public decimal TotalRevenue { get; set; }
-        public int TotalUsers { get; set; }
-        public int TotalCustomers { get; set; }
-        public int TotalVendors { get; set; }
-        public int PendingOrders { get; set; }
-        public List<Order> RecentOrders { get; set; } = new List<Order>();
-    }
-
-    public class SalesReportViewModel
-    {
-        public decimal TotalRevenue { get; set; }
-        public int TotalOrders { get; set; }
-        public List<Order> Orders { get; set; } = new List<Order>();
     }
 }

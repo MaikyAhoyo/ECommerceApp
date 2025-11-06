@@ -303,13 +303,16 @@
                 </a>
             </li>
             <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                <form asp-controller="Auth" asp-action="Logout" method="post" style="margin: 0;">
-                    <button type="submit" style="background: none; border: none; width: 100%; text-align: left; padding: 12px 20px; color: rgba(255,255,255,0.8); cursor: pointer; display: flex; align-items: center;">
+                <form method="post" action="/auth/logout" style="margin: 0;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit"
+                            style="background: none; border: none; width: 100%; text-align: left; padding: 12px 20px; color: rgba(255,255,255,0.8); cursor: pointer; display: flex; align-items: center;">
                         <i class="fas fa-sign-out-alt" style="font-size: 20px; width: 30px; margin-right: 15px;"></i>
                         <span>Cerrar Sesión</span>
                     </button>
                 </form>
             </li>
+
         </ul>
     </aside>
 

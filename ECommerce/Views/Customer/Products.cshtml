@@ -1,0 +1,451 @@
+﻿@model IEnumerable<ECommerce.Models.Entities.Product>
+@{
+    ViewData["Title"] = "Catálogo de Productos";
+    Layout = "_CustomerLayout";
+    var metal = Context.Request.Query["metal"].ToString();
+    var categoryId = Context.Request.Query["categoryId"].ToString();
+    var search = Context.Request.Query["search"].ToString();
+}
+
+<div class="products-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>
+                @if (!string.IsNullOrEmpty(search))
+                {
+                    <span>Resultados para "@search"</span>
+                }
+                else if (!string.IsNullOrEmpty(metal))
+                {
+                    <span>Colección de @GetMetalName(metal)</span>
+                }
+                else
+                {
+                    <span>Todos los Productos</span>
+                }
+            </h1>
+            <p>Encuentra la joya perfecta para ti</p>
+        </div>
+
+        <div class="row">
+            <!-- Filters Sidebar -->
+            <div class="col-lg-3">
+                <div class="filters-card">
+                    <h5><i class="fas fa-filter me-2"></i>Filtros</h5>
+
+                    <form method="get">
+                        <!-- Search -->
+                        <div class="filter-group">
+                            <label>Buscar</label>
+                            <input type="text" name="search" class="form-control" placeholder="Buscar producto..." value="@search">
+                        </div>
+
+                        <!-- Metal -->
+                        <div class="filter-group">
+                            <label>Metal</label>
+                            <select name="metal" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="Gold" selected="@(metal == "Gold")">Oro</option>
+                                <option value="Silver" selected="@(metal == "Silver")">Plata</option>
+                                <option value="Platinum" selected="@(metal == "Platinum")">Platino</option>
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="filter-group">
+                            <label>Rango de Precio</label>
+                            <select name="priceRange" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="0-5000">$0 - $5,000</option>
+                                <option value="5000-15000">$5,000 - $15,000</option>
+                                <option value="15000-30000">$15,000 - $30,000</option>
+                                <option value="30000+">$30,000+</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Aplicar Filtros
+                        </button>
+
+                        <a href="/customer/products" class="btn btn-outline-secondary w-100 mt-2">
+                            <i class="fas fa-redo me-2"></i>Limpiar
+                        </a>
+                    </form>
+
+                    <!-- Quick Links -->
+                    <div class="quick-links">
+                        <h6>Enlaces Rápidos</h6>
+                        <a href="/customer/products?metal=Gold"><i class="fas fa-crown me-2"></i>Oro</a>
+                        <a href="/customer/products?metal=Silver"><i class="fas fa-star me-2"></i>Plata</a>
+                        <a href="/customer/products?metal=Platinum"><i class="fas fa-gem me-2"></i>Platino</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="col-lg-9">
+                <!-- Results Info -->
+                <div class="results-info">
+                    <span>@Model.Count() productos encontrados</span>
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option>Ordenar por: Más Recientes</option>
+                        <option>Precio: Menor a Mayor</option>
+                        <option>Precio: Mayor a Menor</option>
+                        <option>Nombre: A-Z</option>
+                    </select>
+                </div>
+
+                <!-- Products Grid -->
+                @if (Model.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var product in Model)
+                        {
+                            <div class="col-lg-4 col-md-6">
+                                <div class="product-card">
+                                    <div class="product-image">
+                                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                        {
+                                            <img src="@product.ImageUrl" alt="@product.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="no-image">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        }
+                                        <div class="product-badge">@GetMetalName(product.Metal)</div>
+                                        @if (product.Stock < 5 && product.Stock > 0)
+                                        {
+                                            <div class="stock-badge low">¡Últimas unidades!</div>
+                                        }
+                                        else if (product.Stock == 0)
+                                        {
+                                            <div class="stock-badge out">Agotado</div>
+                                        }
+                                    </div>
+                                    <div class="product-info">
+                                        <h5>@product.Name</h5>
+                                        <p class="product-metal">@GetMetalName(product.Metal) @product.Purity</p>
+                                        <div class="product-footer">
+                                            <div>
+                                                <span class="product-price">$@product.Price.ToString("N2")</span>
+                                                @if (product.Stock > 0)
+                                                {
+                                                    <p class="stock-text">En stock: @product.Stock unidades</p>
+                                                }
+                                            </div>
+                                            <a href="/customer/products/details/@product.Id" class="btn btn-primary btn-sm">
+                                                Ver <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>No se encontraron productos</h3>
+                        <p>Intenta ajustar tus filtros o explora todo el catálogo</p>
+                        <a href="/customer/products" class="btn btn-primary">Ver Todos los Productos</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetMetalName(string metal)
+    {
+        return metal switch
+        {
+            "Gold" => "Oro",
+            "Silver" => "Plata",
+            "Platinum" => "Platino",
+            _ => metal
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .products-page {
+            padding: 60px 0;
+            background: #f8f9fa;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+            .page-header h1 {
+                font-size: 42px;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 10px;
+            }
+
+            .page-header p {
+                font-size: 18px;
+                color: #7f8c8d;
+            }
+
+        /* Filters */
+        .filters-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 90px;
+        }
+
+            .filters-card h5 {
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #f8f9fa;
+            }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+            .filter-group label {
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 8px;
+                display: block;
+                font-size: 14px;
+            }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+        }
+
+            .form-control:focus,
+            .form-select:focus {
+                border-color: #f39c12;
+                box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+            }
+
+        .quick-links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f8f9fa;
+        }
+
+            .quick-links h6 {
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 15px;
+                font-size: 14px;
+            }
+
+            .quick-links a {
+                display: block;
+                padding: 10px 15px;
+                color: #7f8c8d;
+                text-decoration: none;
+                border-radius: 8px;
+                margin-bottom: 5px;
+                transition: all 0.3s;
+            }
+
+                .quick-links a:hover {
+                    background: #f8f9fa;
+                    color: #f39c12;
+                }
+
+        /* Results Info */
+        .results-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+            .results-info span {
+                font-weight: 600;
+                color: #2c3e50;
+            }
+
+        /* Product Cards */
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+            .product-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            }
+
+        .product-image {
+            position: relative;
+            height: 250px;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+
+            .product-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.3s;
+            }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .no-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 60px;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(243, 156, 18, 0.95);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+            .stock-badge.low {
+                background: rgba(255, 193, 7, 0.95);
+                color: #2c3e50;
+            }
+
+            .stock-badge.out {
+                background: rgba(220, 53, 69, 0.95);
+                color: white;
+            }
+
+        .product-info {
+            padding: 20px;
+        }
+
+            .product-info h5 {
+                font-size: 16px;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 8px;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                min-height: 40px;
+            }
+
+        .product-metal {
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .product-price {
+            font-size: 22px;
+            font-weight: 700;
+            color: #27ae60;
+            display: block;
+        }
+
+        .stock-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin: 5px 0 0 0;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            background: white;
+            border-radius: 15px;
+        }
+
+            .empty-state i {
+                font-size: 80px;
+                color: #dfe6e9;
+                margin-bottom: 20px;
+            }
+
+            .empty-state h3 {
+                color: #2c3e50;
+                margin-bottom: 10px;
+            }
+
+            .empty-state p {
+                color: #7f8c8d;
+                margin-bottom: 30px;
+            }
+
+        /* Buttons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                opacity: 0.9;
+            }
+
+        @@media (max-width: 992px) {
+            .filters-card {
+                position: static;
+                margin-bottom: 30px;
+            }
+        }
+    </style>
+}

@@ -1,6 +1,7 @@
 ﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using ECommerce.ViewModels;
 
 namespace ECommerce.Controllers
 {
@@ -399,33 +400,5 @@ namespace ECommerce.Controllers
         }
 
         #endregion
-    }
-
-    // ViewModels
-    public class VendorDashboardViewModel
-    {
-        public int VendorId { get; set; }
-        public int TotalProducts { get; set; }
-        public int TotalStock { get; set; }
-        public decimal TotalInventoryValue { get; set; }
-        public int LowStockProducts { get; set; }
-        public int OutOfStockProducts { get; set; }
-        public List<Order> RecentOrders { get; set; } = new List<Order>();
-        public List<Product> TopProducts { get; set; } = new List<Product>();
-    }
-
-    public class VendorInventoryViewModel
-    {
-        public List<Product> AllProducts { get; set; } = new List<Product>();
-        public List<Product> LowStockProducts { get; set; } = new List<Product>();
-        public List<Product> OutOfStockProducts { get; set; } = new List<Product>();
-    }
-
-    public class VendorSalesReportViewModel
-    {
-        public decimal TotalRevenue { get; set; }
-        public int TotalOrders { get; set; }
-        public int TotalProductsSold { get; set; }
-        public List<Order> Orders { get; set; } = new List<Order>();
     }
 }

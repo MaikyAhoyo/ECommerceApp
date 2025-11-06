@@ -1,221 +1,126 @@
 ﻿@model ECommerce.ViewModels.RegisterViewModel
 @{
-    ViewData["Title"] = "Registrarse";
+    ViewData["Title"] = "Register";
     Layout = "_AuthLayout";
 }
 
-<div class="register-container">
-    <div class="register-card">
-        <div class="register-header">
-            <h2>Crear Cuenta</h2>
-            <p>Únete a nuestra tienda de joyería</p>
+<section class="min-h-screen w-full flex items-center justify-center bg-cream px-4 py-12">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100 relative overflow-hidden">
+
+        <!-- Decorative elements -->
+        <div class="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-gold/20 to-transparent rounded-br-full"></div>
+        <div class="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-gold/10 to-transparent rounded-tl-full"></div>
+
+        <!-- Header -->
+        <div class="relative z-10 text-center mb-8">
+            <h2 class="font-playfair text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+            <p class="text-gray-600 text-sm">Join <span class="text-gold font-semibold">Lumière</span> and discover elegance</p>
         </div>
 
-        <form asp-action="Register" method="post" class="register-form">
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <!-- Form -->
+        <form method="post" action="/auth/register" class="space-y-5 relative z-10">
+            @Html.AntiForgeryToken()
 
-            <div class="form-group">
-                <label asp-for="Name">
-                    <i class="fas fa-user"></i> Nombre Completo
+            <!-- Validation Summary -->
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="text-red-600 text-sm bg-red-50 p-3 rounded-lg mb-4">
+                    @Html.ValidationSummary(true, "", new { @class = "text-red-600" })
+                </div>
+            }
+
+            <!-- Name -->
+            <div>
+                <label for="Name" class="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name
                 </label>
-                <input asp-for="Name" class="form-control" placeholder="Juan Pérez" autofocus />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <input id="Name"
+                       name="Name"
+                       type="text"
+                       value="@Model?.Name"
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-gold focus:border-gold transition p-3 outline-none"
+                       placeholder="John Doe"
+                       required />
+                @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-red-500 text-sm" })
             </div>
 
-            <div class="form-group">
-                <label asp-for="Email">
-                    <i class="fas fa-envelope"></i> Email
+            <!-- Email -->
+            <div>
+                <label for="Email" class="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address
                 </label>
-                <input asp-for="Email" class="form-control" placeholder="tu@email.com" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+                <input id="Email"
+                       name="Email"
+                       type="email"
+                       value="@Model?.Email"
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-gold focus:border-gold transition p-3 outline-none"
+                       placeholder="you@example.com"
+                       required />
+                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-red-500 text-sm" })
             </div>
 
-            <div class="form-group">
-                <label asp-for="Password">
-                    <i class="fas fa-lock"></i> Contraseña
+            <!-- Password -->
+            <div>
+                <label for="Password" class="block text-sm font-medium text-gray-700 mb-1">
+                    Password
                 </label>
-                <input asp-for="Password" class="form-control" placeholder="••••••••" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-                <small class="form-text text-muted">Mínimo 6 caracteres</small>
+                <input id="Password"
+                       name="Password"
+                       type="password"
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-gold focus:border-gold transition p-3 outline-none"
+                       placeholder="••••••••"
+                       minlength="6"
+                       required />
+                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-red-500 text-sm" })
             </div>
 
-            <div class="form-group">
-                <label asp-for="ConfirmPassword">
-                    <i class="fas fa-lock"></i> Confirmar Contraseña
+            <!-- Confirm Password -->
+            <div>
+                <label for="ConfirmPassword" class="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Password
                 </label>
-                <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                <input id="ConfirmPassword"
+                       name="ConfirmPassword"
+                       type="password"
+                       class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-gold focus:border-gold transition p-3 outline-none"
+                       placeholder="••••••••"
+                       minlength="6"
+                       required />
+                @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-red-500 text-sm" })
             </div>
 
-            <div class="form-group form-check">
-                <input asp-for="RegisterAsVendor" class="form-check-input" />
-                <label asp-for="RegisterAsVendor" class="form-check-label">
-                    <i class="fas fa-store"></i> Registrarme como vendedor
+            <!-- Register as Vendor -->
+            <div class="bg-gray-50 rounded-lg p-4">
+                <label class="inline-flex items-center cursor-pointer">
+                    <input id="RegisterAsVendor"
+                           name="RegisterAsVendor"
+                           type="checkbox"
+                           value="true"
+                           class="rounded border-gray-300 text-gold focus:ring-gold" />
+                    <input type="hidden" name="RegisterAsVendor" value="false" />
+                    <span class="ml-2 text-sm text-gray-700">
+                        Register as <span class="font-semibold text-gold">Vendor</span>
+                        <span class="block text-xs text-gray-500 mt-1">Create and sell your own products</span>
+                    </span>
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">
-                <i class="fas fa-user-plus"></i> Crear Cuenta
+            <!-- Submit Button -->
+            <button type="submit"
+                    class="w-full bg-gold hover:bg-gold-dark text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg">
+                Create Account
             </button>
         </form>
 
-        <div class="register-footer">
-            <p>¿Ya tienes cuenta? <a asp-action="Login">Inicia sesión aquí</a></p>
+        <!-- Login Link -->
+        <div class="relative z-10 text-center mt-6 text-sm text-gray-600">
+            <p>
+                Already have an account?
+                <a href="/auth/login" class="text-gold font-semibold hover:text-gold-dark cursor-pointer transition">Sign in</a>
+            </p>
         </div>
     </div>
-</div>
-
-@section Styles {
-    <style>
-        .register-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-
-        .register-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: 500px;
-            width: 100%;
-            padding: 40px;
-            animation: slideUp 0.5s ease;
-        }
-
-        @@keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .register-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-            .register-header h2 {
-                color: #333;
-                font-size: 28px;
-                font-weight: 700;
-                margin-bottom: 10px;
-            }
-
-            .register-header p {
-                color: #666;
-                font-size: 14px;
-            }
-
-        .register-form .form-group {
-            margin-bottom: 20px;
-        }
-
-        .register-form label {
-            color: #555;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-            .register-form label i {
-                margin-right: 5px;
-                color: #667eea;
-            }
-
-        .register-form .form-control {
-            height: 50px;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            padding: 12px 15px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-            .register-form .form-control:focus {
-                border-color: #667eea;
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            }
-
-        .form-check {
-            padding-left: 1.5rem;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .form-check-input {
-            margin-top: 0.4rem;
-        }
-
-        .form-check-label i {
-            color: #ffc107;
-        }
-
-        .btn-primary {
-            height: 50px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-            .btn-primary:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            }
-
-        .register-footer {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 25px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-            .register-footer p {
-                color: #666;
-                margin: 0;
-            }
-
-            .register-footer a {
-                color: #667eea;
-                font-weight: 600;
-                text-decoration: none;
-            }
-
-                .register-footer a:hover {
-                    text-decoration: underline;
-                }
-
-        .alert-danger {
-            border-radius: 8px;
-            border-left: 4px solid #dc3545;
-        }
-
-        .text-danger {
-            font-size: 13px;
-            margin-top: 5px;
-            display: block;
-        }
-
-        .form-text {
-            font-size: 12px;
-            margin-top: 5px;
-        }
-    </style>
-}
+</section>
 
 @section Scripts {
     @{
