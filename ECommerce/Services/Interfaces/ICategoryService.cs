@@ -10,5 +10,6 @@ namespace ECommerce.Services.Interfaces
         Task<bool> UpdateAsync(Category category);
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(int categoryId);
+        Task<IEnumerable<Category>> GetByProductIdAsync(int id);
     }
 }

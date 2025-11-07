@@ -63,5 +63,14 @@ namespace ECommerce.Services.Implementations
                         WHERE pc.CategoryId = @CategoryId";
             return await connection.QueryAsync<Product>(sql, new { CategoryId = categoryId });
         }
+
+        public async Task<IEnumerable<Category>> GetByProductIdAsync(int id)
+        {
+            using var connection = _context.CreateConnection();
+            var sql = @"SELECT c.* FROM Categories c
+                        INNER JOIN ProductCategories pc ON c.Id = pc.CategoryId
+                        WHERE pc.ProductId = @ProductId";
+            return await connection.QueryAsync<Category>(sql, new { ProductId = id });
+        }
     }
 }

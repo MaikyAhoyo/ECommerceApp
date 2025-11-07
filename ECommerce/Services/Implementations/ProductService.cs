@@ -38,10 +38,10 @@ namespace ECommerce.Services.Implementations
             return await connection.QueryAsync<Product>(sql);
         }
 
-        public async Task<IEnumerable<Product>> GetTop3Async()
+        public async Task<IEnumerable<Product>> GetTop4Async()
         {
             using var connection = _context.CreateConnection();
-            var procedureName = "GetTop3PopularProducts";
+            var procedureName = "GetTop4PopularProducts";
 
             var result = await connection.QueryAsync<Product>(
                 procedureName,
@@ -50,7 +50,6 @@ namespace ECommerce.Services.Implementations
 
             return result;
         }
-
 
         public async Task<IEnumerable<Product>> GetByVendorIdAsync(int vendorId)
         {

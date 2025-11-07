@@ -4,410 +4,220 @@
     Layout = "_AdminLayout";
 }
 
+<!-- Page Header -->
+<div class="mb-8">
+    <h1 class="font-playfair text-3xl font-bold text-primary mb-2">Dashboard</h1>
+    <p class="text-gray-600">Welcome back! Here's what's happening with your store today.</p>
+</div>
+
 <!-- Stats Cards -->
-<div class="row g-4 mb-4">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+
     <!-- Total Products -->
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="stats-icon bg-primary">
-                <i class="fas fa-box"></i>
+    <div class="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+        <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <i class="ph-fill ph-package text-white text-3xl"></i>
             </div>
-            <div class="stats-content">
-                <h3>@Model.TotalProducts</h3>
-                <p>Total Productos</p>
+            <div class="flex-1">
+                <h3 class="text-3xl font-bold text-primary mb-1">@Model.TotalProducts</h3>
+                <p class="text-gray-600 text-sm font-medium">Total Products</p>
             </div>
         </div>
     </div>
 
     <!-- Total Orders -->
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="stats-icon bg-success">
-                <i class="fas fa-shopping-cart"></i>
+    <div class="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+        <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <i class="ph-fill ph-shopping-cart text-white text-3xl"></i>
             </div>
-            <div class="stats-content">
-                <h3>@Model.TotalOrders</h3>
-                <p>Total Órdenes</p>
+            <div class="flex-1">
+                <h3 class="text-3xl font-bold text-primary mb-1">@Model.TotalOrders</h3>
+                <p class="text-gray-600 text-sm font-medium">Completed Orders</p>
             </div>
         </div>
     </div>
 
     <!-- Total Revenue -->
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="stats-icon bg-warning">
-                <i class="fas fa-dollar-sign"></i>
+    <div class="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+        <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-gold to-gold-dark rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <i class="ph-fill ph-currency-dollar text-white text-3xl"></i>
             </div>
-            <div class="stats-content">
-                <h3>$@Model.TotalRevenue.ToString("N2")</h3>
-                <p>Ingresos Totales</p>
+            <div class="flex-1">
+                <h3 class="text-3xl font-bold text-primary mb-1">$@Model.TotalRevenue.ToString("N2")</h3>
+                <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
             </div>
         </div>
     </div>
 
     <!-- Total Users -->
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="stats-icon bg-info">
-                <i class="fas fa-users"></i>
+    <div class="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+        <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <i class="ph-fill ph-users text-white text-3xl"></i>
             </div>
-            <div class="stats-content">
-                <h3>@Model.TotalUsers</h3>
-                <p>Total Usuarios</p>
+            <div class="flex-1">
+                <h3 class="text-3xl font-bold text-primary mb-1">@Model.TotalUsers</h3>
+                <p class="text-gray-600 text-sm font-medium">Total Users</p>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Secondary Stats -->
-<div class="row g-4 mb-4">
-    <div class="col-md-4">
-        <div class="info-card">
-            <i class="fas fa-user-friends"></i>
-            <h4>@Model.TotalCustomers</h4>
-            <p>Clientes</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+    <!-- Customers -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+        <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i class="ph-fill ph-user-circle text-purple-600 text-4xl"></i>
         </div>
+        <h4 class="text-3xl font-bold text-primary mb-2">@Model.TotalCustomers</h4>
+        <p class="text-gray-600 font-medium">Customers</p>
     </div>
-    <div class="col-md-4">
-        <div class="info-card">
-            <i class="fas fa-store"></i>
-            <h4>@Model.TotalVendors</h4>
-            <p>Vendedores</p>
+
+    <!-- Vendors -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+        <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i class="ph-fill ph-storefront text-blue-600 text-4xl"></i>
         </div>
+        <h4 class="text-3xl font-bold text-primary mb-2">@Model.TotalVendors</h4>
+        <p class="text-gray-600 font-medium">Vendors</p>
     </div>
-    <div class="col-md-4">
-        <div class="info-card">
-            <i class="fas fa-clock"></i>
-            <h4>@Model.PendingOrders</h4>
-            <p>Órdenes Pendientes</p>
+
+    <!-- Pending Orders -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+        <div class="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i class="ph-fill ph-clock text-yellow-600 text-4xl"></i>
         </div>
+        <h4 class="text-3xl font-bold text-primary mb-2">@Model.PendingOrders</h4>
+        <p class="text-gray-600 font-medium">Pending Orders</p>
     </div>
 </div>
 
 <!-- Recent Orders -->
-<div class="card">
-    <div class="card-header">
-        <h5><i class="fas fa-shopping-bag me-2"></i>Órdenes Recientes</h5>
-        <a href="/admin/orders" class="btn btn-sm btn-outline-primary">Ver Todas</a>
-    </div>
-    <div class="card-body">
-        @if (Model.RecentOrders.Any())
-        {
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Cliente</th>
-                            <th>Fecha</th>
-                            <th>Total</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var order in Model.RecentOrders)
-                        {
-                            <tr>
-                                <td><strong>#@order.Id</strong></td>
-                                <td>@order.User?.Name</td>
-                                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td><strong>$@order.Total.ToString("N2")</strong></td>
-                                <td>
-                                    <span class="badge badge-@GetStatusClass(order.Status)">
-                                        @order.Status
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="/admin/orders/details/@order.Id" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+
+    <!-- Card Header -->
+    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gold/10 rounded-xl flex items-center justify-center">
+                <i class="ph-fill ph-shopping-bag text-gold text-xl"></i>
             </div>
+            <h5 class="font-semibold text-lg text-primary">Recent Orders</h5>
+        </div>
+        <a href="/admin/orders" class="inline-flex items-center space-x-2 px-4 py-2 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-xl font-medium transition-all duration-300">
+            <span class="text-sm">View All</span>
+            <i class="ph ph-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Card Body -->
+    <div class="overflow-x-auto">
+        @if (Model.RecentOrders != null && Model.RecentOrders.Any())
+        {
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Order ID</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach (var order in Model.RecentOrders)
+                    {
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-semibold text-primary">#@order.Id</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                        @(order.UserId.ToString().Substring(0, 1))
+                                    </div>
+                                    <span class="text-gray-700 font-medium">User #@order.UserId</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-gray-600 text-sm">@order.OrderDate.ToString("MMM dd, yyyy")</span>
+                                <span class="block text-xs text-gray-400">@order.OrderDate.ToString("hh:mm tt")</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-bold text-green-600">$@order.Total.ToString("N2")</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @GetStatusClasses(order.Status)">
+                                    @order.Status
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="/admin/orders/@order.Id" class="inline-flex items-center justify-center w-9 h-9 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-lg transition-all duration-300">
+                                    <i class="ph ph-eye text-lg"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
         else
         {
-            <div class="empty-state">
-                <i class="fas fa-inbox"></i>
-                <p>No hay órdenes recientes</p>
+            <!-- Empty State -->
+            <div class="text-center py-16">
+                <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i class="ph ph-inbox text-gray-300 text-5xl"></i>
+                </div>
+                <h3 class="font-semibold text-lg text-gray-900 mb-2">No Recent Orders</h3>
+                <p class="text-gray-500 mb-6">Orders will appear here once customers start purchasing.</p>
+                <a href="/admin/products" class="inline-flex items-center space-x-2 px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-xl font-semibold transition-all duration-300">
+                    <i class="ph ph-plus-circle"></i>
+                    <span>Add Products</span>
+                </a>
             </div>
         }
     </div>
 </div>
 
 @functions {
-    string GetStatusClass(string status)
+    string GetStatusClasses(string status)
     {
         return status switch
         {
-            "Pending" => "warning",
-            "Confirmed" => "info",
-            "Shipped" => "primary",
-            "Delivered" => "success",
-            "Cancelled" => "danger",
-            _ => "secondary"
+            "Pending" => "bg-yellow-100 text-yellow-700",
+            "Confirmed" => "bg-blue-100 text-blue-700",
+            "Shipped" => "bg-purple-100 text-purple-700",
+            "Delivered" => "bg-green-100 text-green-700",
+            "Cancelled" => "bg-red-100 text-red-700",
+            _ => "bg-gray-100 text-gray-700"
         };
     }
 }
 
 @section Styles {
     <style>
-        /* Stats Cards */
-        .stats-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            height: 100%;
+        /* Custom scrollbar for table */
+        .overflow-x-auto::-webkit-scrollbar {
+            height: 8px;
         }
 
-            .stats-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-            }
-
-        .stats-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            color: white;
-            flex-shrink: 0;
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
         }
 
-            .stats-icon.bg-primary {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            }
-
-            .stats-icon.bg-success {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            }
-
-            .stats-icon.bg-warning {
-                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            }
-
-            .stats-icon.bg-info {
-                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            }
-
-        .stats-content h3 {
-            font-size: 32px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin: 0;
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: #c9a536;
+            border-radius: 10px;
         }
 
-        .stats-content p {
-            color: #7f8c8d;
-            margin: 5px 0 0;
-            font-size: 14px;
-        }
-
-        /* Info Cards */
-        .info-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-        }
-
-            .info-card:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+            .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+                background: #e6b944;
             }
-
-            .info-card i {
-                font-size: 40px;
-                color: #667eea;
-                margin-bottom: 15px;
-            }
-
-            .info-card h4 {
-                font-size: 28px;
-                font-weight: 700;
-                color: #2c3e50;
-                margin-bottom: 5px;
-            }
-
-            .info-card p {
-                color: #7f8c8d;
-                margin: 0;
-            }
-
-        /* Card */
-        .card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: none;
-            overflow: hidden;
-        }
-
-        .card-header {
-            background: white;
-            border-bottom: 1px solid #e9ecef;
-            padding: 20px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-            .card-header h5 {
-                margin: 0;
-                font-weight: 600;
-                color: #2c3e50;
-                font-size: 18px;
-            }
-
-        .card-body {
-            padding: 0;
-        }
-
-        /* Table */
-        .table {
-            margin: 0;
-        }
-
-            .table thead {
-                background: #f8f9fa;
-            }
-
-                .table thead th {
-                    border: none;
-                    padding: 15px 20px;
-                    font-weight: 600;
-                    color: #2c3e50;
-                    font-size: 14px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-            .table tbody td {
-                padding: 15px 20px;
-                vertical-align: middle;
-                border-bottom: 1px solid #f1f3f5;
-            }
-
-            .table tbody tr:hover {
-                background: #f8f9fa;
-            }
-
-            .table tbody tr:last-child td {
-                border-bottom: none;
-            }
-
-        /* Badges */
-        .badge {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-warning {
-            background: #ffeaa7;
-            color: #d63031;
-        }
-
-        .badge-info {
-            background: #74b9ff;
-            color: #0984e3;
-        }
-
-        .badge-primary {
-            background: #a29bfe;
-            color: #6c5ce7;
-        }
-
-        .badge-success {
-            background: #55efc4;
-            color: #00b894;
-        }
-
-        .badge-danger {
-            background: #ff7675;
-            color: #d63031;
-        }
-
-        .badge-secondary {
-            background: #dfe6e9;
-            color: #2d3436;
-        }
-
-        /* Buttons */
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 14px;
-            border-radius: 6px;
-        }
-
-        .btn-outline-primary {
-            color: #667eea;
-            border-color: #667eea;
-        }
-
-            .btn-outline-primary:hover {
-                background: #667eea;
-                color: white;
-            }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-        }
-
-            .btn-primary:hover {
-                opacity: 0.9;
-            }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #7f8c8d;
-        }
-
-            .empty-state i {
-                font-size: 60px;
-                color: #dfe6e9;
-                margin-bottom: 15px;
-            }
-
-            .empty-state p {
-                margin: 0;
-                font-size: 16px;
-            }
-
-        /* Responsive */
-        @@media (max-width: 768px) {
-            .stats-card {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .stats-content h3 {
-                font-size: 24px;
-            }
-
-            .table-responsive {
-                overflow-x: auto;
-            }
-        }
     </style>
 }

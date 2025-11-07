@@ -1,397 +1,302 @@
 ﻿<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Admin Panel</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/fill/style.css" />
+
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2C2621",
+                        gold: "hsl(45, 80%, 55%)",
+                        "gold-dark": "hsl(38, 70%, 45%)",
+                        cream: "hsl(40, 40%, 96%)"
+                    },
+                    fontFamily: {
+                        playfair: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fa;
-            overflow-x: hidden;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 260px;
-            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
-            padding: 20px 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-        }
-
-            .sidebar.collapsed {
-                width: 80px;
-            }
-
-        .sidebar-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-
-            .sidebar-header h3 {
-                color: white;
-                font-size: 24px;
-                font-weight: 700;
-                margin: 0;
-                transition: opacity 0.3s;
-            }
-
-        .sidebar.collapsed .sidebar-header h3 {
-            opacity: 0;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-            .sidebar-menu li {
-                margin-bottom: 5px;
-            }
-
-            .sidebar-menu a {
-                display: flex;
-                align-items: center;
-                padding: 12px 20px;
-                color: rgba(255,255,255,0.8);
-                text-decoration: none;
-                transition: all 0.3s ease;
-                position: relative;
-            }
-
-                .sidebar-menu a:hover,
-                .sidebar-menu a.active {
-                    background: rgba(255,255,255,0.1);
-                    color: white;
-                }
-
-                    .sidebar-menu a.active::before {
-                        content: '';
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        height: 100%;
-                        width: 4px;
-                        background: #3498db;
-                    }
-
-                .sidebar-menu a i {
-                    font-size: 20px;
-                    width: 30px;
-                    margin-right: 15px;
-                }
-
-        .sidebar.collapsed .sidebar-menu a span {
-            display: none;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 260px;
-            transition: all 0.3s ease;
-            min-height: 100vh;
-        }
-
-            .main-content.expanded {
-                margin-left: 80px;
-            }
-
-        /* Top Navbar */
-        .top-navbar {
-            background: white;
-            padding: 15px 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .navbar-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: #2c3e50;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-            .menu-toggle:hover {
-                background: #f5f7fa;
-            }
-
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .user-details h6 {
-            margin: 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .user-details p {
-            margin: 0;
-            font-size: 12px;
-            color: #7f8c8d;
-        }
-
-        /* Content Area */
-        .content-wrapper {
-            padding: 30px;
-        }
-
-        .page-header {
-            margin-bottom: 30px;
-        }
-
-            .page-header h1 {
-                font-size: 28px;
-                font-weight: 700;
-                color: #2c3e50;
-                margin-bottom: 5px;
-            }
-
-            .page-header p {
-                color: #7f8c8d;
-                margin: 0;
-            }
-
-        /* Alerts/Toasts */
-        .toast-container {
-            z-index: 9999;
-        }
-
-        .alert {
-            border-radius: 10px;
-            border: none;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            animation: slideDown 0.3s ease;
-        }
-
-        @@keyframes slideDown {
+        @@keyframes slideIn {
             from {
+                transform: translateX(100%);
                 opacity: 0;
-                transform: translateY(-20px);
             }
 
             to {
+                transform: translateX(0);
                 opacity: 1;
-                transform: translateY(0);
             }
         }
 
-        /* Responsive */
-        @@media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-                .sidebar.show {
-                    transform: translateX(0);
-                }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .user-details {
-                display: none;
-            }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
         }
+
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c9a536;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #e6b944;
+            }
     </style>
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3><i class="fas fa-gem"></i> Admin</h3>
-        </div>
-        <ul class="sidebar-menu">
-            <li>
-                <a href="/admin/dashboard" class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/products" class="@(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Product") == true ? "active" : "")">
-                    <i class="fas fa-box"></i>
-                    <span>Productos</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/orders" class="@(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Order") == true ? "active" : "")">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Órdenes</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/users" class="@(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("User") == true ? "active" : "")">
-                    <i class="fas fa-users"></i>
-                    <span>Usuarios</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/categories" class="@(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Categor") == true ? "active" : "")">
-                    <i class="fas fa-tags"></i>
-                    <span>Categorías</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/reports/sales">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Reportes</span>
-                </a>
-            </li>
-            <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                <form method="post" action="/auth/logout" style="margin: 0;">
-                    @Html.AntiForgeryToken()
-                    <button type="submit"
-                            style="background: none; border: none; width: 100%; text-align: left; padding: 12px 20px; color: rgba(255,255,255,0.8); cursor: pointer; display: flex; align-items: center;">
-                        <i class="fas fa-sign-out-alt" style="font-size: 20px; width: 30px; margin-right: 15px;"></i>
-                        <span>Cerrar Sesión</span>
-                    </button>
-                </form>
-            </li>
+<body class="bg-gradient-to-br from-cream to-white font-sans overflow-x-hidden">
 
-        </ul>
+    <aside id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-gradient-to-b from-primary to-primary/95 shadow-2xl transition-all duration-300 z-50 lg:translate-x-0 -translate-x-full">
+
+        <div class="p-6 border-b border-white/10">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-gold to-gold-dark rounded-lg flex items-center justify-center">
+                    <i class="ph-fill ph-diamond text-white text-xl"></i>
+                </div>
+                <div class="sidebar-text">
+                    <h3 class="font-playfair text-xl font-bold text-white">Lumière</h3>
+                    <p class="text-xs text-white/60">Admin Panel</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 180px);">
+            <a href="/admin/dashboard" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="ph ph-house-simple text-xl"></i>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+
+            <a href="/admin/products" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Product") == true ? "active" : "")">
+                <i class="ph ph-package text-xl"></i>
+                <span class="sidebar-text">Products</span>
+            </a>
+
+            <a href="/admin/orders" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Order") == true ? "active" : "")">
+                <i class="ph ph-shopping-cart text-xl"></i>
+                <span class="sidebar-text">Orders</span>
+            </a>
+
+            <a href="/admin/users" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("User") == true ? "active" : "")">
+                <i class="ph ph-users text-xl"></i>
+                <span class="sidebar-text">Users</span>
+            </a>
+
+            <a href="/admin/categories" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Categor") == true ? "active" : "")">
+                <i class="ph ph-tag text-xl"></i>
+                <span class="sidebar-text">Categories</span>
+            </a>
+
+            <a href="/admin/reports" class="sidebar-link">
+                <i class="ph ph-chart-line text-xl"></i>
+                <span class="sidebar-text">Reports</span>
+            </a>
+
+            <div class="border-t border-white/10 my-4"></div>
+
+            <form method="post" action="/auth/logout">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="sidebar-link w-full text-left hover:bg-red-500/20 hover:text-red-300">
+                    <i class="ph ph-sign-out text-xl"></i>
+                    <span class="sidebar-text">Logout</span>
+                </button>
+            </form>
+        </nav>
     </aside>
 
-    <!-- Main Content -->
-    <div class="main-content" id="mainContent">
-        <!-- Top Navbar -->
-        <nav class="top-navbar">
-            <div class="navbar-left">
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h5 style="margin: 0; color: #2c3e50;">@ViewData["Title"]</h5>
-            </div>
-            <div class="navbar-right">
-                <div class="user-info">
-                    <div class="user-avatar">
-                        @User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value.Substring(0, 1).ToUpper()
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+    <div id="mainContent" class="lg:ml-64 transition-all duration-300 min-h-screen">
+
+        <nav class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+            <div class="px-6 py-4">
+                <div class="flex justify-between items-center">
+
+                    <div class="flex items-center space-x-4">
+                        <button onclick="toggleSidebar()" class="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="ph ph-list text-2xl text-primary"></i>
+                        </button>
+
+                        <button onclick="toggleSidebarCollapse()" class="hidden lg:block p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="ph ph-sidebar text-xl text-primary"></i>
+                        </button>
+
+                        <h5 class="font-semibold text-lg text-primary hidden sm:block">@ViewData["Title"]</h5>
                     </div>
-                    <div class="user-details">
-                        <h6>@User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</h6>
-                        <p>@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+
+                    <div class="flex items-center space-x-4">
+                        <button class="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="ph ph-bell text-xl text-primary"></i>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+
+                        <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                            <div class="w-10 h-10 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                @User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value.Substring(0, 1).ToUpper()
+                            </div>
+                            <div class="hidden md:block">
+                                <p class="text-sm font-semibold text-primary">@User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</p>
+                                <p class="text-xs text-gray-500">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <!-- Alerts -->
         @if (TempData["Success"] != null)
         {
-            <div class="content-wrapper" style="padding-bottom: 0;">
-                <div class="alert alert-success alert-dismissible fade show">
-                    <i class="fas fa-check-circle me-2"></i>
-                    @TempData["Success"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="toast fixed top-20 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-green-500 shadow-xl rounded-xl px-4 py-3 w-80 animate-slideIn">
+                <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="ph-fill ph-check-circle text-green-600 text-xl"></i>
                 </div>
+                <div class="flex-1 text-sm font-medium text-gray-900">@TempData["Success"]</div>
+                <button class="text-gray-400 hover:text-gray-700 transition-colors" onclick="this.parentElement.remove()">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
             </div>
         }
 
         @if (TempData["Error"] != null)
         {
-            <div class="content-wrapper" style="padding-bottom: 0;">
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    @TempData["Error"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="toast fixed top-20 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-red-500 shadow-xl rounded-xl px-4 py-3 w-80 animate-slideIn">
+                <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="ph-fill ph-warning-circle text-red-600 text-xl"></i>
                 </div>
+                <div class="flex-1 text-sm font-medium text-gray-900">@TempData["Error"]</div>
+                <button class="text-gray-400 hover:text-gray-700 transition-colors" onclick="this.parentElement.remove()">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
             </div>
         }
 
-        <!-- Page Content -->
-        <div class="content-wrapper">
+        <main class="p-6">
             @RenderBody()
-        </div>
+        </main>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Toggle Sidebar -->
     <script>
-        document.getElementById('menuToggle').addEventListener('click', function() {
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function toggleSidebarCollapse() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('mainContent');
 
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
+            if (sidebar.classList.contains('w-64')) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20');
+                mainContent.classList.remove('lg:ml-64');
+                mainContent.classList.add('lg:ml-20');
+
+                document.querySelectorAll('.sidebar-text').forEach(el => {
+                    el.classList.add('hidden');
+                });
+            } else {
+                sidebar.classList.remove('w-20');
+                sidebar.classList.add('w-64');
+                mainContent.classList.remove('lg:ml-20');
+                mainContent.classList.add('lg:ml-64');
+
+                document.querySelectorAll('.sidebar-text').forEach(el => {
+                    el.classList.remove('hidden');
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(t => {
+                setTimeout(() => {
+                    t.classList.add('fade-out');
+                    setTimeout(() => t.remove(), 500);
+                }, 5000);
+            });
         });
 
-        // Mobile menu
-        if (window.innerWidth <= 768) {
-            document.getElementById('menuToggle').addEventListener('click', function() {
-                document.getElementById('sidebar').classList.toggle('show');
-            });
-        }
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (!sidebar.contains(e.target) && !e.target.closest('[onclick="toggleSidebar()"]')) {
+                if (!overlay.classList.contains('hidden')) {
+                    toggleSidebar();
+                }
+            }
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+<style>
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-radius: 0.75rem;
+        color: rgba(255,255,255,0.8);
+        transition-property: all;
+        transition-duration: 200ms;
+        background: none;
+    }
+
+    .sidebar-link:hover {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+    }
+
+    .sidebar-link.active {
+        background: #e6b944;
+        color: #fff;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    }
+
+    .sidebar-link i {
+        flex-shrink: 0;
+    }
+</style>

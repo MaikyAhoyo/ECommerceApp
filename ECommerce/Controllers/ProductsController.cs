@@ -64,6 +64,14 @@ namespace ECommerce.Controllers
             return Ok(products);
         }
 
+        // GET: api/products/top4
+        [HttpGet("top4")]
+        public async Task<IActionResult> GetTop4()
+        {
+            var products = await _productService.GetTop4Async();
+            return Ok(products);
+        }
+
         // GET: api/products/search?keyword=anillo
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string keyword)

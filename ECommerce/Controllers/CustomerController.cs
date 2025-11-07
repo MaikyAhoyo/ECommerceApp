@@ -1,7 +1,8 @@
 ﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using ECommerce.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 
 namespace ECommerce.Controllers
@@ -38,14 +39,19 @@ namespace ECommerce.Controllers
         [HttpGet("home")]
         public async Task<IActionResult> Home()
         {
-            var products = await _productService.GetAllAsync();
-            var categories = await _categoryService.GetAllAsync();
+            var featuredProducts = (await _productService.GetTop4Async()).OrderByDescending(p => p.Id).ToList();
+            var categories = (await _categoryService.GetAllAsync()).ToList();
+
+            foreach (var p in featuredProducts)
+            {
+                var productCategories = await _categoryService.GetByProductIdAsync(p.Id);
+                p.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
+            }
 
             var model = new CustomerHomeViewModel
             {
-                FeaturedProducts = products.OrderByDescending(p => p.Id).Take(8).ToList(),
-                Categories = categories.ToList(),
-                NewArrivals = products.OrderByDescending(p => p.Id).Take(4).ToList()
+                FeaturedProducts = featuredProducts,
+                Categories = categories,
             };
 
             return View(model);
@@ -53,33 +59,84 @@ namespace ECommerce.Controllers
 
         // GET: /customer/products
         [HttpGet("products")]
-        public async Task<IActionResult> Products(string metal = null, int? categoryId = null, string search = null)
+        public async Task<IActionResult> Products(
+        string? metal = null,
+        int? categoryId = null,
+        string? search = null,
+        decimal? minPrice = null,
+        decimal? maxPrice = null,
+        string? sortBy = null,
+        int page = 1)
         {
-            IEnumerable<Product> products;
+            var products = (await _productService.GetAllAsync()).ToList();
+
+            foreach (var p in products)
+            {
+                var productCategories = await _categoryService.GetByProductIdAsync(p.Id);
+                p.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
+            }
 
             if (!string.IsNullOrEmpty(search))
-            {
-                products = await _productService.SearchByNameAsync(search);
-            }
-            else if (!string.IsNullOrEmpty(metal))
-            {
-                products = await _productService.FilterByMetalAsync(metal);
-            }
-            else if (categoryId.HasValue)
-            {
-                products = await _productService.GetByCategoryIdAsync(categoryId.Value);
-            }
-            else
-            {
-                products = await _productService.GetAllAsync();
-            }
+                products = products
+                    .Where(p => p.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
-            ViewBag.Categories = await _categoryService.GetAllAsync();
-            ViewBag.CurrentMetal = metal;
-            ViewBag.CurrentCategory = categoryId;
-            ViewBag.SearchTerm = search;
+            if (!string.IsNullOrEmpty(metal))
+                products = products
+                    .Where(p => p.Metal.Equals(metal, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
 
-            return View(products);
+            if (categoryId.HasValue)
+                products = products
+                    .Where(p => p.CategoryId == categoryId.Value)
+                    .ToList();
+
+            if (minPrice.HasValue)
+                products = products
+                    .Where(p => p.Price >= minPrice.Value)
+                    .ToList();
+
+            if (maxPrice.HasValue)
+                products = products
+                    .Where(p => p.Price <= maxPrice.Value)
+                    .ToList();
+
+            products = sortBy switch
+            {
+                "price_asc" => products.OrderBy(p => p.Price).ToList(),
+                "price_desc" => products.OrderByDescending(p => p.Price).ToList(),
+                "name_asc" => products.OrderBy(p => p.Name).ToList(),
+                "name_desc" => products.OrderByDescending(p => p.Name).ToList(),
+                _ => products
+            };
+
+            const int pageSize = 12;
+            int totalProducts = products.Count;
+            int totalPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
+
+            var paginatedProducts = products
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var categories = (await _categoryService.GetAllAsync()).ToList();
+
+            var viewModel = new CustomerProductsViewModel
+            {
+                Products = paginatedProducts,
+                Categories = categories,
+                CurrentMetal = metal,
+                CurrentCategoryId = categoryId,
+                CurrentMinPrice = minPrice,
+                CurrentMaxPrice = maxPrice,
+                CurrentSortBy = sortBy,
+                SearchTerm = search,
+                TotalProducts = totalProducts,
+                CurrentPage = page,
+                TotalPages = totalPages
+            };
+
+            return View(viewModel);
         }
 
         // GET: /customer/products/details/{id}
@@ -87,6 +144,9 @@ namespace ECommerce.Controllers
         public async Task<IActionResult> ProductDetails(int id)
         {
             var product = await _productService.GetByIdAsync(id);
+
+            var productCategories = await _categoryService.GetByProductIdAsync(product.Id);
+            product.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
 
             if (product == null)
             {
@@ -610,9 +670,14 @@ namespace ECommerce.Controllers
 
         private int GetCurrentUserId()
         {
-            // TODO: Obtener el ID del usuario desde Claims/Session
-            // Por ahora retornamos un ID de ejemplo
-            return 4;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                throw new Exception("No se pudo obtener el ID del usuario actual. Asegúrate de haber iniciado sesión.");
+
+            if (int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+
+            throw new Exception("El ID del usuario no tiene un formato válido.");
         }
 
         #endregion

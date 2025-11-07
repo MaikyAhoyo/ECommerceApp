@@ -21,5 +21,6 @@ namespace ECommerce.Models.Entities
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
         public string CategoryNames { get; set; } = null!;
+        public int CategoryId { get; internal set; }
     }
 }

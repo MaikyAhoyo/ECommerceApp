@@ -110,9 +110,14 @@ namespace ECommerce.ViewModels
         public string? CurrentMetal { get; set; }
         public int? CurrentCategory { get; set; }
         public string? SearchTerm { get; set; }
+        public string? CurrentSearch { get; set; }
+        public int? CurrentCategoryId { get; set; }
+        public decimal? CurrentMinPrice { get; set; }
+        public decimal? CurrentMaxPrice { get; set; }
+        public string? CurrentSortBy { get; set; }
         public int TotalProducts { get; set; }
-        public int CurrentPage { get; set; } = 1;
         public int TotalPages { get; set; }
+        public int CurrentPage { get; set; } = 1;
     }
 
     public class CustomerProductDetailsViewModel
