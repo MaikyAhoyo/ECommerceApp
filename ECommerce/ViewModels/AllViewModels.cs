@@ -1,10 +1,9 @@
 ﻿using ECommerce.Models.Entities;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ECommerce.ViewModels
 {
+    #region Admin View Models
     // ========================================
     // ADMIN VIEW MODELS
     // ========================================
@@ -39,7 +38,9 @@ namespace ECommerce.ViewModels
         public int TotalOrders { get; set; }
         public decimal TotalSpent { get; set; }
     }
+    #endregion
 
+    #region Vendor View Models
     // ========================================
     // VENDOR VIEW MODELS
     // ========================================
@@ -88,7 +89,9 @@ namespace ECommerce.ViewModels
         public int TotalSold { get; set; }
         public decimal TotalRevenue { get; set; }
     }
+    #endregion
 
+    #region Customer View Models
     // ========================================
     // CUSTOMER VIEW MODELS
     // ========================================
@@ -185,7 +188,9 @@ namespace ECommerce.ViewModels
         public bool CanCancel { get; set; }
         public bool CanReview { get; set; }
     }
+    #endregion
 
+    #region Auth View Models
     // ========================================
     // AUTH VIEW MODELS
     // ========================================
@@ -234,6 +239,7 @@ namespace ECommerce.ViewModels
 
         [Display(Name = "Registrarse como vendedor")]
         public bool RegisterAsVendor { get; set; }
+        public string? Role { get; internal set; }
     }
 
     public class ChangePasswordViewModel
@@ -267,7 +273,9 @@ namespace ECommerce.ViewModels
         public int? TotalProducts { get; set; }
         public decimal? TotalRevenue { get; set; }
     }
+    #endregion
 
+    #region Product View Models
     // ========================================
     // PRODUCT VIEW MODELS
     // ========================================
@@ -356,7 +364,9 @@ namespace ECommerce.ViewModels
         public List<Category> AvailableCategories { get; set; } = new List<Category>();
         public List<Category> CurrentCategories { get; set; } = new List<Category>();
     }
+    #endregion
 
+    #region Review View Models
     // ========================================
     // REVIEW VIEW MODELS
     // ========================================
@@ -392,7 +402,9 @@ namespace ECommerce.ViewModels
         [Display(Name = "Comentario")]
         public string? Comment { get; set; }
     }
+    #endregion
 
+    #region Shared/Common View Models
     // ========================================
     // SHARED/COMMON VIEW MODELS
     // ========================================
@@ -422,9 +434,11 @@ namespace ECommerce.ViewModels
         [Required(ErrorMessage = "La cantidad es requerida")]
         public int Quantity { get; set; }
     }
+    #endregion
 
+    #region Pagination
     // ========================================
-    // PAGINACIÓN
+    // PAGINATION
     // ========================================
 
     public class PaginatedList<T>
@@ -447,4 +461,5 @@ namespace ECommerce.ViewModels
         public string? Controller { get; set; }
         public Dictionary<string, string> RouteValues { get; set; } = new Dictionary<string, string>();
     }
+    #endregion
 }

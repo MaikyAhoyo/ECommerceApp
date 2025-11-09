@@ -102,7 +102,6 @@ namespace ECommerce.Controllers
             };
         }
 
-
         // GET: /auth/register
         [HttpGet("register")]
         public IActionResult Register()
@@ -153,7 +152,6 @@ namespace ECommerce.Controllers
             return View(model);
         }
 
-
         // POST: /auth/logout
         [HttpPost("logout")]
         [ValidateAntiForgeryToken]
@@ -165,7 +163,6 @@ namespace ECommerce.Controllers
             TempData["Success"] = "Session closed successfully";
             return RedirectToAction("Login", "Auth");
         }
-
 
         // GET: /auth/access-denied
         [HttpGet("access-denied")]

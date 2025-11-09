@@ -109,6 +109,19 @@ namespace ECommerce.Services.Implementations
             return await connection.QueryFirstOrDefaultAsync<Order>(sql, new { UserId = userId });
         }
 
+        public async Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {
+            using var connection = _context.CreateConnection();
+            var sql = @"
+                SELECT Id, UserId, Total, Status, OrderDate
+                FROM Orders
+                WHERE OrderDate BETWEEN @StartDate AND @EndDate
+                ORDER BY OrderDate DESC;
+            ";
+
+            return await connection.QueryAsync<Order>(sql, new { StartDate = startDate, EndDate = endDate });
+        }
+
         public async Task<bool> UpdateStatusAsync(int id, string status)
         {
             using var connection = _context.CreateConnection();

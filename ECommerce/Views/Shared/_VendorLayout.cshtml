@@ -1,5 +1,287 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/fill/style.css" />
+
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2C2621",
+                        gold: "hsl(45, 80%, 55%)",
+                        "gold-dark": "hsl(38, 70%, 45%)",
+                        cream: "hsl(40, 40%, 96%)"
+                    },
+                    fontFamily: {
+                        playfair: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c9a536;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #e6b944;
+            }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="bg-gradient-to-br from-cream to-white font-sans overflow-x-hidden">
+
+    <aside id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-gradient-to-b from-primary to-primary/95 shadow-2xl transition-all duration-300 z-50 lg:translate-x-0 -translate-x-full">
+
+        <div class="p-6 border-b border-white/10">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-gold to-gold-dark rounded-lg flex items-center justify-center">
+                    <i class="ph-fill ph-diamond text-white text-xl"></i>
+                </div>
+                <div class="sidebar-text">
+                    <h3 class="font-playfair text-xl font-bold text-white">Lumière</h3>
+                    <p class="text-xs text-white/60">Admin Panel</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 180px);">
+            <a href="/vendor/dashboard" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="ph ph-house-simple text-xl"></i>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+
+            <a href="/vendor/products" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Product") == true ? "active" : "")">
+                <i class="ph ph-package text-xl"></i>
+                <span class="sidebar-text">Products</span>
+            </a>
+
+            <a href="/vendor/orders" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Order") == true ? "active" : "")">
+                <i class="ph ph-shopping-cart text-xl"></i>
+                <span class="sidebar-text">Orders</span>
+            </a>
+
+            <a href="/vendor/reports" class="sidebar-link">
+                <i class="ph ph-chart-line text-xl"></i>
+                <span class="sidebar-text">Reports</span>
+            </a>
+
+            <div class="border-t border-white/10 my-4"></div>
+
+            <form method="post" action="/auth/logout">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="sidebar-link w-full text-left hover:bg-red-500/20 hover:text-red-300">
+                    <i class="ph ph-sign-out text-xl"></i>
+                    <span class="sidebar-text">Logout</span>
+                </button>
+            </form>
+        </nav>
+    </aside>
+
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+    <div id="mainContent" class="lg:ml-64 transition-all duration-300 min-h-screen">
+
+        <nav class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+            <div class="px-6 py-4">
+                <div class="flex justify-between items-center">
+
+                    <div class="flex items-center space-x-4">
+                        <button onclick="toggleSidebar()" class="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="ph ph-list text-2xl text-primary"></i>
+                        </button>
+
+                        <button onclick="toggleSidebarCollapse()" class="hidden lg:block p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="ph ph-sidebar text-xl text-primary"></i>
+                        </button>
+
+                        <h5 class="font-semibold text-lg text-primary hidden sm:block">@ViewData["Title"]</h5>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                            <div class="w-10 h-10 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                @User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value.Substring(0, 1).ToUpper()
+                            </div>
+                            <div class="hidden md:block">
+                                <p class="text-sm font-semibold text-primary">@User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</p>
+                                <p class="text-xs text-gray-500">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="toast fixed top-20 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-green-500 shadow-xl rounded-xl px-4 py-3 w-80 animate-slideIn">
+                <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="ph-fill ph-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div class="flex-1 text-sm font-medium text-gray-900">@TempData["Success"]</div>
+                <button class="text-gray-400 hover:text-gray-700 transition-colors" onclick="this.parentElement.remove()">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="toast fixed top-20 right-4 z-50 flex items-center gap-3 bg-white border-l-4 border-red-500 shadow-xl rounded-xl px-4 py-3 w-80 animate-slideIn">
+                <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="ph-fill ph-warning-circle text-red-600 text-xl"></i>
+                </div>
+                <div class="flex-1 text-sm font-medium text-gray-900">@TempData["Error"]</div>
+                <button class="text-gray-400 hover:text-gray-700 transition-colors" onclick="this.parentElement.remove()">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+        }
+
+        <main class="p-6">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function toggleSidebarCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            if (sidebar.classList.contains('w-64')) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20');
+                mainContent.classList.remove('lg:ml-64');
+                mainContent.classList.add('lg:ml-20');
+
+                document.querySelectorAll('.sidebar-text').forEach(el => {
+                    el.classList.add('hidden');
+                });
+            } else {
+                sidebar.classList.remove('w-20');
+                sidebar.classList.add('w-64');
+                mainContent.classList.remove('lg:ml-20');
+                mainContent.classList.add('lg:ml-64');
+
+                document.querySelectorAll('.sidebar-text').forEach(el => {
+                    el.classList.remove('hidden');
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(t => {
+                setTimeout(() => {
+                    t.classList.add('fade-out');
+                    setTimeout(() => t.remove(), 500);
+                }, 5000);
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (!sidebar.contains(e.target) && !e.target.closest('[onclick="toggleSidebar()"]')) {
+                if (!overlay.classList.contains('hidden')) {
+                    toggleSidebar();
+                }
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+<style>
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-radius: 0.75rem;
+        color: rgba(255,255,255,0.8);
+        transition-property: all;
+        transition-duration: 200ms;
+        background: none;
+    }
+
+        .sidebar-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .sidebar-link.active {
+            background: #e6b944;
+            color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-link i {
+            flex-shrink: 0;
+        }
+</style>

@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = "Products Management";
     Layout = "_AdminLayout";
+
+    var currentSearch = Context.Request.Query["search"].ToString();
+    var currentMetal = Context.Request.Query["metal"].ToString();
+    var currentStock = Context.Request.Query["stock"].ToString();
 }
 
 <!-- Page Header -->
@@ -15,58 +19,89 @@
         </div>
         <p class="text-gray-600">Manage your product catalog</p>
     </div>
-    <a href="/admin/products/create" class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
-        <i class="ph ph-plus-circle text-xl"></i>
-        <span>New Product</span>
-    </a>
 </div>
 
-<!-- Filters -->
-<div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
-    <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        
-        <!-- Search -->
-        <div class="md:col-span-2">
-            <div class="relative">
-                <input type="text" 
-                       name="search" 
-                       placeholder="Search products..."
-                       class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 pr-10 transition-all">
-                <i class="ph ph-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+<!-- Filters & Results Info -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+    <!-- Filters -->
+    <div class="p-6 border-b border-gray-100">
+        <form method="get" asp-action="Products" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="pageSize" value="@ViewBag.PageSize">
+
+            <!-- Search -->
+            <div class="md:col-span-2">
+                <div class="relative">
+                    <input type="text"
+                           name="search"
+                           value="@currentSearch"
+                           placeholder="Search products..."
+                           class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 pr-10 transition-all">
+                    <i class="ph ph-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
             </div>
+
+            <!-- Metal Filter -->
+            <div>
+                <select name="metal"
+                        class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
+                    <option value="">All Metals</option>
+                    <option value="Gold" @(currentMetal == "Gold" ? "selected" : "")>Gold</option>
+                    <option value="Silver" @(currentMetal == "Silver" ? "selected" : "")>Silver</option>
+                    <option value="Platinum" @(currentMetal == "Platinum" ? "selected" : "")>Platinum</option>
+                </select>
+            </div>
+
+            <!-- Stock Filter -->
+            <div>
+                <select name="stock"
+                        class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
+                    <option value="">All Stock</option>
+                    <option value="instock" @(currentStock == "instock" ? "selected" : "")>In Stock</option>
+                    <option value="lowstock" @(currentStock == "lowstock" ? "selected" : "")>Low Stock</option>
+                    <option value="outofstock" @(currentStock == "outofstock" ? "selected" : "")>Out of Stock</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                        class="w-full bg-gold/10 hover:bg-gold text-gold hover:text-white border-2 border-gold px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2">
+                    <i class="ph ph-funnel-simple"></i>
+                    <span>Filter</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Info & Page Size Selector -->
+    <div class="px-6 py-4 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-2">
+            <i class="ph ph-package text-gold"></i>
+            <span class="text-sm text-gray-600">
+                Showing <span class="font-semibold text-primary">@((ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1)</span>
+                to <span class="font-semibold text-primary">@Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, Model.Count())</span>
+                of <span class="font-semibold text-primary">@ViewBag.TotalItems</span> products
+            </span>
         </div>
 
-        <!-- Metal Filter -->
-        <div>
-            <select name="metal" 
-                    class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
-                <option value="">All Metals</option>
-                <option value="Gold">Gold</option>
-                <option value="Silver">Silver</option>
-                <option value="Platinum">Platinum</option>
+        <form method="get" action="/admin/products" class="flex items-center space-x-2">
+            <input type="hidden" name="search" value="@currentSearch">
+            <input type="hidden" name="metal" value="@currentMetal">
+            <input type="hidden" name="stock" value="@currentStock">
+            <input type="hidden" name="page" value="1">
+
+            <label class="text-sm text-gray-600 font-medium">Items per page:</label>
+            <select name="pageSize"
+                    onchange="this.form.submit()"
+                    class="rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-3 py-1.5 text-sm font-medium transition-all">
+                <option value="5" @(ViewBag.PageSize == 5 ? "selected" : "")>5</option>
+                <option value="10" @(ViewBag.PageSize == 10 ? "selected" : "")>10</option>
+                <option value="20" @(ViewBag.PageSize == 20 ? "selected" : "")>20</option>
+                <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
             </select>
-        </div>
-
-        <!-- Stock Filter -->
-        <div>
-            <select name="stock" 
-                    class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
-                <option value="">All Stock</option>
-                <option value="instock">In Stock</option>
-                <option value="lowstock">Low Stock</option>
-                <option value="outofstock">Out of Stock</option>
-            </select>
-        </div>
-
-        <!-- Submit Button -->
-        <div>
-            <button type="submit" 
-                    class="w-full bg-gold/10 hover:bg-gold text-gold hover:text-white border-2 border-gold px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2">
-                <i class="ph ph-funnel-simple"></i>
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 <!-- Products Table -->
@@ -80,7 +115,9 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Image</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Metal/Purity</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Original Price</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actual Price</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Discount</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Vendor</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
@@ -90,8 +127,6 @@
                     @foreach (var product in Model)
                     {
                         <tr class="hover:bg-gray-50 transition-colors">
-                            
-                            <!-- Image -->
                             <td class="px-6 py-4">
                                 <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
                                     @if (!string.IsNullOrEmpty(product.ImageUrl))
@@ -104,16 +139,12 @@
                                     }
                                 </div>
                             </td>
-
-                            <!-- Product Name -->
                             <td class="px-6 py-4">
                                 <div>
                                     <p class="font-semibold text-primary">@product.Name</p>
                                     <p class="text-xs text-gray-500">ID: @product.Id</p>
                                 </div>
                             </td>
-
-                            <!-- Metal/Purity -->
                             <td class="px-6 py-4">
                                 <div class="space-y-1">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @GetMetalClasses(product.Metal)">
@@ -122,13 +153,28 @@
                                     <p class="text-xs text-gray-600">@product.Purity</p>
                                 </div>
                             </td>
-
-                            <!-- Price -->
                             <td class="px-6 py-4">
                                 <span class="font-bold text-green-600">$@product.Price.ToString("N2")</span>
                             </td>
-
-                            <!-- Stock -->
+                            <td class="px-6 py-4">
+                                <span class="font-bold text-green-600">$@product.OriginalPrice.ToString("N2")</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if (product.Discount > 0)
+                                {
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                        <i class="ph-fill ph-tag mr-1"></i>
+                                        @product.Discount% Off
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                        <i class="ph-fill ph-tag mr-1"></i>
+                                        No Discount
+                                    </span>
+                                }
+                            </td>
                             <td class="px-6 py-4">
                                 @if (product.Stock == 0)
                                 {
@@ -152,21 +198,12 @@
                                     </span>
                                 }
                             </td>
-
-                            <!-- Vendor -->
                             <td class="px-6 py-4">
                                 <span class="text-sm text-gray-600">Vendor #@product.VendorId</span>
                             </td>
-
-                            <!-- Actions -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="/admin/products/edit/@product.Id" 
-                                       class="inline-flex items-center justify-center w-9 h-9 bg-blue-100 hover:bg-blue-500 text-blue-600 hover:text-white rounded-lg transition-all duration-300"
-                                       title="Edit">
-                                        <i class="ph ph-pencil text-lg"></i>
-                                    </a>
-                                    <button onclick="deleteProduct(@product.Id)" 
+                                    <button onclick="deleteProduct(@product.Id, '@product.Name')"
                                             class="inline-flex items-center justify-center w-9 h-9 bg-red-100 hover:bg-red-500 text-red-600 hover:text-white rounded-lg transition-all duration-300"
                                             title="Delete">
                                         <i class="ph ph-trash text-lg"></i>
@@ -178,20 +215,96 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="text-sm text-gray-600">
+                        Page <span class="font-semibold text-primary">@ViewBag.CurrentPage</span> of <span class="font-semibold text-primary">@ViewBag.TotalPages</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        @if (ViewBag.CurrentPage > 2)
+                        {
+                            <a href="@GetPageUrl(1)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                               title="First Page">
+                                <i class="ph ph-caret-double-left"></i>
+                            </a>
+                        }
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <a href="@GetPageUrl(ViewBag.CurrentPage - 1)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                               title="Previous">
+                                <i class="ph ph-caret-left"></i>
+                            </a>
+                        }
+                        @{
+                            var startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                            var endPage = Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2);
+                        }
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            if (i == ViewBag.CurrentPage)
+                            {
+                                <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gold text-white font-bold shadow-lg">@i</div>
+                            }
+                            else
+                            {
+                                <a href="@GetPageUrl(i)"
+                                   class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all font-medium">@i</a>
+                            }
+                        }
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <a href="@GetPageUrl(ViewBag.CurrentPage + 1)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                               title="Next">
+                                <i class="ph ph-caret-right"></i>
+                            </a>
+                        }
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages - 1)
+                        {
+                            <a href="@GetPageUrl(ViewBag.TotalPages)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                               title="Last Page">
+                                <i class="ph ph-caret-double-right"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
     }
     else
     {
-        <!-- Empty State -->
         <div class="text-center py-20">
             <div class="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <i class="ph ph-package text-gray-300 text-6xl"></i>
             </div>
-            <h3 class="font-playfair text-2xl font-bold text-primary mb-2">No Products Available</h3>
-            <p class="text-gray-600 mb-8">Start building your catalog by adding your first product.</p>
-            <a href="/admin/products/create" class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
-                <i class="ph ph-plus-circle text-xl"></i>
-                <span>Create First Product</span>
-            </a>
+            <h3 class="font-playfair text-2xl font-bold text-primary mb-2">No Products Found</h3>
+            <p class="text-gray-600 mb-8">
+                @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentMetal) || !string.IsNullOrEmpty(currentStock))
+                {
+                    <span>No products match your filters. Try adjusting your search.</span>
+                }
+                else
+                {
+                    <span>Start building your catalog by adding your first product.</span>
+                }
+            </p>
+            <div class="flex justify-center gap-4">
+                @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentMetal) || !string.IsNullOrEmpty(currentStock))
+                {
+                    <a href="/admin/products" class="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
+                        <i class="ph ph-arrow-clockwise"></i>
+                        <span>Clear Filters</span>
+                    </a>
+                }
+            </div>
         </div>
     }
 </div>
@@ -199,15 +312,14 @@
 <!-- Delete Modal -->
 <div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-95 opacity-0" id="modalContent">
-        
-        <!-- Modal Header -->
+        <!-- Header -->
         <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                         <i class="ph-fill ph-warning text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Confirm Deletion</h3>
+                    <h3 class="text-xl font-bold text-white">Confirm Product Deletion</h3>
                 </div>
                 <button onclick="closeModal()" class="text-white/80 hover:text-white transition-colors">
                     <i class="ph ph-x text-2xl"></i>
@@ -215,21 +327,33 @@
             </div>
         </div>
 
-        <!-- Modal Body -->
+        <!-- Body -->
         <div class="p-6">
-            <p class="text-gray-700 mb-6">
-                Are you sure you want to delete this product? This action cannot be undone.
+            <p class="text-gray-700 mb-4">
+                Are you sure you want to delete the product <strong id="productName" class="text-red-600"></strong>?
             </p>
 
-            <!-- Modal Actions -->
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <i class="ph-fill ph-warning-circle text-red-600 text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-red-800 font-medium">Warning</p>
+                        <p class="text-xs text-red-700 mt-1">This will permanently remove the product and its associations with categories or vendors.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
             <div class="flex space-x-3">
-                <button onclick="closeModal()" 
+                <button onclick="closeModal()"
                         class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-all duration-300">
                     Cancel
                 </button>
                 <form id="deleteForm" method="post" class="flex-1">
                     @Html.AntiForgeryToken()
-                    <button type="submit" 
+                    <button type="submit"
                             class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl">
                         Delete Product
                     </button>
@@ -261,18 +385,40 @@
             _ => metal
         };
     }
+
+    string GetPageUrl(int page)
+    {
+        var currentSearch = Context.Request.Query["search"].ToString();
+        var currentMetal = Context.Request.Query["metal"].ToString();
+        var currentStock = Context.Request.Query["stock"].ToString();
+        var pageSize = ViewBag.PageSize;
+
+        var queryParams = new List<string>();
+        queryParams.Add($"page={page}");
+        queryParams.Add($"pageSize={pageSize}");
+
+        if (!string.IsNullOrEmpty(currentSearch))
+            queryParams.Add($"search={Uri.EscapeDataString(currentSearch)}");
+        if (!string.IsNullOrEmpty(currentMetal))
+            queryParams.Add($"metal={currentMetal}");
+        if (!string.IsNullOrEmpty(currentStock))
+            queryParams.Add($"stock={currentStock}");
+
+        return $"/admin/products?{string.Join("&", queryParams)}";
+    }
 }
 
 @section Scripts {
     <script>
-        function deleteProduct(id) {
+        function deleteProduct(id, name) {
             const modal = document.getElementById('deleteModal');
             const modalContent = document.getElementById('modalContent');
             const form = document.getElementById('deleteForm');
-            
+            const nameField = document.getElementById('productName');
+
             form.action = '/admin/products/delete/' + id;
-            
-            // Show modal with animation
+            nameField.textContent = name || 'Unknown Product';
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
@@ -283,51 +429,43 @@
         function closeModal() {
             const modal = document.getElementById('deleteModal');
             const modalContent = document.getElementById('modalContent');
-            
-            // Hide with animation
+
             modalContent.classList.remove('scale-100', 'opacity-100');
             modalContent.classList.add('scale-95', 'opacity-0');
-            
+
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
         }
 
-        // Close modal when clicking outside
-        document.getElementById('deleteModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+        document.getElementById('deleteModal')?.addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
         });
 
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
         });
     </script>
 }
 
 @section Styles {
     <style>
-        /* Custom scrollbar for table */
         .overflow-x-auto::-webkit-scrollbar {
             height: 8px;
         }
-        
+
         .overflow-x-auto::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
-        
+
         .overflow-x-auto::-webkit-scrollbar-thumb {
             background: #c9a536;
             border-radius: 10px;
         }
-        
-        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-            background: #e6b944;
-        }
+
+            .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+                background: #e6b944;
+            }
     </style>
 }

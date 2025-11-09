@@ -13,6 +13,7 @@ namespace ECommerce.Services.Interfaces
         Task<int> GetTotalOrdersCountAsync();
         Task<decimal> GetTotalRevenueAsync();
         Task<Order?> GetActiveCartAsync(int userId);
+        Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task<bool> UpdateStatusAsync(int id, string status);
         Task<bool> UpdateAsync(Order order);
         Task<bool> DeleteAsync(int id);

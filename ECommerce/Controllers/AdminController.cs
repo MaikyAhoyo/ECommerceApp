@@ -33,6 +33,8 @@ namespace ECommerce.Controllers
             _paymentService = paymentService;
         }
 
+        #region Dashboard
+
         // GET: /admin/dashboard
         [HttpGet("dashboard")]
         public async Task<IActionResult> Dashboard()
@@ -52,107 +54,60 @@ namespace ECommerce.Controllers
             return View(model);
         }
 
+        #endregion
+
         #region Products Management
 
         // GET: /admin/products
         [HttpGet("products")]
-        public async Task<IActionResult> Products()
+        public async Task<IActionResult> Products(int page = 1, int pageSize = 10, string search = null, string metal = null, string stock = null)
         {
-            var products = await _productService.GetAllAsync();
-            return View(products);
-        }
+            // Get all products
+            var allProducts = await _productService.GetAllAsync();
 
-        // GET: /admin/products/create
-        [HttpGet("products/create")]
-        public async Task<IActionResult> CreateProduct()
-        {
-            ViewBag.Categories = await _categoryService.GetAllAsync();
-            ViewBag.Vendors = await _userService.GetVendorsAsync();
-            return View();
-        }
-
-        // POST: /admin/products/create
-        [HttpPost("products/create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateProduct(Product product, int[] categoryIds)
-        {
-            if (!ModelState.IsValid)
+            // Apply filters
+            if (!string.IsNullOrEmpty(search))
             {
-                ViewBag.Categories = await _categoryService.GetAllAsync();
-                ViewBag.Vendors = await _userService.GetVendorsAsync();
-                return View(product);
+                allProducts = allProducts.Where(p =>
+                    p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
             }
 
-            var productId = await _productService.CreateAsync(product);
-
-            // Add categories
-            if (categoryIds != null && categoryIds.Length > 0)
+            if (!string.IsNullOrEmpty(metal))
             {
-                foreach (var categoryId in categoryIds)
+                allProducts = allProducts.Where(p => p.Metal == metal).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(stock))
+            {
+                allProducts = stock switch
                 {
-                    await _productService.AddCategoryToProductAsync(productId, categoryId);
-                }
+                    "instock" => allProducts.Where(p => p.Stock > 5).ToList(),
+                    "lowstock" => allProducts.Where(p => p.Stock > 0 && p.Stock <= 5).ToList(),
+                    "outofstock" => allProducts.Where(p => p.Stock == 0).ToList(),
+                    _ => allProducts.ToList()
+                };
             }
 
-            TempData["Success"] = "Producto creado exitosamente";
-            return RedirectToAction(nameof(Products));
-        }
+            var totalItems = allProducts.Count();
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-        // GET: /admin/products/edit/{id}
-        [HttpGet("products/edit/{id}")]
-        public async Task<IActionResult> EditProduct(int id)
-        {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-            {
-                TempData["Error"] = "Producto no encontrado";
-                return RedirectToAction(nameof(Products));
-            }
+            // Ensure page is within valid range
+            page = Math.Max(1, Math.Min(page, totalPages > 0 ? totalPages : 1));
 
-            ViewBag.Categories = await _categoryService.GetAllAsync();
-            ViewBag.ProductCategories = await _productService.GetProductCategoriesAsync(id);
-            ViewBag.Vendors = await _userService.GetVendorsAsync();
-            return View(product);
-        }
+            // Apply pagination
+            var paginatedProducts = allProducts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-        // POST: /admin/products/edit/{id}
-        [HttpPost("products/edit/{id}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProduct(int id, Product product, int[] categoryIds)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Categories = await _categoryService.GetAllAsync();
-                ViewBag.Vendors = await _userService.GetVendorsAsync();
-                return View(product);
-            }
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
 
-            product.Id = id;
-            var success = await _productService.UpdateAsync(product);
-
-            if (!success)
-            {
-                TempData["Error"] = "Error al actualizar el producto";
-                return View(product);
-            }
-
-            // Update categories
-            var currentCategories = await _productService.GetProductCategoriesAsync(id);
-            foreach (var category in currentCategories)
-            {
-                await _productService.RemoveCategoryFromProductAsync(id, category.Id);
-            }
-
-            if (categoryIds != null && categoryIds.Length > 0)
-            {
-                foreach (var categoryId in categoryIds)
-                {
-                    await _productService.AddCategoryToProductAsync(id, categoryId);
-                }
-            }
-
-            TempData["Success"] = "Producto actualizado exitosamente";
-            return RedirectToAction(nameof(Products));
+            return View(paginatedProducts);
         }
 
         // POST: /admin/products/delete/{id}
@@ -162,10 +117,9 @@ namespace ECommerce.Controllers
         {
             var success = await _productService.DeleteAsync(id);
 
-            if (success)
-                TempData["Success"] = "Producto eliminado exitosamente";
-            else
-                TempData["Error"] = "Error al eliminar el producto";
+            TempData["Success"] = success
+                ? "Product deleted successfully."
+                : "Error deleting product.";
 
             return RedirectToAction(nameof(Products));
         }
@@ -176,47 +130,41 @@ namespace ECommerce.Controllers
 
         // GET: /admin/orders
         [HttpGet("orders")]
-        public async Task<IActionResult> Orders(string status = null)
+        public async Task<IActionResult> Orders(int page = 1, int pageSize = 10, string search = null, string status = null)
         {
-            IEnumerable<Order> orders;
+            var allOrders = await _orderService.GetAllAsync();
 
-            if (!string.IsNullOrEmpty(status))
-                orders = await _orderService.GetOrdersByStatusAsync(status);
-            else
-                orders = await _orderService.GetAllAsync();
-
-            ViewBag.CurrentStatus = status;
-            return View(orders);
-        }
-
-        // GET: /admin/orders/details/{id}
-        [HttpGet("orders/details/{id}")]
-        public async Task<IActionResult> OrderDetails(int id)
-        {
-            var order = await _orderService.GetOrderWithDetailsAsync(id);
-
-            if (order == null)
+            // Apply filters
+            if (!string.IsNullOrEmpty(search))
             {
-                TempData["Error"] = "Orden no encontrada";
-                return RedirectToAction(nameof(Orders));
+                if (int.TryParse(search, out int searchId))
+                {
+                    allOrders = allOrders.Where(o => o.Id == searchId || o.UserId.ToString().Contains(search)).ToList();
+                }
             }
 
-            return View(order);
-        }
+            if (!string.IsNullOrEmpty(status))
+            {
+                allOrders = allOrders.Where(o => o.Status == status).ToList();
+            }
 
-        // POST: /admin/orders/update-status/{id}
-        [HttpPost("orders/update-status/{id}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateOrderStatus(int id, string status)
-        {
-            var success = await _orderService.UpdateStatusAsync(id, status);
+            var totalItems = allOrders.Count();
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            page = Math.Max(1, Math.Min(page, totalPages > 0 ? totalPages : 1));
 
-            if (success)
-                TempData["Success"] = "Estado de orden actualizado exitosamente";
-            else
-                TempData["Error"] = "Error al actualizar el estado";
+            var paginatedOrders = allOrders
+                .OrderByDescending(o => o.OrderDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            return RedirectToAction(nameof(OrderDetails), new { id });
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.CurrentStatus = status;
+
+            return View(paginatedOrders);
         }
 
         #endregion
@@ -225,44 +173,105 @@ namespace ECommerce.Controllers
 
         // GET: /admin/users
         [HttpGet("users")]
-        public async Task<IActionResult> Users(string role = null)
+        public async Task<IActionResult> Users(int page = 1, int pageSize = 10, string search = null, string role = null)
         {
-            IEnumerable<User> users;
+            var allUsers = await _userService.GetAllAsync();
 
-            if (role == "Vendor")
-                users = await _userService.GetVendorsAsync();
-            else
-                users = await _userService.GetAllAsync();
+            // Apply filters
+            if (!string.IsNullOrEmpty(search))
+            {
+                allUsers = allUsers.Where(u =>
+                    u.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    u.Email.Contains(search, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
 
-            if (!string.IsNullOrEmpty(role) && role != "Vendor")
-                users = users.Where(u => u.Role == role);
+            if (!string.IsNullOrEmpty(role))
+            {
+                allUsers = allUsers.Where(u => u.Role == role).ToList();
+            }
 
+            var totalItems = allUsers.Count();
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            page = Math.Max(1, Math.Min(page, totalPages > 0 ? totalPages : 1));
+
+            var paginatedUsers = allUsers
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
             ViewBag.CurrentRole = role;
-            return View(users);
+
+            return View(paginatedUsers);
         }
 
-        // GET: /admin/users/details/{id}
-        [HttpGet("users/details/{id}")]
-        public async Task<IActionResult> UserDetails(int id)
+        // GET: /admin/users/create
+        [HttpGet("users/create")]
+        public IActionResult CreateUser()
         {
-            var user = await _userService.GetByIdAsync(id);
+            return View();
+        }
 
-            if (user == null)
+        // POST: /admin/users/create
+        [HttpPost("users/create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateUser(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var existingUser = await _userService.GetByEmailAsync(model.Email);
+            if (existingUser != null)
             {
-                TempData["Error"] = "Usuario no encontrado";
+                ModelState.AddModelError("Email", "This email is already registered");
+                return View(model);
+            }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
+            var user = new User
+            {
+                Name = model.Name,
+                Email = model.Email,
+                PasswordHash = hashedPassword,
+                Role = model.Role ?? "Customer",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var userId = await _userService.RegisterAsync(user);
+
+            TempData["Success"] = "User created successfully.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        // POST: /admin/users/change-role/{id}
+        [HttpPost("users/change-role/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeRole(int id, string role)
+        {
+            if (string.IsNullOrEmpty(role))
+            {
+                TempData["Error"] = "Invalid role selected.";
                 return RedirectToAction(nameof(Users));
             }
 
-            var orders = await _orderService.GetByUserIdAsync(id);
-            ViewBag.Orders = orders;
-
-            if (user.Role == "Vendor")
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
             {
-                var products = await _productService.GetByVendorIdAsync(id);
-                ViewBag.Products = products;
+                TempData["Error"] = "User not found.";
+                return RedirectToAction(nameof(Users));
             }
 
-            return View(user);
+            user.Role = role;
+            await _userService.UpdateAsync(user);
+
+            TempData["Success"] = $"Role updated successfully for {user.Name}.";
+            return RedirectToAction(nameof(Users));
         }
 
         // POST: /admin/users/delete/{id}
@@ -272,10 +281,9 @@ namespace ECommerce.Controllers
         {
             var success = await _userService.DeleteAsync(id);
 
-            if (success)
-                TempData["Success"] = "Usuario eliminado exitosamente";
-            else
-                TempData["Error"] = "Error al eliminar el usuario";
+            TempData["Success"] = success
+                ? "User deleted successfully."
+                : "Error deleting user.";
 
             return RedirectToAction(nameof(Users));
         }
@@ -308,7 +316,7 @@ namespace ECommerce.Controllers
                 return View(category);
 
             await _categoryService.CreateAsync(category);
-            TempData["Success"] = "Categoría creada exitosamente";
+            TempData["Success"] = "Category created successfully.";
             return RedirectToAction(nameof(Categories));
         }
 
@@ -320,7 +328,7 @@ namespace ECommerce.Controllers
 
             if (category == null)
             {
-                TempData["Error"] = "Categoría no encontrada";
+                TempData["Error"] = "Category not found.";
                 return RedirectToAction(nameof(Categories));
             }
 
@@ -338,10 +346,9 @@ namespace ECommerce.Controllers
             category.Id = id;
             var success = await _categoryService.UpdateAsync(category);
 
-            if (success)
-                TempData["Success"] = "Categoría actualizada exitosamente";
-            else
-                TempData["Error"] = "Error al actualizar la categoría";
+            TempData["Success"] = success
+                ? "Category updated successfully."
+                : "Error updating category.";
 
             return RedirectToAction(nameof(Categories));
         }
@@ -353,39 +360,62 @@ namespace ECommerce.Controllers
         {
             var success = await _categoryService.DeleteAsync(id);
 
-            if (success)
-                TempData["Success"] = "Categoría eliminada exitosamente";
-            else
-                TempData["Error"] = "Error al eliminar la categoría";
+            TempData["Success"] = success
+                ? "Category deleted successfully."
+                : "Error deleting category.";
 
             return RedirectToAction(nameof(Categories));
         }
 
         #endregion
 
-        #region Reviews Management
+        #region Reports Management
 
-        // GET: /admin/reviews
-        [HttpGet("reviews")]
-        public async Task<IActionResult> Reviews()
+        // GET: /admin/reports
+        [HttpGet("reports")]
+        public async Task<IActionResult> Reports(DateTime? startDate, DateTime? endDate, string type = "sales")
         {
-            // Obtener todas las reviews - necesitarías un método GetAllAsync en IReviewService
-            return View();
-        }
+            startDate ??= DateTime.Today.AddDays(-30);
+            endDate ??= DateTime.Today;
 
-        // POST: /admin/reviews/delete/{id}
-        [HttpPost("reviews/delete/{id}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteReview(int id)
-        {
-            var success = await _reviewService.DeleteAsync(id);
+            var orders = await _orderService.GetOrdersByDateRangeAsync(startDate.Value, endDate.Value);
 
-            if (success)
-                TempData["Success"] = "Reseña eliminada exitosamente";
-            else
-                TempData["Error"] = "Error al eliminar la reseña";
+            if (orders == null || !orders.Any())
+            {
+                return View(new AdminSalesReportViewModel
+                {
+                    TotalRevenue = 0,
+                    TotalOrders = 0,
+                    Orders = new List<Order>(),
+                    RevenueByStatus = new Dictionary<string, decimal>(),
+                    OrdersByStatus = new Dictionary<string, int>()
+                });
+            }
 
-            return RedirectToAction(nameof(Reviews));
+            var totalRevenue = orders.Sum(o => o.Total);
+            var totalOrders = orders.Count();
+
+            var revenueByStatus = orders
+                .GroupBy(o => o.Status)
+                .ToDictionary(g => g.Key, g => g.Sum(o => o.Total));
+
+            var ordersByStatus = orders
+                .GroupBy(o => o.Status)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var model = new AdminSalesReportViewModel
+            {
+                TotalRevenue = totalRevenue,
+                TotalOrders = totalOrders,
+                RevenueByStatus = revenueByStatus,
+                OrdersByStatus = ordersByStatus,
+                Orders = orders
+                    .OrderByDescending(o => o.OrderDate)
+                    .Take(20)
+                    .ToList()
+            };
+
+            return View(model);
         }
 
         #endregion

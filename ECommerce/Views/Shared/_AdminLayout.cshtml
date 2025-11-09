@@ -159,11 +159,6 @@
                     </div>
 
                     <div class="flex items-center space-x-4">
-                        <button class="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                            <i class="ph ph-bell text-xl text-primary"></i>
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
-
                         <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
                             <div class="w-10 h-10 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center text-white font-semibold text-sm">
                                 @User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value.Substring(0, 1).ToUpper()
