@@ -5,17 +5,15 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// =============================
+//        SERVICES CONFIG
+// =============================
 builder.Services.AddControllersWithViews();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register DapperContext
+// Context & Services
 builder.Services.AddSingleton<DapperContext>();
-
-// Register Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -24,7 +22,9 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IShippingAddressService, ShippingAddressService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
-// Configure Authentication
+// =============================
+//     AUTHENTICATION & AUTHZ
+// =============================
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -34,12 +34,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;        //solo desarrollo
-        //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Dev
+        //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Prod
         options.Cookie.SameSite = SameSiteMode.Lax;
     });
 
-// Configure Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
@@ -48,7 +47,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("VendorOrAdmin", policy => policy.RequireRole("Vendor", "Admin"));
 });
 
-// Configure CORS
+// =============================
+//            CORS
+// =============================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -59,7 +60,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure Session (opcional, para funcionalidades adicionales)
+// =============================
+//           SESSION
+// =============================
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -67,9 +70,11 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// =============================
+//        BUILD APP PIPELINE
+// =============================
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -87,17 +92,27 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseCors("AllowAll");
-
-// IMPORTANTE: El orden es crítico
-app.UseAuthentication();  // Primero autenticación
-app.UseAuthorization();   // Luego autorización
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseSession();
 
+// =============================
+//          ROUTING
+// =============================
+
+// Ruta raíz: redirige al login del AuthController
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/auth/login");
+    return Task.CompletedTask;
+});
+
+// MVC Controllers
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=Login}/{id?}");
 
-app.MapControllers(); // Para API Controllers
+// API Controllers
+app.MapControllers();
 
 app.Run();

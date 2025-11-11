@@ -121,7 +121,7 @@
                 <span class="sidebar-text">Categories</span>
             </a>
 
-            <a href="/admin/reports" class="sidebar-link">
+            <a href="/admin/reports" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Reports") == true ? "active" : "")">
                 <i class="ph ph-chart-line text-xl"></i>
                 <span class="sidebar-text">Reports</span>
             </a>

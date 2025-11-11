@@ -1,0 +1,138 @@
+﻿@model ECommerce.ViewModels.VendorSalesReportViewModel
+@{
+    ViewData["Title"] = "Sales Reports & Analytics";
+    Layout = "_VendorLayout";
+}
+
+<!-- Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <div>
+        <div class="flex items-center space-x-3 mb-2">
+            <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                <i class="ph-fill ph-chart-line text-orange-600 text-xl"></i>
+            </div>
+            <h1 class="font-playfair text-3xl font-bold text-primary">Sales Analytics</h1>
+        </div>
+        <p class="text-gray-600">Insights and performance metrics</p>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Total Revenue -->
+    <div class="group bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 text-white overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="ph-fill ph-currency-dollar text-3xl"></i>
+                </div>
+            </div>
+            <h3 class="text-4xl font-bold mb-1">$@Model.TotalRevenue.ToString("N2")</h3>
+            <p class="text-white/80 text-sm font-medium">Total Revenue</p>
+        </div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="group bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 text-white overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="ph-fill ph-shopping-bag text-3xl"></i>
+                </div>
+            </div>
+            <h3 class="text-4xl font-bold mb-1">@Model.TotalOrders</h3>
+            <p class="text-white/80 text-sm font-medium">Total Orders</p>
+        </div>
+    </div>
+
+    <!-- Total Products Sold -->
+    <div class="group bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 text-white overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="ph-fill ph-package text-3xl"></i>
+                </div>
+            </div>
+            <h3 class="text-4xl font-bold mb-1">@Model.TotalProductsSold</h3>
+            <p class="text-white/80 text-sm font-medium">Products Sold</p>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Products Sold by Month -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center space-x-2">
+            <i class="ph-fill ph-chart-bar text-blue-600 text-xl"></i>
+            <h3 class="font-semibold text-lg text-primary">Products Sold by Month</h3>
+        </div>
+        <div class="p-6">
+            @if (Model.ProductsSoldByMonth != null && Model.ProductsSoldByMonth.Any())
+            {
+                <div class="space-y-3">
+                    @foreach (var item in Model.ProductsSoldByMonth.OrderBy(x => x.Key))
+                    {
+                        var percentage = Model.TotalProductsSold > 0
+                        ? (decimal)item.Value / Model.TotalProductsSold * 100
+                        : 0;
+                        <div>
+                            <div class="flex justify-between text-sm font-medium text-gray-700">
+                                <span>@item.Key</span>
+                                <span>@item.Value (@percentage.ToString("F1")%)</span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-3">
+                                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full"
+                                     style="width:@percentage%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-gray-400 py-8">
+                    <i class="ph ph-chart-bar text-5xl mb-3"></i>
+                    <p>No monthly sales data available</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Top Selling Products -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center space-x-2">
+            <i class="ph-fill ph-star text-yellow-500 text-xl"></i>
+            <h3 class="font-semibold text-lg text-primary">Top Selling Products</h3>
+        </div>
+        <div class="p-6">
+            @if (Model.TopSellingProducts != null && Model.TopSellingProducts.Any())
+            {
+                <ul class="divide-y divide-gray-100">
+                    @foreach (var product in Model.TopSellingProducts.Take(10))
+                    {
+                        <li class="flex justify-between items-center py-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                    <i class="ph ph-package text-gray-500 text-lg"></i>
+                                </div>
+                                <span class="font-medium text-gray-700">@product.ProductName</span>
+                            </div>
+                            <span class="font-bold text-primary">@product.QuantitySold</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="text-center text-gray-400 py-8">
+                    <i class="ph ph-star text-5xl mb-3"></i>
+                    <p>No product sales data available</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

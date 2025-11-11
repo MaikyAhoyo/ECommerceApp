@@ -1,7 +1,8 @@
 ﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using ECommerce.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ECommerce.Controllers
 {
@@ -27,6 +28,8 @@ namespace ECommerce.Controllers
             _reviewService = reviewService;
             _userService = userService;
         }
+
+        #region Dashboard
 
         // GET: /vendor/dashboard
         [HttpGet("dashboard")]
@@ -64,56 +67,117 @@ namespace ECommerce.Controllers
                 TotalInventoryValue = totalValue,
                 LowStockProducts = productsList.Where(p => p.Stock < 5).Count(),
                 OutOfStockProducts = productsList.Where(p => p.Stock == 0).Count(),
-                RecentOrders = vendorOrders.OrderByDescending(o => o.OrderDate).Take(10).ToList(),
+                RecentOrders = vendorOrders.OrderByDescending(o => o.OrderDate).Take(5).ToList(),
                 TopProducts = productsList.OrderByDescending(p => p.Price).Take(5).ToList()
             };
 
             return View(model);
         }
 
+        #endregion
+
         #region My Products
 
-        // GET: /vendor/products
+        // GET: /admin/products
         [HttpGet("products")]
-        public async Task<IActionResult> MyProducts()
+        public async Task<IActionResult> MyProducts(int page = 1, int pageSize = 10, string search = null, string metal = null, string stock = null)
         {
+            // Get all products
             int vendorId = GetCurrentVendorId();
             var products = await _productService.GetByVendorIdAsync(vendorId);
-            return View(products);
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(search))
+            {
+                products = products.Where(p =>
+                    p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(metal))
+            {
+                products = products.Where(p => p.Metal == metal).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(stock))
+            {
+                products = stock switch
+                {
+                    "instock" => products.Where(p => p.Stock > 5).ToList(),
+                    "lowstock" => products.Where(p => p.Stock > 0 && p.Stock <= 5).ToList(),
+                    "outofstock" => products.Where(p => p.Stock == 0).ToList(),
+                    _ => products.ToList()
+                };
+            }
+
+            var totalItems = products.Count();
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            // Ensure page is within valid range
+            page = Math.Max(1, Math.Min(page, totalPages > 0 ? totalPages : 1));
+
+            // Apply pagination
+            var paginatedProducts = products
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
+
+            return View(paginatedProducts);
         }
 
         // GET: /vendor/products/create
         [HttpGet("products/create")]
         public async Task<IActionResult> CreateProduct()
         {
-            ViewBag.Categories = await _categoryService.GetAllAsync();
-            return View();
+            var categories = await _categoryService.GetAllAsync();
+
+            var model = new ProductCreateViewModel
+            {
+                AvailableCategories = categories?.ToList() ?? new List<Category>()
+            };
+
+            return View(model);
         }
 
         // POST: /vendor/products/create
         [HttpPost("products/create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateProduct(Product product, int[] categoryIds)
+        public async Task<IActionResult> CreateProduct(ProductCreateViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Categories = await _categoryService.GetAllAsync();
-                return View(product);
+                model.AvailableCategories = (await _categoryService.GetAllAsync()).ToList();
+                return View(model);
             }
 
-            product.VendorId = GetCurrentVendorId();
+            var product = new Product
+            {
+                Name = model.Name,
+                Description = model.Description,
+                Price = model.Price,
+                OriginalPrice = model.Price,
+                Stock = model.Stock,
+                VendorId = GetCurrentVendorId(),
+                ImageUrl = model.ImageUrl,
+                Metal = model.Metal,
+                Purity = model.Purity
+            };
+
             var productId = await _productService.CreateAsync(product);
 
-            // Add categories
-            if (categoryIds != null && categoryIds.Length > 0)
+            if (model.SelectedCategoryIds?.Any() == true)
             {
-                foreach (var categoryId in categoryIds)
-                {
+                foreach (var categoryId in model.SelectedCategoryIds)
                     await _productService.AddCategoryToProductAsync(productId, categoryId);
-                }
             }
 
-            TempData["Success"] = "Producto creado exitosamente";
+            TempData["Success"] = "Product created successfully";
             return RedirectToAction(nameof(MyProducts));
         }
 
@@ -121,91 +185,84 @@ namespace ECommerce.Controllers
         [HttpGet("products/edit/{id}")]
         public async Task<IActionResult> EditProduct(int id)
         {
-            int vendorId = GetCurrentVendorId();
+            var vendorId = GetCurrentVendorId();
             var product = await _productService.GetByIdAsync(id);
 
             if (product == null || product.VendorId != vendorId)
             {
-                TempData["Error"] = "Producto no encontrado o no tienes permiso para editarlo";
+                TempData["Error"] = "Product not found or no permission for editing granted.";
                 return RedirectToAction(nameof(MyProducts));
             }
 
-            ViewBag.Categories = await _categoryService.GetAllAsync();
-            ViewBag.ProductCategories = await _productService.GetProductCategoriesAsync(id);
-            return View(product);
+            var categories = await _categoryService.GetAllAsync();
+            var productCategories = await _productService.GetProductCategoriesAsync(id);
+
+            var viewModel = new ProductEditViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                Stock = product.Stock,
+                ImageUrl = product.ImageUrl,
+                Metal = product.Metal,
+                Purity = product.Purity,
+                AvailableCategories = categories.ToList(),
+                SelectedCategoryIds = productCategories.Select(c => c.Id).ToList()
+            };
+
+            return View(viewModel);
         }
 
         // POST: /vendor/products/edit/{id}
         [HttpPost("products/edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProduct(int id, Product product, int[] categoryIds)
+        public async Task<IActionResult> EditProduct(int id, ProductEditViewModel model)
         {
-            int vendorId = GetCurrentVendorId();
+            var vendorId = GetCurrentVendorId();
             var existingProduct = await _productService.GetByIdAsync(id);
 
             if (existingProduct == null || existingProduct.VendorId != vendorId)
             {
-                TempData["Error"] = "Producto no encontrado o no tienes permiso para editarlo";
+                TempData["Error"] = "Product not found or no permission for editing granted.";
                 return RedirectToAction(nameof(MyProducts));
             }
 
             if (!ModelState.IsValid)
             {
-                ViewBag.Categories = await _categoryService.GetAllAsync();
-                return View(product);
+                model.AvailableCategories = (await _categoryService.GetAllAsync()).ToList();
+                return View(model);
             }
 
-            product.Id = id;
-            product.VendorId = vendorId;
-            var success = await _productService.UpdateAsync(product);
+            existingProduct.Name = model.Name;
+            existingProduct.Description = model.Description;
+            existingProduct.Price = model.Price;
+            existingProduct.Stock = model.Stock;
+            existingProduct.ImageUrl = model.ImageUrl;
+            existingProduct.Metal = model.Metal;
+            existingProduct.Purity = model.Purity;
+
+            var success = await _productService.UpdateAsync(existingProduct);
 
             if (!success)
             {
-                TempData["Error"] = "Error al actualizar el producto";
-                return View(product);
+                TempData["Error"] = "Error updating product.";
+                model.AvailableCategories = (await _categoryService.GetAllAsync()).ToList();
+                return View(model);
             }
 
-            // Update categories
             var currentCategories = await _productService.GetProductCategoriesAsync(id);
             foreach (var category in currentCategories)
-            {
                 await _productService.RemoveCategoryFromProductAsync(id, category.Id);
-            }
 
-            if (categoryIds != null && categoryIds.Length > 0)
+            if (model.SelectedCategoryIds?.Any() == true)
             {
-                foreach (var categoryId in categoryIds)
-                {
+                foreach (var categoryId in model.SelectedCategoryIds)
                     await _productService.AddCategoryToProductAsync(id, categoryId);
-                }
             }
 
-            TempData["Success"] = "Producto actualizado exitosamente";
+            TempData["Success"] = "Product updated successfully.";
             return RedirectToAction(nameof(MyProducts));
-        }
-
-        // GET: /vendor/products/details/{id}
-        [HttpGet("products/details/{id}")]
-        public async Task<IActionResult> ProductDetails(int id)
-        {
-            int vendorId = GetCurrentVendorId();
-            var product = await _productService.GetByIdAsync(id);
-
-            if (product == null || product.VendorId != vendorId)
-            {
-                TempData["Error"] = "Producto no encontrado";
-                return RedirectToAction(nameof(MyProducts));
-            }
-
-            var reviews = await _reviewService.GetByProductIdAsync(id);
-            var avgRating = await _reviewService.GetAverageRatingByProductAsync(id);
-            var categories = await _productService.GetProductCategoriesAsync(id);
-
-            ViewBag.Reviews = reviews;
-            ViewBag.AverageRating = avgRating;
-            ViewBag.Categories = categories;
-
-            return View(product);
         }
 
         // POST: /vendor/products/delete/{id}
@@ -218,16 +275,16 @@ namespace ECommerce.Controllers
 
             if (product == null || product.VendorId != vendorId)
             {
-                TempData["Error"] = "Producto no encontrado o no tienes permiso para eliminarlo";
+                TempData["Error"] = "Product not found or no permission for deleting granted";
                 return RedirectToAction(nameof(MyProducts));
             }
 
             var success = await _productService.DeleteAsync(id);
 
             if (success)
-                TempData["Success"] = "Producto eliminado exitosamente";
+                TempData["Success"] = "Producto deleted successfully";
             else
-                TempData["Error"] = "Error al eliminar el producto";
+                TempData["Error"] = "Error deleting product";
 
             return RedirectToAction(nameof(MyProducts));
         }
@@ -242,36 +299,68 @@ namespace ECommerce.Controllers
 
             if (product == null || product.VendorId != vendorId)
             {
-                return Json(new { success = false, message = "Producto no encontrado" });
+                TempData["Error"] = "Product not found or you don't have permission to edit it.";
+                return RedirectToAction(nameof(MyProducts));
             }
 
-            var success = await _productService.UpdateStockAsync(id, quantity);
+            try
+            {
+                var success = await _productService.UpdateStockAsync(id, quantity);
 
-            if (success)
-                return Json(new { success = true, message = "Stock actualizado" });
-            else
-                return Json(new { success = false, message = "Error al actualizar stock" });
+                if (!success)
+                {
+                    TempData["Error"] = "An error occurred while updating the stock.";
+                    return RedirectToAction(nameof(MyProducts));
+                }
+
+                TempData["Success"] = "Stock updated successfully!";
+                return RedirectToAction(nameof(MyProducts));
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "An unexpected error occurred while updating the stock.";
+                return RedirectToAction(nameof(MyProducts));
+            }
         }
 
-        #endregion
-
-        #region Inventory Management
-
-        // GET: /vendor/inventory
-        [HttpGet("inventory")]
-        public async Task<IActionResult> Inventory()
+        // POST: /vendor/products/discount/{id}
+        [HttpPost("products/discount/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyDiscount(int id, decimal discount)
         {
             int vendorId = GetCurrentVendorId();
-            var products = await _productService.GetByVendorIdAsync(vendorId);
+            var product = await _productService.GetByIdAsync(id);
 
-            var model = new VendorInventoryViewModel
+            if (product == null || product.VendorId != vendorId)
             {
-                AllProducts = products.ToList(),
-                LowStockProducts = products.Where(p => p.Stock > 0 && p.Stock < 5).ToList(),
-                OutOfStockProducts = products.Where(p => p.Stock == 0).ToList()
-            };
+                TempData["Error"] = "Product not found or you don't have permission to edit it.";
+                return RedirectToAction(nameof(MyProducts));
+            }
 
-            return View(model);
+            if (discount < 0 || discount > 100)
+            {
+                TempData["Error"] = "Discount must be between 0% and 100%.";
+                return RedirectToAction(nameof(MyProducts));
+            }
+
+            try
+            {
+                var success = await _productService.UpdateDiscountAsync(id, discount);
+
+                if (!success)
+                {
+                    TempData["Error"] = "An error occurred while updating the discount.";
+                    return RedirectToAction(nameof(MyProducts));
+                }
+
+                TempData["Success"] = "Discount updated successfully!";
+                return RedirectToAction(nameof(MyProducts));
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "An unexpected error occurred while applying the discount.";
+                return RedirectToAction(nameof(MyProducts));
+            }
         }
 
         #endregion
@@ -280,15 +369,14 @@ namespace ECommerce.Controllers
 
         // GET: /vendor/orders
         [HttpGet("orders")]
-        public async Task<IActionResult> Orders()
+        public async Task<IActionResult> MyOrders(int page = 1, int pageSize = 10, string search = null, string status = null)
         {
             int vendorId = GetCurrentVendorId();
             var products = await _productService.GetByVendorIdAsync(vendorId);
             var productIds = products.Select(p => p.Id).ToList();
 
-            // Obtener todas las órdenes y filtrar las que contienen productos del vendedor
             var allOrders = await _orderService.GetAllAsync();
-            var vendorOrders = new List<Order>();
+            var myOrders = new List<Order>();
 
             foreach (var order in allOrders)
             {
@@ -297,34 +385,42 @@ namespace ECommerce.Controllers
                 var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(order.Id);
                 if (orderWithDetails != null && orderWithDetails.OrderItems.Any(oi => productIds.Contains(oi.ProductId)))
                 {
-                    vendorOrders.Add(orderWithDetails);
+                    myOrders.Add(orderWithDetails);
                 }
             }
 
-            return View(vendorOrders.OrderByDescending(o => o.OrderDate));
-        }
-
-        // GET: /vendor/orders/details/{id}
-        [HttpGet("orders/details/{id}")]
-        public async Task<IActionResult> OrderDetails(int id)
-        {
-            int vendorId = GetCurrentVendorId();
-            var products = await _productService.GetByVendorIdAsync(vendorId);
-            var productIds = products.Select(p => p.Id).ToList();
-
-            var order = await _orderService.GetOrderWithDetailsAsync(id);
-
-            if (order == null || !order.OrderItems.Any(oi => productIds.Contains(oi.ProductId)))
+            if (!string.IsNullOrEmpty(search))
             {
-                TempData["Error"] = "Orden no encontrada";
-                return RedirectToAction(nameof(Orders));
+                if (int.TryParse(search, out int searchId))
+                {
+                    myOrders = myOrders.Where(o => o.Id == searchId || o.UserId.ToString().Contains(search)).ToList();
+                }
             }
 
-            // Filtrar solo los items del vendedor
-            order.OrderItems = order.OrderItems.Where(oi => productIds.Contains(oi.ProductId)).ToList();
+            if (!string.IsNullOrEmpty(status))
+            {
+                myOrders = myOrders.Where(o => o.Status == status).ToList();
+            }
 
-            return View(order);
+            var totalItems = myOrders.Count;
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            page = Math.Max(1, Math.Min(page, totalPages > 0 ? totalPages : 1));
+
+            var paginatedOrders = myOrders
+                .OrderByDescending(o => o.OrderDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.CurrentStatus = status;
+
+            return View(paginatedOrders);
         }
+
 
         #endregion
 
@@ -332,7 +428,7 @@ namespace ECommerce.Controllers
 
         // GET: /vendor/reviews
         [HttpGet("reviews")]
-        public async Task<IActionResult> Reviews()
+        public async Task<IActionResult> Reviews(string search = "", int? productId = null, int page = 1, int pageSize = 10)
         {
             int vendorId = GetCurrentVendorId();
             var products = await _productService.GetByVendorIdAsync(vendorId);
@@ -341,48 +437,118 @@ namespace ECommerce.Controllers
             foreach (var product in products)
             {
                 var reviews = await _reviewService.GetByProductIdAsync(product.Id);
+
+                foreach (var review in reviews)
+                {
+                    if (review.User == null)
+                        review.User = await _userService.GetByIdAsync(review.UserId);
+                    if (review.Product == null)
+                        review.Product = product;
+                }
+
                 allReviews.AddRange(reviews);
             }
 
-            return View(allReviews.OrderByDescending(r => r.CreatedAt));
+            if (productId.HasValue)
+                allReviews = allReviews.Where(r => r.Product?.Id == productId.Value).ToList();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var lower = search.ToLower();
+                allReviews = allReviews.Where(r =>
+                    (r.User?.Name?.ToLower().Contains(lower) ?? false) ||
+                    (r.User?.Email?.ToLower().Contains(lower) ?? false) ||
+                    (r.Product?.Name?.ToLower().Contains(lower) ?? false) ||
+                    (r.Comment?.ToLower().Contains(lower) ?? false)
+                ).ToList();
+            }
+
+            allReviews = allReviews.OrderByDescending(r => r.CreatedAt).ToList();
+
+            int totalItems = allReviews.Count;
+            double averageRating = totalItems > 0 ? allReviews.Average(r => r.Rating) : 0;
+
+            var pagedReviews = allReviews
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.AverageRating = averageRating;
+            ViewBag.Search = search;
+            ViewBag.Products = products;
+            ViewBag.SelectedProductId = productId;
+
+            return View(pagedReviews);
+
         }
 
         #endregion
 
         #region Reports
 
-        // GET: /vendor/reports/sales
-        [HttpGet("reports/sales")]
-        public async Task<IActionResult> SalesReport()
+        [HttpGet("reports")]
+        public async Task<IActionResult> Reports(DateTime? startDate, DateTime? endDate, string type = "sales")
         {
-            int vendorId = GetCurrentVendorId();
-            var products = await _productService.GetByVendorIdAsync(vendorId);
-            var productIds = products.Select(p => p.Id).ToList();
+            startDate ??= DateTime.Today.AddDays(-30);
+            endDate ??= DateTime.Today;
 
-            var allOrders = await _orderService.GetAllAsync();
-            var vendorOrders = new List<Order>();
-            decimal totalRevenue = 0;
+            var orders = await _orderService.GetOrdersWithItemsByDateRangeAsync(startDate.Value, endDate.Value);
 
-            foreach (var order in allOrders)
+            if (orders == null || !orders.Any())
             {
-                if (order.Status == "Cart" || order.Status == "Cancelled") continue;
-
-                var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(order.Id);
-                if (orderWithDetails != null && orderWithDetails.OrderItems.Any(oi => productIds.Contains(oi.ProductId)))
+                return View(new VendorSalesReportViewModel
                 {
-                    // Calcular solo el revenue de productos del vendedor
-                    var vendorItems = orderWithDetails.OrderItems.Where(oi => productIds.Contains(oi.ProductId));
-                    totalRevenue += vendorItems.Sum(oi => oi.Quantity * oi.UnitPrice);
-                    vendorOrders.Add(orderWithDetails);
-                }
+                    TotalRevenue = 0,
+                    TotalOrders = 0,
+                    TotalProductsSold = 0,
+                    Orders = new List<Order>(),
+                    ProductsSoldByMonth = new Dictionary<string, int>(),
+                    TopSellingProducts = new List<ProductSalesData>()
+                });
             }
+
+            var totalRevenue = orders.Sum(o => o.Total);
+            var totalOrders = orders.Count();
+
+            var totalProductsSold = orders
+                .SelectMany(o => o.OrderItems)
+                .Sum(oi => oi.Quantity);
+
+            var productsSoldByMonth = orders
+                .GroupBy(o => o.OrderDate.ToString("MMM yyyy"))
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.SelectMany(o => o.OrderItems).Sum(oi => oi.Quantity)
+                );
+
+            var topSellingProducts = orders
+                .SelectMany(o => o.OrderItems)
+                .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
+                .Select(g => new ProductSalesData
+                {
+                    ProductId = g.Key.ProductId,
+                    ProductName = g.Key.Name,
+                    QuantitySold = g.Sum(x => x.Quantity),
+                    TotalRevenue = g.Sum(x => x.Quantity * x.UnitPrice)
+                })
+                .OrderByDescending(p => p.QuantitySold)
+                .Take(5)
+                .ToList();
 
             var model = new VendorSalesReportViewModel
             {
                 TotalRevenue = totalRevenue,
-                TotalOrders = vendorOrders.Count,
-                TotalProductsSold = vendorOrders.SelectMany(o => o.OrderItems).Where(oi => productIds.Contains(oi.ProductId)).Sum(oi => oi.Quantity),
-                Orders = vendorOrders.OrderByDescending(o => o.OrderDate).ToList()
+                TotalOrders = totalOrders,
+                TotalProductsSold = totalProductsSold,
+                Orders = orders
+                    .OrderByDescending(o => o.OrderDate)
+                    .Take(20)
+                    .ToList(),
+                ProductsSoldByMonth = productsSoldByMonth,
+                TopSellingProducts = topSellingProducts
             };
 
             return View(model);
@@ -394,9 +560,14 @@ namespace ECommerce.Controllers
 
         private int GetCurrentVendorId()
         {
-            // TODO: Obtener el ID del vendedor desde Claims/Session
-            // Por ahora retornamos un ID de ejemplo
-            return 2;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                throw new Exception("Couldn't get current user ID. Be sure you're loged in.");
+
+            if (int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+
+            throw new Exception("User ID it's not a valid format.");
         }
 
         #endregion

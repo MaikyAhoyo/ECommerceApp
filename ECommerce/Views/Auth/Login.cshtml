@@ -60,18 +60,9 @@
                 @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-red-500 text-sm" })
             </div>
 
-            <!-- Remember Me -->
+            <!-- Forgot Password -->
             <div class="flex items-center justify-between text-sm">
-                <label class="inline-flex items-center cursor-pointer">
-                    <input id="RememberMe"
-                           name="RememberMe"
-                           type="checkbox"
-                           value="true"
-                           class="rounded border-gray-300 text-gold focus:ring-gold" />
-                    <input type="hidden" name="RememberMe" value="false" />
-                    <span class="ml-2 text-gray-600">Remember me</span>
-                </label>
-                <a href="#" class="text-gold hover:text-gold-dark font-medium transition">Forgot password?</a>
+                <a href="/auth/forgot-password" class="text-gold hover:text-gold-dark font-medium transition">Forgot password?</a>
             </div>
 
             <!-- Submit Button -->

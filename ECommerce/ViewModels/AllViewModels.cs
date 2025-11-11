@@ -197,17 +197,17 @@ namespace ECommerce.ViewModels
 
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "El email es requerido")]
-        [EmailAddress(ErrorMessage = "Email inválido")]
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email")]
         [Display(Name = "Email")]
         public string Email { get; set; } = null!;
 
-        [Required(ErrorMessage = "La contraseña es requerida")]
+        [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
-        [Display(Name = "Contraseña")]
+        [Display(Name = "Password")]
         public string Password { get; set; } = null!;
 
-        [Display(Name = "Recordarme")]
+        [Display(Name = "Remembre Me")]
         public bool RememberMe { get; set; }
 
         public string? ReturnUrl { get; set; }
@@ -215,50 +215,51 @@ namespace ECommerce.ViewModels
 
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "El nombre es requerido")]
-        [StringLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres")]
-        [Display(Name = "Nombre completo")]
+        [Required(ErrorMessage = "Full name is required")]
+        [StringLength(100, ErrorMessage = "Full name cannot exceed 100 characters")]
+        [Display(Name = "Full Name")]
         public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "El email es requerido")]
-        [EmailAddress(ErrorMessage = "Email inválido")]
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
         [Display(Name = "Email")]
         public string Email { get; set; } = null!;
 
-        [Required(ErrorMessage = "La contraseña es requerida")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+        [Required(ErrorMessage = "Password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long")]
         [DataType(DataType.Password)]
-        [Display(Name = "Contraseña")]
+        [Display(Name = "Password")]
         public string Password { get; set; } = null!;
 
-        [Required(ErrorMessage = "Debes confirmar la contraseña")]
+        [Required(ErrorMessage = "Password confirmation is required")]
         [DataType(DataType.Password)]
-        [Display(Name = "Confirmar contraseña")]
-        [Compare("Password", ErrorMessage = "Las contraseñas no coinciden")]
+        [Display(Name = "Confirm Password")]
+        [Compare("Password", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; } = null!;
 
-        [Display(Name = "Registrarse como vendedor")]
+        [Display(Name = "Register as Vendor")]
         public bool RegisterAsVendor { get; set; }
+
         public string? Role { get; internal set; }
     }
 
     public class ChangePasswordViewModel
     {
-        [Required(ErrorMessage = "La contraseña actual es requerida")]
+        [Required(ErrorMessage = "Current password is required")]
         [DataType(DataType.Password)]
-        [Display(Name = "Contraseña actual")]
+        [Display(Name = "Current Password")]
         public string CurrentPassword { get; set; } = null!;
 
-        [Required(ErrorMessage = "La nueva contraseña es requerida")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+        [Required(ErrorMessage = "New password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "New password must be at least 6 characters long")]
         [DataType(DataType.Password)]
-        [Display(Name = "Nueva contraseña")]
+        [Display(Name = "New Password")]
         public string NewPassword { get; set; } = null!;
 
-        [Required(ErrorMessage = "Debes confirmar la nueva contraseña")]
+        [Required(ErrorMessage = "Please confirm your new password")]
         [DataType(DataType.Password)]
-        [Display(Name = "Confirmar nueva contraseña")]
-        [Compare("NewPassword", ErrorMessage = "Las contraseñas no coinciden")]
+        [Display(Name = "Confirm New Password")]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
         public string ConfirmNewPassword { get; set; } = null!;
     }
 
@@ -268,8 +269,6 @@ namespace ECommerce.ViewModels
         public int TotalOrders { get; set; }
         public int TotalReviews { get; set; }
         public List<ShippingAddress> Addresses { get; set; } = new List<ShippingAddress>();
-
-        // Solo para vendedores
         public int? TotalProducts { get; set; }
         public decimal? TotalRevenue { get; set; }
     }
@@ -282,87 +281,85 @@ namespace ECommerce.ViewModels
 
     public class ProductCreateViewModel
     {
-        [Required(ErrorMessage = "El nombre es requerido")]
-        [StringLength(200, ErrorMessage = "El nombre no puede exceder 200 caracteres")]
-        [Display(Name = "Nombre del producto")]
+        [Required(ErrorMessage = "Name is required")]
+        [StringLength(200, ErrorMessage = "Name cannot exceed 200 characters")]
+        [Display(Name = "Product Name")]
         public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "La descripción es requerida")]
-        [Display(Name = "Descripción")]
+        [Required(ErrorMessage = "Description is required")]
+        [Display(Name = "Description")]
         public string Description { get; set; } = null!;
 
-        [Required(ErrorMessage = "El precio es requerido")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "El precio debe ser mayor a 0")]
-        [Display(Name = "Precio")]
+        [Required(ErrorMessage = "Price is required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Display(Name = "Price")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "El stock es requerido")]
-        [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")]
+        [Required(ErrorMessage = "Stock is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "Stock cannot be negative")]
         [Display(Name = "Stock")]
         public int Stock { get; set; }
 
-        [Display(Name = "URL de la imagen")]
+        [Display(Name = "Image URL")]
         [StringLength(500)]
         public string? ImageUrl { get; set; }
 
-        [Required(ErrorMessage = "El metal es requerido")]
+        [Required(ErrorMessage = "Metal type is required")]
         [Display(Name = "Metal")]
         public string Metal { get; set; } = null!; // Gold, Silver, Platinum
 
-        [Required(ErrorMessage = "La pureza es requerida")]
-        [Range(0.001, 999.999, ErrorMessage = "Pureza inválida")]
-        [Display(Name = "Pureza")]
+        [Required(ErrorMessage = "Purity is required")]
+        [Range(0.001, 999.999, ErrorMessage = "Invalid purity value")]
+        [Display(Name = "Purity")]
         public decimal Purity { get; set; }
 
-        [Display(Name = "Categorías")]
-        public List<int> SelectedCategoryIds { get; set; } = new List<int>();
+        [Display(Name = "Categories")]
+        public List<int> SelectedCategoryIds { get; set; } = new();
 
-        // Para llenar en el controlador
-        public List<Category> AvailableCategories { get; set; } = new List<Category>();
-        public List<User> AvailableVendors { get; set; } = new List<User>(); // Solo para admin
+        public List<Category> AvailableCategories { get; set; } = new();
     }
 
     public class ProductEditViewModel
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre es requerido")]
+        [Required(ErrorMessage = "Name is required")]
         [StringLength(200)]
-        [Display(Name = "Nombre del producto")]
+        [Display(Name = "Product Name")]
         public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "La descripción es requerida")]
-        [Display(Name = "Descripción")]
+        [Required(ErrorMessage = "Description is required")]
+        [Display(Name = "Description")]
         public string Description { get; set; } = null!;
 
-        [Required(ErrorMessage = "El precio es requerido")]
+        [Required(ErrorMessage = "Price is required")]
         [Range(0.01, double.MaxValue)]
-        [Display(Name = "Precio")]
+        [Display(Name = "Price")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "El stock es requerido")]
+        [Required(ErrorMessage = "Stock is required")]
         [Range(0, int.MaxValue)]
         [Display(Name = "Stock")]
         public int Stock { get; set; }
 
-        [Display(Name = "URL de la imagen")]
+        [Display(Name = "Image URL")]
         [StringLength(500)]
         public string? ImageUrl { get; set; }
 
-        [Required(ErrorMessage = "El metal es requerido")]
+        [Required(ErrorMessage = "Metal type is required")]
         [Display(Name = "Metal")]
         public string Metal { get; set; } = null!;
 
-        [Required(ErrorMessage = "La pureza es requerida")]
+        [Required(ErrorMessage = "Purity is required")]
         [Range(0.001, 999.999)]
-        [Display(Name = "Pureza")]
+        [Display(Name = "Purity")]
         public decimal Purity { get; set; }
 
-        [Display(Name = "Categorías")]
-        public List<int> SelectedCategoryIds { get; set; } = new List<int>();
+        [Display(Name = "Categories")]
+        public List<int> SelectedCategoryIds { get; set; } = new();
 
-        public List<Category> AvailableCategories { get; set; } = new List<Category>();
-        public List<Category> CurrentCategories { get; set; } = new List<Category>();
+        public List<Category> AvailableCategories { get; set; } = new();
+        public List<Category> CurrentCategories { get; set; } = new();
     }
     #endregion
 
@@ -415,6 +412,7 @@ namespace ECommerce.ViewModels
         public string ProductName { get; set; } = null!;
         public int QuantitySold { get; set; }
         public decimal Revenue { get; set; }
+        public decimal TotalRevenue { get; internal set; }
     }
 
     public class OrderStatusUpdateViewModel

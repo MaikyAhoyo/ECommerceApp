@@ -100,12 +100,66 @@ namespace ECommerce.Services.Implementations
             return rowsAffected > 0;
         }
 
-        public async Task<bool> UpdateStockAsync(int id, int quantity)
+        public async Task<bool> UpdateStockAsync(int id, int quantityChange)
         {
             using var connection = _context.CreateConnection();
-            var sql = "UPDATE Products SET Stock = Stock + @Quantity WHERE Id = @Id";
-            var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id, Quantity = quantity });
+            var sql = "UPDATE Products SET Stock = Stock + @QuantityChange WHERE Id = @Id";
+            var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id, QuantityChange = quantityChange });
             return rowsAffected > 0;
+        }
+
+        public async Task<bool> UpdateDiscountAsync(int id, decimal discount)
+        {
+            using var connection = _context.CreateConnection();
+
+            var originalPrice = await connection.ExecuteScalarAsync<decimal>(
+                "SELECT OriginalPrice FROM Products WHERE Id = @Id",
+                new { Id = id }
+            );
+
+            if (originalPrice <= 0)
+                return false;
+
+            if (discount < 0) discount = 0;
+            if (discount > 100) discount = 100;
+
+            decimal discountedPrice = discount > 0
+                ? originalPrice * (1 - (discount / 100m))
+                : originalPrice;
+
+            discountedPrice = RoundPriceToNearestEnding(discountedPrice);
+
+            var sql = @"
+                      UPDATE Products 
+                      SET Discount = @Discount, 
+                      Price = @NewPrice
+                      WHERE Id = @Id";
+
+            var rowsAffected = await connection.ExecuteAsync(sql, new
+            {
+                Id = id,
+                Discount = discount,
+                NewPrice = discountedPrice
+            });
+
+            return rowsAffected > 0;
+        }
+
+        private decimal RoundPriceToNearestEnding(decimal price)
+        {
+            decimal whole = Math.Floor(price);
+            decimal fraction = price - whole;
+
+            decimal roundedFraction;
+
+            if (fraction < 0.25m)
+                roundedFraction = 0.00m;
+            else if (fraction < 0.75m)
+                roundedFraction = 0.50m;
+            else
+                roundedFraction = 0.99m;
+
+            return whole + roundedFraction;
         }
 
         public async Task<bool> AddCategoryToProductAsync(int productId, int categoryId)

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin Panel</title>
+    <title>@ViewData["Title"] - Vendor Panel</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -90,7 +90,7 @@
                 </div>
                 <div class="sidebar-text">
                     <h3 class="font-playfair text-xl font-bold text-white">Lumière</h3>
-                    <p class="text-xs text-white/60">Admin Panel</p>
+                    <p class="text-xs text-white/60">Vendor Panel</p>
                 </div>
             </div>
         </div>
@@ -111,7 +111,12 @@
                 <span class="sidebar-text">Orders</span>
             </a>
 
-            <a href="/vendor/reports" class="sidebar-link">
+            <a href="/vendor/reviews" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Reviews") == true ? "active" : "")">
+                <i class="ph ph-star text-xl"></i>
+                <span class="sidebar-text">Reviews</span>
+            </a>
+
+            <a href="/vendor/reports" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Reports") == true ? "active" : "")">
                 <i class="ph ph-chart-line text-xl"></i>
                 <span class="sidebar-text">Reports</span>
             </a>

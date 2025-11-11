@@ -122,6 +122,46 @@ namespace ECommerce.Services.Implementations
             return await connection.QueryAsync<Order>(sql, new { StartDate = startDate, EndDate = endDate });
         }
 
+        public async Task<IEnumerable<Order>> GetOrdersWithItemsByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {
+            using var connection = _context.CreateConnection();
+
+            var sql = @"
+                      SELECT 
+                      o.Id, o.UserId, o.Total, o.Status, o.OrderDate,
+                      oi.Id, oi.OrderId, oi.ProductId, oi.Quantity, oi.UnitPrice,
+                      p.Id, p.Name, p.Price, p.ImageUrl
+                      FROM Orders o
+                      INNER JOIN OrderItems oi ON o.Id = oi.OrderId
+                      INNER JOIN Products p ON oi.ProductId = p.Id
+                      WHERE o.OrderDate BETWEEN @StartDate AND @EndDate
+                      ORDER BY o.OrderDate DESC;";
+
+            var orderDictionary = new Dictionary<int, Order>();
+
+            var orders = await connection.QueryAsync<Order, OrderItem, Product, Order>(
+                sql,
+                (order, orderItem, product) =>
+                {
+                    if (!orderDictionary.TryGetValue(order.Id, out var currentOrder))
+                    {
+                        currentOrder = order;
+                        currentOrder.OrderItems = new List<OrderItem>();
+                        orderDictionary.Add(order.Id, currentOrder);
+                    }
+
+                    orderItem.Product = product;
+                    currentOrder.OrderItems.Add(orderItem);
+
+                    return currentOrder;
+                },
+                new { StartDate = startDate, EndDate = endDate },
+                splitOn: "Id,Id"
+            );
+
+            return orderDictionary.Values;
+        }
+
         public async Task<bool> UpdateStatusAsync(int id, string status)
         {
             using var connection = _context.CreateConnection();

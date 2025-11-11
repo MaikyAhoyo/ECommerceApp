@@ -67,10 +67,9 @@
                         <i class="ph ph-text-align-left text-gray-400 absolute left-4 top-3 pointer-events-none"></i>
                         <textarea id="Description"
                                   name="Description"
-                                  value="@Model?.Description"
                                   rows="4"
                                   class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-gray-800 placeholder-gray-400 resize-none transition-all duration-300 group-hover:border-purple-400"
-                                  placeholder="@Model?.Description"></textarea>
+                                  placeholder="@Model?.Description">@Model?.Description</textarea>
                     </div>
                     @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-red-500 text-sm" })
                 </div>

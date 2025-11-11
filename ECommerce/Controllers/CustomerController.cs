@@ -672,12 +672,12 @@ namespace ECommerce.Controllers
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
-                throw new Exception("No se pudo obtener el ID del usuario actual. Asegúrate de haber iniciado sesión.");
+                throw new Exception("Couldn't get current user ID. Be sure you're loged in.");
 
             if (int.TryParse(userIdClaim.Value, out int userId))
                 return userId;
 
-            throw new Exception("El ID del usuario no tiene un formato válido.");
+            throw new Exception("User ID it's not a valid format.");
         }
 
         #endregion

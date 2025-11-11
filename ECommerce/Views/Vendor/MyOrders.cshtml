@@ -1,0 +1,280 @@
+﻿@model IEnumerable<ECommerce.Models.Entities.Order>
+@{
+    ViewData["Title"] = "Orders Management";
+    Layout = "_VendorLayout";
+
+    var currentSearch = Context.Request.Query["search"].ToString();
+    var currentStatus = Context.Request.Query["status"].ToString();
+}
+
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <div>
+        <div class="flex items-center space-x-3 mb-2">
+            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <i class="ph-fill ph-shopping-cart text-green-600 text-xl"></i>
+            </div>
+            <h1 class="font-playfair text-3xl font-bold text-primary">Orders</h1>
+        </div>
+        <p class="text-gray-600">Manage customer orders and shipments</p>
+    </div>
+</div>
+
+<!-- Filters & Results Info -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+    <!-- Filters -->
+    <div class="p-6 border-b border-gray-100">
+        <form method="get" asp-action="Orders" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="pageSize" value="@ViewBag.PageSize">
+
+            <!-- Search -->
+            <div class="md:col-span-2">
+                <div class="relative">
+                    <input type="text"
+                           name="search"
+                           value="@currentSearch"
+                           placeholder="Search by order ID or customer..."
+                           class="w-full rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none px-4 py-2.5 pr-10 transition-all">
+                    <i class="ph ph-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="md:col-span-2">
+                <select name="status"
+                        class="w-full rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none px-4 py-2.5 transition-all">
+                    <option value="">All Status</option>
+                    <option value="Cart" @(currentStatus == "Cart" ? "selected" : "")>Cart</option>
+                    <option value="Pending" @(currentStatus == "Pending" ? "selected" : "")>Pending</option>
+                    <option value="Confirmed" @(currentStatus == "Confirmed" ? "selected" : "")>Confirmed</option>
+                    <option value="Shipped" @(currentStatus == "Shipped" ? "selected" : "")>Shipped</option>
+                    <option value="Delivered" @(currentStatus == "Delivered" ? "selected" : "")>Delivered</option>
+                    <option value="Cancelled" @(currentStatus == "Cancelled" ? "selected" : "")>Cancelled</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                        class="w-full bg-green-50 hover:bg-green-500 text-green-600 hover:text-white border-2 border-green-500 px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2">
+                    <i class="ph ph-funnel-simple"></i>
+                    <span>Filter</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Info & Page Size Selector -->
+    <div class="px-6 py-4 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-2">
+            <i class="ph ph-shopping-cart text-green-600"></i>
+            <span class="text-sm text-gray-600">
+                Showing <span class="font-semibold text-primary">@((ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1)</span>
+                to <span class="font-semibold text-primary">@Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalItems)</span>
+                of <span class="font-semibold text-primary">@ViewBag.TotalItems</span> orders
+            </span>
+        </div>
+
+        <form method="get" action="/admin/orders" class="flex items-center space-x-2">
+            <input type="hidden" name="search" value="@currentSearch">
+            <input type="hidden" name="status" value="@currentStatus">
+            <input type="hidden" name="page" value="1">
+
+            <label class="text-sm text-gray-600 font-medium">Items per page:</label>
+            <select name="pageSize"
+                    onchange="this.form.submit()"
+                    class="rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none px-3 py-1.5 text-sm font-medium transition-all">
+                <option value="5" @(ViewBag.PageSize == 5 ? "selected" : "")>5</option>
+                <option value="10" @(ViewBag.PageSize == 10 ? "selected" : "")>10</option>
+                <option value="20" @(ViewBag.PageSize == 20 ? "selected" : "")>20</option>
+                <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    @if (Model != null && Model.Any())
+    {
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Order ID</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Order Date</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Arrival Date</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach (var order in Model)
+                    {
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-semibold text-primary">#@order.Id</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 text-xs font-bold">
+                                        @(order.UserId.ToString().Substring(0, 1))
+                                    </div>
+                                    <span class="text-gray-700 font-medium">User #@order.UserId</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-gray-600 text-sm">@order.OrderDate.ToString("MMM dd, yyyy")</span>
+                                <span class="block text-xs text-gray-400">@order.OrderDate.ToString("hh:mm tt")</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if (order.ArrivalDate == null)
+                                {
+                                    <span class="text-gray-400 text-sm italic">(N/A)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-600 text-sm">@order.ArrivalDate</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-bold text-green-600">$@order.Total.ToString("N2")</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @GetStatusClasses(order.Status)">
+                                    @order.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="text-sm text-gray-600">
+                        Page <span class="font-semibold text-primary">@ViewBag.CurrentPage</span> of <span class="font-semibold text-primary">@ViewBag.TotalPages</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        @if (ViewBag.CurrentPage > 2)
+                        {
+                            <a href="@GetPageUrl(1)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-500 hover:text-white transition-all"
+                               title="First Page">
+                                <i class="ph ph-caret-double-left"></i>
+                            </a>
+                        }
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <a href="@GetPageUrl(ViewBag.CurrentPage - 1)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-500 hover:text-white transition-all"
+                               title="Previous">
+                                <i class="ph ph-caret-left"></i>
+                            </a>
+                        }
+                        @{
+                            var startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                            var endPage = Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2);
+                        }
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            if (i == ViewBag.CurrentPage)
+                            {
+                                <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-green-500 text-white font-bold shadow-lg">@i</div>
+                            }
+                            else
+                            {
+                                <a href="@GetPageUrl(i)"
+                                   class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-500 hover:text-white transition-all font-medium">@i</a>
+                            }
+                        }
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <a href="@GetPageUrl(ViewBag.CurrentPage + 1)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-500 hover:text-white transition-all"
+                               title="Next">
+                                <i class="ph ph-caret-right"></i>
+                            </a>
+                        }
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages - 1)
+                        {
+                            <a href="@GetPageUrl(ViewBag.TotalPages)"
+                               class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-green-500 hover:bg-green-500 hover:text-white transition-all"
+                               title="Last Page">
+                                <i class="ph ph-caret-double-right"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center py-20">
+            <div class="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <i class="ph ph-shopping-cart text-gray-300 text-6xl"></i>
+            </div>
+            <h3 class="font-playfair text-2xl font-bold text-primary mb-2">No Orders Found</h3>
+            <p class="text-gray-600 mb-8">
+                @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentStatus))
+                {
+                    <span>No orders match your filters. Try adjusting your search.</span>
+                }
+                else
+                {
+                    <span>No orders have been placed yet.</span>
+                }
+            </p>
+            @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentStatus))
+            {
+                <a href="/admin/orders" class="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
+                    <i class="ph ph-arrow-clockwise"></i>
+                    <span>Clear Filters</span>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusClasses(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-yellow-100 text-yellow-700",
+            "Confirmed" => "bg-blue-100 text-blue-700",
+            "Shipped" => "bg-purple-100 text-purple-700",
+            "Delivered" => "bg-green-100 text-green-700",
+            "Cancelled" => "bg-red-100 text-red-700",
+            _ => "bg-gray-100 text-gray-700"
+        };
+    }
+
+    string GetPageUrl(int page)
+    {
+        var currentSearch = Context.Request.Query["search"].ToString();
+        var currentStatus = Context.Request.Query["status"].ToString();
+        var pageSize = ViewBag.PageSize;
+
+        var queryParams = new List<string>
+        {
+            $"page={page}",
+            $"pageSize={pageSize}"
+        };
+
+        if (!string.IsNullOrEmpty(currentSearch))
+            queryParams.Add($"search={Uri.EscapeDataString(currentSearch)}");
+        if (!string.IsNullOrEmpty(currentStatus))
+            queryParams.Add($"status={currentStatus}");
+
+        return $"/vendor/orders?{string.Join("&", queryParams)}";
+    }
+}

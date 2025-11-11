@@ -1,0 +1,162 @@
+﻿@model ECommerce.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Create User";
+    Layout = "_AdminLayout";
+}
+
+<div class="max-w-3xl mx-auto animate-fade-in">
+    <div class="flex items-center justify-between mb-10">
+        <div class="flex items-center space-x-3">
+            <a href="/admin/categories"
+               class="w-10 h-10 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 rounded-xl flex items-center justify-center transition-all duration-300">
+                <i class="ph ph-arrow-left text-2xl"></i>
+            </a>
+            <div>
+                <h1 class="font-playfair text-3xl font-bold text-primary tracking-tight">
+                    Add User
+                </h1>
+                <p class="text-gray-500 text-sm">Add a new user (Admin, Vendor, Customer).</p>
+            </div>
+        </div>
+        <div class="hidden sm:block">
+            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <i class="ph-fill ph-user text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" asp-action="CreateUser" class="space-y-8">
+        @Html.AntiForgeryToken()
+
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-xl text-sm shadow-sm">
+                <i class="ph ph-warning-circle text-base mr-2"></i>
+                Please correct the following errors:
+                @Html.ValidationSummary(true, "", new { @class = "mt-2 list-disc list-inside text-red-600" })
+            </div>
+        }
+
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
+                <h3 class="text-lg font-semibold text-white flex items-center space-x-2">
+                    <i class="ph-fill ph-tag text-xl"></i>
+                    <span>User Information</span>
+                </h3>
+            </div>
+
+            <div class="p-8 space-y-8">
+                <div class="group">
+                    <label for="Name" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Name</label>
+                    <div class="relative">
+                        <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        <input id="Name"
+                               name="Name"
+                               type="text"
+                               value="@Model?.Name"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
+                               placeholder="John Doe" 
+                               required />
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-red-500 text-sm" })
+                </div>
+
+                <div class="group">
+                    <label for="Email" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Email</label>
+                    <div class="relative">
+                        <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        <input id="Email"
+                               name="Email"
+                               type="email"
+                               value="@Model?.Email"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
+                               placeholder="you@example.com" 
+                               required />
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-red-500 text-sm" })
+                </div>
+
+                <div class="group">
+                    <label for="Password" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Password</label>
+                    <div class="relative">
+                        <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        <input id="Password"
+                               name="Password"
+                               type="password"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
+                               placeholder="••••••••"
+                               minlength="6"
+                               required />
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-red-500 text-sm" })
+                </div>
+                
+                <div class="group">
+                    <label for="ConfirmPassword" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Password</label>
+                    <div class="relative">
+                        <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        <input id="ConfirmPassword"
+                               name="ConfirmPassword"
+                               type="password"
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
+                               placeholder="••••••••"
+                               minlength="6"
+                               required />
+                    </div>
+                    @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-red-500 text-sm" })
+                </div>
+
+                <div class="group">
+                    <label for="Role" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Role</label>
+                    <div class="relative">
+                        <select id="Role"
+                                name="Role"
+                                class="w-full pl-4 pr-10 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400">
+                            <option value="Customer" @(Model?.Role == "Customer" ? "selected" : "")>Customer</option>
+                            <option value="Vendor" @(Model?.Role == "Vendor" ? "selected" : "")>Vendor</option>
+                            <option value="Admin" @(Model?.Role == "Admin" ? "selected" : "")>Admin</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+            <button type="submit"
+                    class="flex-1 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
+                <i class="ph ph-check-circle text-xl"></i>
+                <span>Add User</span>
+            </button>
+
+            <a href="/admin/users"
+               class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2">
+                <i class="ph ph-x-circle text-xl"></i>
+                <span>Cancel</span>
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<style>
+    @@keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.5s ease-out;
+    }
+</style>

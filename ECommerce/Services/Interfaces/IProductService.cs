@@ -15,6 +15,7 @@ namespace ECommerce.Services.Interfaces
         Task<bool> UpdateAsync(Product product);
         Task<bool> DeleteAsync(int id);
         Task<bool> UpdateStockAsync(int id, int quantity);
+        Task<bool> UpdateDiscountAsync(int id, decimal discount);
         Task<bool> AddCategoryToProductAsync(int productId, int categoryId);
         Task<bool> RemoveCategoryFromProductAsync(int productId, int categoryId);
         Task<IEnumerable<Category>> GetProductCategoriesAsync(int productId);
