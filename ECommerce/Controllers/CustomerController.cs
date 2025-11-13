@@ -158,13 +158,23 @@ namespace ECommerce.Controllers
             var avgRating = await _reviewService.GetAverageRatingByProductAsync(id);
             var reviewCount = await _reviewService.GetReviewCountByProductAsync(id);
             var categories = await _productService.GetProductCategoriesAsync(id);
+            var relatedProducts = (await _productService.GetAllAsync())
+                .Where(p => p.CategoryId == product.CategoryId && p.Id != id)
+                .Take(4)
+                .ToList();
 
-            ViewBag.Reviews = reviews;
-            ViewBag.AverageRating = avgRating;
-            ViewBag.ReviewCount = reviewCount;
-            ViewBag.Categories = categories;
+            var viewModel = new CustomerProductDetailsViewModel
+            {
+                Product = product,
+                Reviews = reviews.Cast<Review>().ToList(),
+                AverageRating = avgRating,
+                ReviewCount = reviewCount,
+                Categories = categories.Cast<Category>().ToList(),
+                RelatedProducts = relatedProducts,
+                InStock = product.Stock > 0
+            };
 
-            return View(product);
+            return View(viewModel);
         }
 
         #endregion
