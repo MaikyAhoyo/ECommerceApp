@@ -34,25 +34,23 @@
 
                                 <div>
                                     <h5 class="text-base font-semibold text-gray-800 mb-1">@item.ProductName</h5>
-                                    <p class="text-gray-500 text-sm">@GetMetalName(item.Metal) @item.Purity</p>
+                                    <p class="text-gray-500 text-sm">@GetMetalName(item.Metal) @item.Purity </p>
                                     <div class="flex justify-between items-center mt-3 lg:hidden">
                                         <span class="text-green-600 font-bold text-lg">$@item.UnitPrice.ToString("N2")</span>
-                                        <button type="button" class="text-red-500 text-xl hover:text-red-700 transition" onclick="removeItem(@item.Id)">
+                                        <button  type="button" class="text-red-500 text-xl hover:text-red-700 transition" onclick="removeItem(@item.Id)">
                                             <i class="ph-bold ph-trash"></i>
                                         </button>
                                     </div>
                                 </div>
-
-                                <div class="hidden lg:flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
+                                <div class="hidden lg:flex items-center border-2 border-gray-200 rounded-lg overflow-hidden w-fit">
                                     <button type="button" class="w-9 h-9 bg-gray-100 hover:bg-yellow-500 hover:text-white transition" onclick="updateQuantity(@item.Id, @item.Quantity - 1)">
-                                        <i class="ph-bold ph-minus"></i>
+                                        <i class="ph ph-minus"></i>
                                     </button>
-                                    <input type="number" value="@item.Quantity" min="1" max="@item.MaxStock" class="w-12 h-9 text-center border-none font-semibold" readonly>
+                                    <input type="number" value="@item.Quantity" min="1" max="@item.MaxStock" class="w-12 h-9 text-center border-none font-semibold select-none px-0 py-0 leading-none cursor-pointer" readonly onfocus="this.blur()" onmousedown="return false" aria-label="Cantidad">
                                     <button type="button" class="w-9 h-9 bg-gray-100 hover:bg-yellow-500 hover:text-white transition" onclick="updateQuantity(@item.Id, @item.Quantity + 1)">
-                                        <i class="ph-bold ph-plus"></i>
+                                        <i class="ph ph-plus"></i>
                                     </button>
                                 </div>
-
                                 <div class="hidden lg:block text-center">
                                     <span class="text-gray-500 text-sm">$@item.UnitPrice.ToString("N2")</span>
                                 </div>

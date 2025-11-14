@@ -61,8 +61,8 @@ namespace ECommerce.Services.Implementations
 
             if (result != null)
             {
-                // Get order items
-                var itemsSql = @"SELECT oi.*, p.Id, p.Name, p.Price, p.ImageUrl
+                // Get order items (include Metal and Purity so Product is fully hydrated)
+                var itemsSql = @"SELECT oi.*, p.Id, p.Name, p.Price, p.ImageUrl, p.Metal, p.Purity, p.Stock
                                  FROM OrderItems oi
                                  INNER JOIN Products p ON oi.ProductId = p.Id
                                  WHERE oi.OrderId = @OrderId";
@@ -130,7 +130,7 @@ namespace ECommerce.Services.Implementations
                       SELECT 
                       o.Id, o.UserId, o.Total, o.Status, o.OrderDate,
                       oi.Id, oi.OrderId, oi.ProductId, oi.Quantity, oi.UnitPrice,
-                      p.Id, p.Name, p.Price, p.ImageUrl
+                      p.Id, p.Name, p.Price, p.ImageUrl, p.Metal, p.Purity
                       FROM Orders o
                       INNER JOIN OrderItems oi ON o.Id = oi.OrderId
                       INNER JOIN Products p ON oi.ProductId = p.Id
@@ -236,7 +236,7 @@ namespace ECommerce.Services.Implementations
         public async Task<IEnumerable<OrderItem>> GetOrderItemsAsync(int orderId)
         {
             using var connection = _context.CreateConnection();
-            var sql = @"SELECT oi.*, p.Id, p.Name, p.Price, p.ImageUrl
+            var sql = @"SELECT oi.*, p.Id, p.Name, p.Price, p.ImageUrl, p.Metal, p.Purity, p.Stock
                         FROM OrderItems oi
                         INNER JOIN Products p ON oi.ProductId = p.Id
                         WHERE oi.OrderId = @OrderId";
