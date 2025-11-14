@@ -215,7 +215,7 @@
                         </a>
                     </div>
                 }
-            }
+            }   
             else
             {
                 <div class="text-center py-16 bg-gray-100 rounded-xl">
@@ -299,6 +299,7 @@
         }
 
         function addToCart(productId) {
+            console.log('Product ID:', productId);
             let quantity = parseInt(document.getElementById('quantity').value);
 
             fetch('/customer/cart/add', {

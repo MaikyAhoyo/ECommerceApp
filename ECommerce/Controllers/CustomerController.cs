@@ -245,8 +245,11 @@ namespace ECommerce.Controllers
 
         // POST: /customer/cart/add
         [HttpPost("cart/add")]
-        public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         {
+            int productId = request?.ProductId ?? 0;
+            int quantity = request?.Quantity ?? 1;
+
             int userId = GetCurrentUserId();
 
             // Verificar que el producto existe y tiene stock
@@ -297,6 +300,12 @@ namespace ECommerce.Controllers
             }
 
             return Json(new { success = false, message = "Error al agregar al carrito" });
+        }
+
+        public class AddToCartRequest
+        {
+            public int ProductId { get; set; }
+            public int Quantity { get; set; } = 1;
         }
 
         // POST: /customer/cart/update/{itemId}
