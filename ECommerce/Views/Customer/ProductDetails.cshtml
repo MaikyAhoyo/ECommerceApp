@@ -299,6 +299,12 @@
         }
 
         function addToCart(productId) {
+            // Esperar a que notificationModal esté disponible
+            if (typeof notificationModal === 'undefined') {
+                alert('Error: Modal de notificaciones no está cargado');
+                return;
+            }
+
             console.log('Product ID:', productId);
             let quantity = parseInt(document.getElementById('quantity').value);
 
@@ -315,15 +321,28 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Producto agregado al carrito');
-                    updateCartCount();
+                    notificationModal.success(
+                        '¡Producto Agregado!',
+                        data.message,
+                        () => {
+                            updateCartCount();
+                            // Resetear cantidad
+                            document.getElementById('quantity').value = 1;
+                        }
+                    );
                 } else {
-                    alert('Error: ' + data.message);
+                    notificationModal.error(
+                        'Error',
+                        data.message
+                    );
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al agregar al carrito');
+                notificationModal.error(
+                    'Error',
+                    'Error al agregar al carrito'
+                );
             });
         }
 

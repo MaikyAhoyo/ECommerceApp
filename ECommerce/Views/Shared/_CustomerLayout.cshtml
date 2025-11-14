@@ -345,6 +345,9 @@
         window.addEventListener('storage', updateCartCount);
     </script>
 
+    <!-- Modal Notification (debe ir antes de otros scripts) -->
+    @await Html.PartialAsync("_ModalNotification")
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
