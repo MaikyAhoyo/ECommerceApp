@@ -142,9 +142,8 @@ namespace ECommerce.Controllers
         // GET: /customer/products/details/{id}
         [HttpGet("products/details/{id}")]
         public async Task<IActionResult> ProductDetails(int id)
-        {
+        {   
             var product = await _productService.GetByIdAsync(id);
-
             var productCategories = await _categoryService.GetByProductIdAsync(product.Id);
             product.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
 
@@ -206,7 +205,42 @@ namespace ECommerce.Controllers
                 cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
             }
 
-            return View(cart);
+            // Mapear Order -> CustomerCartViewModel
+            var viewModel = new CustomerCartViewModel();
+            if (cart != null)
+            {
+                viewModel.Cart = cart;
+
+                // Map OrderItems to CartItemViewModel
+                if (cart.OrderItems != null && cart.OrderItems.Any())
+                {
+                    foreach (var oi in cart.OrderItems)
+                    {
+                        var itemVm = new CartItemViewModel
+                        {
+                            Id = oi.Id,
+                            ProductId = oi.ProductId,
+                            ProductName = oi.Product?.Name ?? string.Empty,
+                            ProductImageUrl = oi.Product?.ImageUrl ?? string.Empty,
+                            Metal = oi.Product?.Metal ?? string.Empty,
+                            Purity = oi.Product?.Purity ?? 0,
+                            Quantity = oi.Quantity,
+                            UnitPrice = oi.UnitPrice,
+                            MaxStock = oi.Product != null ? oi.Product.Stock : 0
+                        };
+                        viewModel.Items.Add(itemVm);
+                    }
+                }
+
+                // Calcular totales
+                viewModel.Subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
+                viewModel.Tax = Math.Round(viewModel.Subtotal * 0.16m, 2);
+                viewModel.Shipping = 0m; // lógica de envío simple
+                viewModel.Total = viewModel.Subtotal + viewModel.Tax + viewModel.Shipping;
+                viewModel.ItemCount = viewModel.Items.Sum(i => i.Quantity);
+            }
+
+            return View(viewModel);
         }
 
         // POST: /customer/cart/add
