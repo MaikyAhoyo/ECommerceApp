@@ -1,0 +1,319 @@
+﻿@model dynamic
+
+<!-- Review Modal (Partial) -->
+<div id="reviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" role="dialog" aria-labelledby="reviewModalTitle" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <h2 id="reviewModalTitle" class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="ph ph-star"></i>Escribir Reseña
+                </h2>
+                <button type="button" class="text-white hover:text-gray-200 transition" data-action="close" aria-label="Cerrar modal">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+            <!-- Product Info -->
+            <div class="mb-6 pb-6 border-b border-gray-200">
+                <p class="text-sm text-gray-500 uppercase tracking-wide mb-2">Producto</p>
+                <p class="text-lg font-semibold text-gray-800">@Model.ProductName</p>
+            </div>
+
+            <!-- User Info -->
+            <div class="mb-6 pb-6 border-b border-gray-200">
+                <p class="text-sm text-gray-500 uppercase tracking-wide mb-2">Tu Nombre</p>
+                <p class="text-lg font-semibold text-gray-800">@Model.UserName</p>
+            </div>
+
+            <!-- Rating -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-800 mb-3">Calificación</label>
+                <div id="starContainer" class="flex gap-2" role="radiogroup" aria-label="Calificación del producto">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <button type="button" class="star-btn text-4xl text-gray-300 transition" data-rating="@i" role="radio" aria-checked="false" aria-label="@i estrellas">
+                            <i class="ph ph-star"></i>
+                        </button>
+                    }
+                </div>
+                <input type="hidden" id="reviewRating" value="0">
+                <p id="ratingError" class="text-red-500 text-sm mt-2 hidden">Por favor, selecciona una calificación</p>
+            </div>
+
+            <!-- Comment -->
+            <div class="mb-6">
+                <label for="reviewComment" class="block text-sm font-semibold text-gray-800 mb-3">Tu Reseña</label>
+                <textarea id="reviewComment" placeholder="Cuéntanos tu experiencia con este producto..."
+                          class="w-full h-32 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          maxlength="500" aria-describedby="charCount"></textarea>
+                <p class="text-xs text-gray-500 mt-2"><span id="charCount">0</span>/500 caracteres</p>
+                <p id="commentError" class="text-red-500 text-sm mt-2 hidden">Por favor, escribe tu reseña</p>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-4 flex gap-3">
+            <button type="button" data-action="close"
+                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition">
+                Cancelar
+            </button>
+            <button type="button" id="submitReviewBtn"
+                    class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+                Enviar Reseña
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        // Server-injected product id (safe numeric)
+        const productId = @Model.ProductId;
+        let selectedRating = 0;
+
+        function openReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            resetReviewForm();
+            // Focus textarea for accessibility
+            setTimeout(() => {
+                const textarea = document.getElementById('reviewComment');
+                if (textarea) textarea.focus();
+            }, 100);
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            resetReviewForm();
+        }
+
+        function resetReviewForm() {
+            selectedRating = 0;
+            document.getElementById('reviewRating').value = '0';
+
+            const comment = document.getElementById('reviewComment');
+            if (comment) comment.value = '';
+
+            const charCount = document.getElementById('charCount');
+            if (charCount) charCount.textContent = '0';
+
+            // Reset star buttons
+            document.querySelectorAll('#starContainer .star-btn').forEach(btn => {
+                btn.classList.remove('text-yellow-500', 'text-yellow-400');
+                btn.classList.add('text-gray-300');
+                btn.setAttribute('aria-checked', 'false');
+            });
+
+            // Hide error messages
+            document.getElementById('ratingError')?.classList.add('hidden');
+            document.getElementById('commentError')?.classList.add('hidden');
+        }
+
+        function renderStarsUpTo(n, classToAdd) {
+            document.querySelectorAll('#starContainer .star-btn').forEach((btn, idx) => {
+                if (idx < n) {
+                    btn.classList.remove('text-gray-300', 'text-yellow-400', 'text-yellow-500');
+                    btn.classList.add(classToAdd);
+                    btn.setAttribute('aria-checked', 'true');
+                } else {
+                    btn.classList.remove('text-yellow-400', 'text-yellow-500');
+                    btn.classList.add('text-gray-300');
+                    btn.setAttribute('aria-checked', 'false');
+                }
+            });
+        }
+
+        async function submitReview() {
+            const rating = parseInt(document.getElementById('reviewRating').value || '0', 10);
+            const comment = (document.getElementById('reviewComment').value || '').trim();
+
+            // Validation
+            let hasError = false;
+
+            const ratingError = document.getElementById('ratingError');
+            const commentError = document.getElementById('commentError');
+
+            if (rating === 0) {
+                ratingError?.classList.remove('hidden');
+                hasError = true;
+            } else {
+                ratingError?.classList.add('hidden');
+            }
+
+            if (comment.length === 0) {
+                commentError?.classList.remove('hidden');
+                hasError = true;
+            } else {
+                commentError?.classList.add('hidden');
+            }
+
+            if (hasError) return;
+
+            // Disable submit button to prevent double submission
+            const submitBtn = document.getElementById('submitReviewBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+            }
+
+            // Payload matching the Review model expected by the API
+            const payload = {
+                productId: productId,
+                rating: rating,
+                comment: comment
+                // UserId will be set server-side from the authenticated user
+                // CreatedAt will be set server-side
+            };
+
+            try {
+                const response = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (response.ok) {
+                    if (typeof notificationModal !== 'undefined') {
+                        notificationModal.success('¡Reseña Enviada!', 'Tu reseña ha sido publicada correctamente', () => {
+                            closeReviewModal();
+                            location.reload();
+                        });
+                    } else {
+                        alert('¡Reseña enviada correctamente!');
+                        closeReviewModal();
+                        location.reload();
+                    }
+                } else {
+                    const msg = data?.message || 'Error al enviar la reseña';
+                    console.error('Server error:', data);
+
+                    if (typeof notificationModal !== 'undefined') {
+                        notificationModal.error('Error', msg);
+                    } else {
+                        alert(msg);
+                    }
+                }
+            } catch (err) {
+                console.error('Network error:', err);
+                if (typeof notificationModal !== 'undefined') {
+                    notificationModal.error('Error', 'Error de conexión al enviar la reseña');
+                } else {
+                    alert('Error de conexión al enviar la reseña');
+                }
+            } finally {
+                // Re-enable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Enviar Reseña';
+                }
+            }
+        }
+
+        // Initialization: attach handlers
+        function initReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            if (!modal) return;
+
+            const starButtons = Array.from(document.querySelectorAll('#starContainer .star-btn'));
+            const starContainer = document.getElementById('starContainer');
+            const commentEl = document.getElementById('reviewComment');
+            const charCount = document.getElementById('charCount');
+            const submitBtn = document.getElementById('submitReviewBtn');
+
+            // Click & keyboard for stars
+            starButtons.forEach((btn, index) => {
+                const ratingValue = index + 1;
+
+                btn.addEventListener('click', () => {
+                    selectedRating = ratingValue;
+                    document.getElementById('reviewRating').value = String(selectedRating);
+                    renderStarsUpTo(selectedRating, 'text-yellow-500');
+                    document.getElementById('ratingError')?.classList.add('hidden');
+                });
+
+                btn.addEventListener('mouseenter', () => {
+                    renderStarsUpTo(ratingValue, 'text-yellow-400');
+                });
+
+                btn.addEventListener('mouseleave', () => {
+                    // Restore selected
+                    if (selectedRating > 0) {
+                        renderStarsUpTo(selectedRating, 'text-yellow-500');
+                    } else {
+                        renderStarsUpTo(0, 'text-gray-300');
+                    }
+                });
+
+                // Keyboard accessibility
+                btn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            // When leaving the star container, restore to selectedRating
+            starContainer?.addEventListener('mouseleave', () => {
+                if (selectedRating > 0) {
+                    renderStarsUpTo(selectedRating, 'text-yellow-500');
+                } else {
+                    renderStarsUpTo(0, 'text-gray-300');
+                }
+            });
+
+            // Character counter
+            if (commentEl && charCount) {
+                commentEl.addEventListener('input', () => {
+                    charCount.textContent = String(commentEl.value.length);
+                    if (commentEl.value.trim().length > 0) {
+                        document.getElementById('commentError')?.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Submit
+            submitBtn?.addEventListener('click', submitReview);
+
+            // Close buttons
+            modal.querySelectorAll('[data-action="close"]').forEach(btn => {
+                btn.addEventListener('click', closeReviewModal);
+            });
+
+            // Background click closes modal
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeReviewModal();
+            });
+
+            // Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeReviewModal();
+                }
+            });
+
+            // Expose methods to global so ProductDetails can call openReviewModal()
+            window.openReviewModal = openReviewModal;
+            window.closeReviewModal = closeReviewModal;
+        }
+
+        // Run init after DOM is ready
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            initReviewModal();
+        } else {
+            document.addEventListener('DOMContentLoaded', initReviewModal);
+        }
+    })();
+</script>

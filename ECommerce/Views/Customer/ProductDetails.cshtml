@@ -56,14 +56,13 @@
                             }
                             else if (i == Math.Ceiling(Model.AverageRating) && Model.AverageRating % 1 != 0)
                             {
-                                <i class="ph ph-star-half-alt"></i>
+                                <i class="ph ph-star-half"></i>
                             }
                             else
                             {
                                 <i class="far ph-star"></i>
                             }
                         }
-                        @Model.AverageRating
 
                     </div>
                     <span class="text-gray-500 text-sm">@Model.AverageRating.ToString("0.0") (@Model.ReviewCount reseñas)</span>
@@ -209,13 +208,13 @@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <div class="text-center mt-6">
-                        <a href="/customer/reviews/create/@Model.Product.Id"
-                           class="inline-block px-6 py-3 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl font-semibold transition">
+                        <button type="button" onclick="openReviewModal()"
+                                class="inline-block px-6 py-3 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl font-semibold transition">
                             <i class="ph ph-star mr-2"></i>Escribir una Reseña
-                        </a>
+                        </button>
                     </div>
                 }
-            }   
+            }
             else
             {
                 <div class="text-center py-16 bg-gray-100 rounded-xl">
@@ -223,10 +222,10 @@
                     <p class="text-gray-500 mb-5">Aún no hay reseñas para este producto</p>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <a href="/customer/reviews/create/@Model.Product.Id"
-                           class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition">
+                        <button type="button" onclick="openReviewModal()"
+                                class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition">
                             <i class="ph ph-star mr-2"></i>Sé el primero en opinar
-                        </a>
+                        </button>
                     }
                 </div>
             }
@@ -267,6 +266,12 @@
     </div>
 </div>
 
+@* Render the reusable partial modal (keeps view modular). Pass simple anonymous model. *@
+@{
+    var reviewModalModel = new { ProductId = Model.Product.Id, ProductName = Model.Product.Name, UserName = User.Identity?.Name };
+}
+@Html.Partial("_ModalReview", reviewModalModel)
+
 @functions {
     string GetMetalName(string metal)
     {
@@ -299,13 +304,11 @@
         }
 
         function addToCart(productId) {
-            // Esperar a que notificationModal esté disponible
             if (typeof notificationModal === 'undefined') {
                 alert('Error: Modal de notificaciones no está cargado');
                 return;
             }
 
-            console.log('Product ID:', productId);
             let quantity = parseInt(document.getElementById('quantity').value);
 
             fetch('/customer/cart/add', {
@@ -326,7 +329,6 @@
                         data.message,
                         () => {
                             updateCartCount();
-                            // Resetear cantidad
                             document.getElementById('quantity').value = 1;
                         }
                     );

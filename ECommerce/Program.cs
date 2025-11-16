@@ -48,6 +48,18 @@ builder.Services.AddAuthorization(options =>
 });
 
 // =============================
+//      ANTIFORGERY TOKEN
+// =============================
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.Cookie.Name = "X-CSRF-TOKEN";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
+// =============================
 //            CORS
 // =============================
 builder.Services.AddCors(options =>
@@ -92,6 +104,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseCors("AllowAll");
+
+// IMPORTANTE: El orden correcto es:
+// 1. Authentication
+// 2. Authorization  
+// 3. Session
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
@@ -99,7 +116,6 @@ app.UseSession();
 // =============================
 //          ROUTING
 // =============================
-
 // Ruta raíz: redirige al login del AuthController
 app.MapGet("/", context =>
 {
