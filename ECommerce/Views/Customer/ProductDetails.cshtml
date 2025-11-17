@@ -93,10 +93,10 @@
                         <i class="ph ph-package text-xl text-yellow-500"></i>
                         <div>
                             <span class="block text-xs text-gray-500 uppercase tracking-wide">Disponibilidad</span>
-                            <span class="block font-semibold text-sm">
+                            <span class="block font-semibold text-xl">
                                 @if (Model.Product.Stock > 0)
                                 {
-                                    <span class="text-green-600">En stock (@Model.Product.Stock)</span>
+                                    <span class="text-green-600">@Model.Product.Stock en Stock</span>
                                 }
                                 else
                                 {

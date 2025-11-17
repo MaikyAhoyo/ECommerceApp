@@ -252,20 +252,42 @@ namespace ECommerce.Controllers
 
             int userId = GetCurrentUserId();
 
-            // Verificar que el producto existe y tiene stock
+            // 1. Obtener el producto para saber el Stock real
             var product = await _productService.GetByIdAsync(productId);
             if (product == null)
             {
                 return Json(new { success = false, message = "Producto no encontrado" });
             }
 
-            if (product.Stock < quantity)
+            // 2. Obtener el carrito activo para ver qué tenemos ya guardado
+            var cart = await _orderService.GetActiveCartAsync(userId);
+            
+            int currentQuantityInCart = 0;
+
+            if (cart != null)
             {
-                return Json(new { success = false, message = "Stock insuficiente" });
+                // Usamos el método GetOrderItemsAsync que ya existe en tu OrderService
+                var cartItems = await _orderService.GetOrderItemsAsync(cart.Id);
+                var existingItem = cartItems.FirstOrDefault(i => i.ProductId == productId);
+                
+                if (existingItem != null)
+                {
+                    currentQuantityInCart = existingItem.Quantity;
+                }
             }
 
-            // Obtener o crear carrito
-            var cart = await _orderService.GetActiveCartAsync(userId);
+            // 3. VALIDACIÓN CORREGIDA: (Lo que ya tengo + lo que quiero agregar) vs Stock
+            if (currentQuantityInCart + quantity > product.Stock)
+            {
+                return Json(new { 
+                    success = false, 
+                    message = $"Stock insuficiente. Solo hay {product.Stock} disponibles." 
+                });
+            }
+
+            // --- A partir de aquí el código sigue igual que antes, pero debes mover la lógica de creación del carrito ---
+
+            // Si el carrito es null, lo creamos ahora (ya sabemos que el stock es válido)
             if (cart == null)
             {
                 var newCart = new Order
@@ -283,7 +305,7 @@ namespace ECommerce.Controllers
             var item = new OrderItem
             {
                 ProductId = productId,
-                Quantity = quantity,
+                Quantity = quantity, // Aquí mandamos solo la cantidad nueva, tu OrderService ya hace la suma en SQL
                 UnitPrice = product.Price
             };
 
@@ -291,7 +313,6 @@ namespace ECommerce.Controllers
 
             if (success)
             {
-                // Recalcular total
                 var total = await _orderService.CalculateOrderTotalAsync(cart.Id);
                 cart.Total = total;
                 await _orderService.UpdateAsync(cart);
@@ -301,7 +322,6 @@ namespace ECommerce.Controllers
 
             return Json(new { success = false, message = "Error al agregar al carrito" });
         }
-
         public class AddToCartRequest
         {
             public int ProductId { get; set; }
@@ -317,12 +337,42 @@ namespace ECommerce.Controllers
                 return Json(new { success = false, message = "Cantidad inválida" });
             }
 
-            var success = await _orderService.UpdateOrderItemQuantityAsync(itemId, quantity);
+            try 
+            {
+                int userId = GetCurrentUserId();
+                var cart = await _orderService.GetActiveCartAsync(userId);
+                if (cart == null)
+                {
+                    return Json(new { success = false, message = "Carrito no encontrado" });
+                }
 
-            if (success)
-                return Json(new { success = true, message = "Cantidad actualizada" });
-            else
-                return Json(new { success = false, message = "Error al actualizar" });
+                var cartItems = await _orderService.GetOrderItemsAsync(cart.Id);
+                var itemToUpdate = cartItems.FirstOrDefault(i => i.Id == itemId);
+
+                if (itemToUpdate == null)
+                {
+                    return Json(new { success = false, message = "El producto no se encuentra en tu carrito" });
+                }
+
+                if (itemToUpdate.Product != null && quantity > itemToUpdate.Product.Stock)
+                {
+                    return Json(new { 
+                        success = false, 
+                        message = $"Stock insuficiente. Solo hay {itemToUpdate.Product.Stock} unidades disponibles." 
+                    });
+                }
+
+                var success = await _orderService.UpdateOrderItemQuantityAsync(itemId, quantity);
+
+                if (success)
+                    return Json(new { success = true, message = "Cantidad actualizada" });
+                else
+                    return Json(new { success = false, message = "Error al actualizar" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
         }
 
         // POST: /customer/cart/remove/{itemId}
