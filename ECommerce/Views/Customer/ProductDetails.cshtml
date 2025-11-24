@@ -3,6 +3,7 @@
     ViewData["Title"] = Model.Product.Name;
     Layout = "_CustomerLayout";
 }
+
 <div class="py-10 pb-20">
     <div class="container mx-auto px-4">
         <!-- Breadcrumb -->
@@ -15,6 +16,7 @@
                 <li class="text-gray-700 font-medium">@Model.Product.Name</li>
             </ol>
         </nav>
+
         <div class="grid lg:grid-cols-2 gap-12">
             <!-- Product Image -->
             <div class="lg:sticky lg:top-24 lg:self-start">
@@ -37,10 +39,12 @@
                     }
                 </div>
             </div>
+
             <!-- Product Info -->
             <div>
                 <!-- Title & Price -->
                 <h1 class="text-4xl font-bold text-gray-800 mb-4">@Model.Product.Name</h1>
+
                 <!-- Rating -->
                 <div class="flex items-center gap-3 mb-5">
                     <div class="flex text-yellow-500 text-lg">
@@ -59,13 +63,16 @@
                                 <i class="far ph-star"></i>
                             }
                         }
+
                     </div>
                     <span class="text-gray-500 text-sm">@Model.AverageRating.ToString("0.0") (@Model.ReviewCount reseñas)</span>
                 </div>
+
                 <div class="py-5 my-8 border-t border-b border-gray-200">
                     <span class="block text-5xl font-bold text-green-600 mb-1">$@Model.Product.Price.ToString("N2")</span>
                     <span class="text-gray-500 text-sm">IVA incluido</span>
                 </div>
+
                 <!-- Specifications -->
                 <div class="grid grid-cols-3 gap-3 mb-8 p-4 bg-gray-100 rounded-xl">
                     <div class="flex items-center gap-3">
@@ -86,21 +93,20 @@
                         <i class="ph ph-package text-xl text-yellow-500"></i>
                         <div>
                             <span class="block text-xs text-gray-500 uppercase tracking-wide">Disponibilidad</span>
-                            <span class="block font-semibold text-sm">
-                                <span class="block font-semibold text-xl">
-                                    @if (Model.Product.Stock > 0)
-                                    {
-                                        <span class="text-green-600">En stock (@Model.Product.Stock)</span>
-                                        <span class="text-green-600">@Model.Product.Stock en Stock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-red-600">Agotado</span>
-                                    }
-                                </span>
+                            <span class="block font-semibold text-xl">
+                                @if (Model.Product.Stock > 0)
+                                {
+                                    <span class="text-green-600">@Model.Product.Stock en Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="text-red-600">Agotado</span>
+                                }
+                            </span>
                         </div>
                     </div>
                 </div>
+
                 <!-- Categories -->
                 @if (Model.Categories.Any())
                 {
@@ -115,11 +121,13 @@
                         }
                     </div>
                 }
+
                 <!-- Description -->
                 <div class="my-8">
                     <h6 class="font-bold text-gray-800 mb-4">Descripción</h6>
                     <p class="text-gray-500 leading-relaxed">@Model.Product.Description</p>
                 </div>
+
                 <!-- Add to Cart -->
                 @if (Model.Product.Stock > 0)
                 {
@@ -146,6 +154,7 @@
                         Este producto está agotado actualmente
                     </div>
                 }
+
                 <!-- Trust Badges -->
                 <div class="flex flex-col md:flex-row gap-8 my-10 p-6  rounded-xl">
                     <div class="flex items-center gap-3 text-gray-800">
@@ -163,9 +172,11 @@
                 </div>
             </div>
         </div>
+
         <!-- Reviews Section -->
         <div class="mt-20">
             <h3 class="text-3xl font-bold text-gray-800 mb-8">Reseñas de Clientes</h3>
+
             @if (Model.Reviews.Any())
             {
                 <div class="space-y-5">
@@ -193,6 +204,7 @@
                         </div>
                     }
                 </div>
+
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <div class="text-center mt-6">
@@ -218,6 +230,7 @@
                 </div>
             }
         </div>
+
         <!-- Related Products -->
         @if (Model.RelatedProducts.Any())
         {
@@ -252,11 +265,13 @@
         }
     </div>
 </div>
+
 @* Render the reusable partial modal (keeps view modular). Pass simple anonymous model. *@
 @{
     var reviewModalModel = new { ProductId = Model.Product.Id, ProductName = Model.Product.Name, UserName = User.Identity?.Name };
 }
 @Html.Partial("_ModalReview", reviewModalModel)
+
 @functions {
     string GetMetalName(string metal)
     {
@@ -269,27 +284,33 @@
         };
     }
 }
+
 @section Scripts {
     <script>
         let maxQty = @Model.Product.Stock;
+
         function increaseQty() {
             let qty = parseInt(document.getElementById('quantity').value);
             if (qty < maxQty) {
                 document.getElementById('quantity').value = qty + 1;
             }
         }
+
         function decreaseQty() {
             let qty = parseInt(document.getElementById('quantity').value);
             if (qty > 1) {
                 document.getElementById('quantity').value = qty - 1;
             }
         }
+
         function addToCart(productId) {
             if (typeof notificationModal === 'undefined') {
                 alert('Error: Modal de notificaciones no está cargado');
                 return;
             }
+
             let quantity = parseInt(document.getElementById('quantity').value);
+
             fetch('/customer/cart/add', {
                 method: 'POST',
                 headers: {
@@ -326,6 +347,7 @@
                 );
             });
         }
+
         function updateCartCount() {
             // TODO: Implementar actualización del contador
         }
