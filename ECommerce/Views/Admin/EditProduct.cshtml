@@ -4,10 +4,12 @@
     Layout = "_AdminLayout";
 }
 
-<!-- Page Header -->
 <div class="mb-8">
     <div class="flex items-center space-x-3 mb-2">
-        <a href="/admin/products" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition-colors">
+        <a asp-controller="Admin"
+           asp-action="Products"
+           
+            class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition-colors">
             <i class="ph ph-arrow-left text-xl text-gray-600"></i>
         </a>
         <div>
@@ -17,16 +19,13 @@
     </div>
 </div>
 
-<!-- Form -->
 <div class="max-w-4xl">
     <form asp-action="Edit" method="post" class="space-y-6">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
 
-        <!-- Validation Summary -->
         <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800 text-sm"></div>
 
-        <!-- Product Information Card -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-gold to-gold-dark px-6 py-4">
                 <h3 class="text-lg font-semibold text-white flex items-center space-x-2">
@@ -36,7 +35,6 @@
             </div>
 
             <div class="p-6 space-y-6">
-                <!-- Product Name -->
                 <div>
                     <label asp-for="Name" class="block text-sm font-semibold text-primary mb-2">Product Name *</label>
                     <input asp-for="Name"
@@ -44,7 +42,6 @@
                     <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
                 </div>
 
-                <!-- Description -->
                 <div>
                     <label asp-for="Description" class="block text-sm font-semibold text-primary mb-2">Description *</label>
                     <textarea asp-for="Description"
@@ -53,7 +50,6 @@
                     <span asp-validation-for="Description" class="text-red-500 text-sm"></span>
                 </div>
 
-                <!-- Price and Stock -->
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
                         <label asp-for="Price" class="block text-sm font-semibold text-primary mb-2">Price ($) *</label>
@@ -76,7 +72,6 @@
                     </div>
                 </div>
 
-                <!-- Image URL -->
                 <div>
                     <label asp-for="ImageUrl" class="block text-sm font-semibold text-primary mb-2">Image URL</label>
                     <input asp-for="ImageUrl"
@@ -86,7 +81,6 @@
             </div>
         </div>
 
-        <!-- Metal Specifications Card -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-purple-500 to-purple-700 px-6 py-4">
                 <h3 class="text-lg font-semibold text-white flex items-center space-x-2">
@@ -121,7 +115,6 @@
             </div>
         </div>
 
-        <!-- Categories Card -->
         @if (Model.AvailableCategories != null && Model.AvailableCategories.Any())
         {
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -152,7 +145,6 @@
             </div>
         }
 
-        <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-4">
             <button type="submit"
                     class="flex-1 bg-gold hover:bg-gold-dark text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
