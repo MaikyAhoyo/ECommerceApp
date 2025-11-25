@@ -43,9 +43,18 @@
                                     </div>
                                 </div>
                                 <div class="hidden lg:flex items-center border-2 border-gray-200 rounded-lg overflow-hidden w-fit">
+                                    @if (item.Quantity <= 1)
+                                    {
+                                        <button type="button" class="w-9 h-9 bg-gray-100 text-gray-300 cursor-not-allowed" disabled>
+                                            <i class="ph ph-minus"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
                                     <button type="button" class="w-9 h-9 bg-gray-100 hover:bg-yellow-500 hover:text-white transition" onclick="updateQuantity(@item.Id, @item.Quantity - 1)">
                                         <i class="ph ph-minus"></i>
                                     </button>
+                                    }
                                     <input type="number" value="@item.Quantity" min="1" max="@item.MaxStock" class="w-12 h-9 text-center border-none font-semibold select-none px-0 py-0 leading-none cursor-pointer" readonly onfocus="this.blur()" onmousedown="return false" aria-label="Cantidad">
                                     <button type="button" class="w-9 h-9 bg-gray-100 hover:bg-yellow-500 hover:text-white transition" onclick="updateQuantity(@item.Id, @item.Quantity + 1)">
                                         <i class="ph ph-plus"></i>
@@ -60,9 +69,11 @@
                                 </div>
 
                                 <div class="hidden lg:block">
-                                    <button type="button" class="text-red-500 text-xl hover:text-red-700 hover:scale-110 transition" onclick="removeItem(@item.Id)">
-                                        <i class="ph-bold ph-x"></i>
-                                    </button>
+                                    <button type="button" class="text-red-500 text-xl hover:text-red-700 hover:scale-110 transition" onclick="removeItem(@item.Id)" aria-label="Eliminar">
+                                        <i class="ph ph-bold ph-trash"></i>
+
+                                        
+                                    </button>   
                                 </div>
                             </div>
                         }
@@ -71,7 +82,7 @@
                     <!-- Continue Shopping -->
                     <div class="mt-5">
                         <a href="/customer/products" class="inline-flex items-center px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition">
-                            <i class="ph-bold ph-arrow-left mr-2"></i>Seguir Comprando
+                            <i class="ph ph-bold ph-arrow-left mr-2"></i>Seguir Comprando
                         </a>
                     </div>
                 </div>
@@ -165,17 +176,17 @@
 @section Scripts {
     <script>
         function updateQuantity(itemId, newQuantity) {
-            if (newQuantity < 1) return;
+           if (newQuantity < 1) return;
 
-            fetch(`/customer/cart/update/${itemId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ quantity: newQuantity })
+            fetch(`/customer/cart/update/${itemId}?quantity=${newQuantity}`, {
+                method: 'POST'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Error de red');
+                return response.json();
+            })
             .then(data => {
+                console.log("Respuesta:", data);
                 if (data.success) {
                     location.reload();
                 } else {
@@ -184,9 +195,9 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al actualizar la cantidad');
+                alert('No se pudo conectar con el servidor');
             });
-        }
+        };
 
         function removeItem(itemId) {
             if (!confirm('¿Eliminar este producto del carrito?')) return;
