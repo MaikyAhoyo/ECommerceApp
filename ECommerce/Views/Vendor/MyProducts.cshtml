@@ -19,7 +19,10 @@
         </div>
         <p class="text-gray-600">Manage your product catalog</p>
     </div>
-    <a href="/vendor/products/create" class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
+    <a asp-controller="Vendor"
+       asp-action="CreateProduct"
+        
+       class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
         <i class="ph ph-plus-circle text-xl"></i>
         <span>Create Product</span>
     </a>
@@ -29,7 +32,7 @@
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
     <!-- Filters -->
     <div class="p-6 border-b border-gray-100">
-        <form method="get" action="/vendor/products" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <form method="get" asp-action="MyProducts" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <input type="hidden" name="page" value="1">
             <input type="hidden" name="pageSize" value="@ViewBag.PageSize">
 
@@ -50,9 +53,9 @@
                 <select name="metal"
                         class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
                     <option value="">All Metals</option>
-                    <option value="Gold" @(currentMetal == "Gold" ? "selected" : "")>Gold</option>
-                    <option value="Silver" @(currentMetal == "Silver" ? "selected" : "")>Silver</option>
-                    <option value="Platinum" @(currentMetal == "Platinum" ? "selected" : "")>Platinum</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Platinum">Platinum</option>
                 </select>
             </div>
 
@@ -61,9 +64,9 @@
                 <select name="stock"
                         class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
                     <option value="">All Stock</option>
-                    <option value="instock" @(currentStock == "instock" ? "selected" : "")>In Stock</option>
-                    <option value="lowstock" @(currentStock == "lowstock" ? "selected" : "")>Low Stock</option>
-                    <option value="outofstock" @(currentStock == "outofstock" ? "selected" : "")>Out of Stock</option>
+                    <option value="instock">In Stock</option>
+                    <option value="lowstock">Low Stock</option>
+                    <option value="outofstock">Out of Stock</option>
                 </select>
             </div>
 
@@ -89,7 +92,7 @@
             </span>
         </div>
 
-        <form method="get" action="/vendor/products" class="flex items-center space-x-2">
+        <form method="get" asp-action="MyProducts" class="flex items-center space-x-2">
             <input type="hidden" name="search" value="@currentSearch">
             <input type="hidden" name="metal" value="@currentMetal">
             <input type="hidden" name="stock" value="@currentStock">
@@ -99,10 +102,10 @@
             <select name="pageSize"
                     onchange="this.form.submit()"
                     class="rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-3 py-1.5 text-sm font-medium transition-all">
-                <option value="5" @(ViewBag.PageSize == 5 ? "selected" : "")>5</option>
-                <option value="10" @(ViewBag.PageSize == 10 ? "selected" : "")>10</option>
-                <option value="20" @(ViewBag.PageSize == 20 ? "selected" : "")>20</option>
-                <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
             </select>
         </form>
     </div>
@@ -221,7 +224,10 @@
                             <!-- Actions -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="/vendor/products/edit/@product.Id"
+                                    <a asp-controller="Vendor"
+                                       asp-action="EditProduct"
+                                       asp-route-id="@product.Id"
+                                       
                                        class="inline-flex items-center justify-center w-9 h-9 bg-blue-100 hover:bg-blue-500 text-blue-600 hover:text-white rounded-lg transition-all duration-300"
                                        title="Edit">
                                         <i class="ph ph-pencil text-lg"></i>
@@ -344,12 +350,18 @@
             <div class="flex justify-center gap-4">
                 @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentMetal) || !string.IsNullOrEmpty(currentStock))
                 {
-                    <a href="/vendor/products" class="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
+                    <a asp-controller="Vendor"
+                       asp-action="MyProducts"
+                        
+                       class="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
                         <i class="ph ph-arrow-clockwise"></i>
                         <span>Clear Filters</span>
                     </a>
                 }
-                <a href="/vendor/products/create" class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
+                <a asp-controller="Vendor"
+                   asp-action="CreateProduct"
+                   
+                   class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
                     <i class="ph ph-plus-circle"></i>
                     <span>Create Product</span>
                 </a>

@@ -14,7 +14,6 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/regular/style.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@@phosphor-icons/web@2.1.1/src/fill/style.css" />
 
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -72,12 +71,43 @@
             border-radius: 4px;
         }
 
-            ::-webkit-scrollbar-thumb:hover {
-                background: #e6b944;
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e6b944;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-radius: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            transition-property: all;
+            transition-duration: 200ms;
+            background: none;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .sidebar-link.active {
+            background: #e6b944;
+            color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-link i {
+            flex-shrink: 0;
+        }
     </style>
 
     @await RenderSectionAsync("Styles", required: false)
+
 </head>
 <body class="bg-gradient-to-br from-cream to-white font-sans overflow-x-hidden">
 
@@ -96,34 +126,52 @@
         </div>
 
         <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 180px);">
-            <a href="/vendor/dashboard" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+            <a asp-controller="Vendor"
+               asp-action="Dashboard"
+                
+               class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
                 <i class="ph ph-house-simple text-xl"></i>
                 <span class="sidebar-text">Dashboard</span>
             </a>
 
-            <a href="/vendor/products" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Product") == true ? "active" : "")">
+            <a asp-controller="Vendor"
+               asp-action="MyProducts"
+               
+               class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Product") == true ? "active" : "")">
                 <i class="ph ph-package text-xl"></i>
                 <span class="sidebar-text">Products</span>
             </a>
 
-            <a href="/vendor/orders" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Order") == true ? "active" : "")">
+            <a asp-controller="Vendor"
+               asp-action="MyOrders"
+                
+               class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Order") == true ? "active" : "")">
                 <i class="ph ph-shopping-cart text-xl"></i>
                 <span class="sidebar-text">Orders</span>
             </a>
 
-            <a href="/vendor/reviews" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Reviews") == true ? "active" : "")">
+            <a asp-controller="Vendor"
+               asp-action="Reviews"
+                
+               class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Reviews") == true ? "active" : "")">
                 <i class="ph ph-star text-xl"></i>
                 <span class="sidebar-text">Reviews</span>
             </a>
 
-            <a href="/vendor/reports" class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Reports") == true ? "active" : "")">
+            <a asp-controller="Vendor"
+               asp-action="Reports"
+                
+               class="sidebar-link @(ViewContext.RouteData.Values["Action"]?.ToString()?.Contains("Reports") == true ? "active" : "")">
                 <i class="ph ph-chart-line text-xl"></i>
                 <span class="sidebar-text">Reports</span>
             </a>
 
             <div class="border-t border-white/10 my-4"></div>
 
-            <form method="post" action="/auth/logout">
+            <form method="post" 
+                  asp-controller="Auth"
+                  asp-action="Logout"
+                  >
                 @Html.AntiForgeryToken()
                 <button type="submit" class="sidebar-link w-full text-left hover:bg-red-500/20 hover:text-red-300">
                     <i class="ph ph-sign-out text-xl"></i>
@@ -255,38 +303,9 @@
         });
     </script>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
-<style>
-    .sidebar-link {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-        border-radius: 0.75rem;
-        color: rgba(255,255,255,0.8);
-        transition-property: all;
-        transition-duration: 200ms;
-        background: none;
-    }
-
-        .sidebar-link:hover {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-        }
-
-        .sidebar-link.active {
-            background: #e6b944;
-            color: #fff;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-        }
-
-        .sidebar-link i {
-            flex-shrink: 0;
-        }
-</style>

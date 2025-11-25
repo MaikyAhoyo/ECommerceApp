@@ -7,7 +7,9 @@
 <div class="max-w-3xl mx-auto animate-fade-in">
     <div class="flex items-center justify-between mb-10">
         <div class="flex items-center space-x-3">
-            <a href="/admin/categories"
+            <a asp-controller="Admin"
+               asp-action="Categories"
+               
                class="w-10 h-10 bg-gray-100 hover:bg-purple-100 text-gray-600 hover:text-purple-600 rounded-xl flex items-center justify-center transition-all duration-300">
                 <i class="ph ph-arrow-left text-2xl"></i>
             </a>
@@ -28,14 +30,7 @@
     <form method="post" asp-action="CreateCategory" class="space-y-8">
         @Html.AntiForgeryToken()
 
-        @if (ViewData.ModelState.ErrorCount > 0)
-        {
-            <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-xl text-sm shadow-sm">
-                <i class="ph ph-warning-circle text-base mr-2"></i>
-                Please correct the following errors:
-                @Html.ValidationSummary(true, "", new { @class = "mt-2 list-disc list-inside text-red-600" })
-            </div>
-        }
+        <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800 text-sm"></div>
 
         <div class="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
             <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-4">
@@ -47,31 +42,27 @@
 
             <div class="p-8 space-y-8">
                 <div class="group">
-                    <label for="Name" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Category Name</label>
+                    <label asp-for="Name" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Category Name</label>
                     <div class="relative">
                         <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <input id="Name"
-                               name="Name"
+                        <input asp-for="Name"
                                type="text"
-                               value="@Model?.Name"
                                class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-purple-400"
                                placeholder="e.g., Rings, Necklaces, Earrings" />
                     </div>
-                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
                 </div>
 
                 <div class="group">
-                    <label for="Description" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Description</label>
+                    <label asp-for="Description" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Description</label>
                     <div class="relative">
                         <i class="ph ph-text-align-left text-gray-400 absolute left-4 top-3 pointer-events-none"></i>
-                        <textarea id="Description"
-                                  name="Description"
-                                  value="@Model?.Description"
+                        <textarea asp-for="Description"
                                   rows="4"
                                   class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 outline-none text-gray-800 placeholder-gray-400 resize-none transition-all duration-300 group-hover:border-purple-400"
                                   placeholder="Describe this category..."></textarea>
                     </div>
-                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Description" class="text-red-500 text-sm"></span>
                 </div>
             </div>
         </div>
@@ -83,7 +74,9 @@
                 <span>Create Category</span>
             </button>
 
-            <a href="/admin/categories"
+            <a asp-controller="Admin"
+               asp-action="Categories"
+               
                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2">
                 <i class="ph ph-x-circle text-xl"></i>
                 <span>Cancel</span>
