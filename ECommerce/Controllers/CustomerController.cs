@@ -1,4 +1,4 @@
-﻿﻿using ECommerce.Models.Entities;
+﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
 using ECommerce.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -146,7 +146,7 @@ namespace ECommerce.Controllers
         // GET: /customer/products/details/{id}
         [HttpGet("products/details/{id}")]
         public async Task<IActionResult> ProductDetails(int id)
-        {   
+        {
             var product = await _productService.GetByIdAsync(id);
             var productCategories = await _categoryService.GetByProductIdAsync(product.Id);
             product.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
@@ -265,7 +265,7 @@ namespace ECommerce.Controllers
 
             // 2. Obtener el carrito activo para ver qué tenemos ya guardado
             var cart = await _orderService.GetActiveCartAsync(userId);
-            
+
             int currentQuantityInCart = 0;
 
             if (cart != null)
@@ -273,7 +273,7 @@ namespace ECommerce.Controllers
                 // Usamos el método GetOrderItemsAsync que ya existe en tu OrderService
                 var cartItems = await _orderService.GetOrderItemsAsync(cart.Id);
                 var existingItem = cartItems.FirstOrDefault(i => i.ProductId == productId);
-                
+
                 if (existingItem != null)
                 {
                     currentQuantityInCart = existingItem.Quantity;
@@ -283,9 +283,10 @@ namespace ECommerce.Controllers
             // 3. VALIDACIÓN CORREGIDA: (Lo que ya tengo + lo que quiero agregar) vs Stock
             if (currentQuantityInCart + quantity > product.Stock)
             {
-                return Json(new { 
-                    success = false, 
-                    message = $"Stock insuficiente. Solo hay {product.Stock} disponibles." 
+                return Json(new
+                {
+                    success = false,
+                    message = $"Stock insuficiente. Solo hay {product.Stock} disponibles."
                 });
             }
 
@@ -341,7 +342,7 @@ namespace ECommerce.Controllers
                 return Json(new { success = false, message = "Cantidad inválida" });
             }
 
-            try 
+            try
             {
                 int userId = GetCurrentUserId();
                 var cart = await _orderService.GetActiveCartAsync(userId);
@@ -360,9 +361,10 @@ namespace ECommerce.Controllers
 
                 if (itemToUpdate.Product != null && quantity > itemToUpdate.Product.Stock)
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Stock insuficiente. Solo hay {itemToUpdate.Product.Stock} unidades disponibles." 
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Stock insuficiente. Solo hay {itemToUpdate.Product.Stock} unidades disponibles."
                     });
                 }
 
@@ -846,14 +848,43 @@ namespace ECommerce.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAddress(ShippingAddress address)
         {
-            if (!ModelState.IsValid)
+            try
+            {
+                int userId = GetCurrentUserId();
+
+                // Validar ModelState
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors);
+                    var errorMessage = string.Join("; ", errors.Select(e => e.ErrorMessage));
+                    
+                    // Si es AJAX, devolver JSON
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        return Json(new { success = false, message = "Validation error: " + errorMessage });
+                    
+                    TempData["Error"] = "Por favor completa todos los campos requeridos";
+                    return View(address);
+                }
+
+                // Asignar UserId
+                address.UserId = userId;
+
+                // Crear la dirección
+                await _shippingAddressService.CreateAsync(address);
+
+                TempData["Success"] = "Dirección creada exitosamente";
+                return RedirectToAction(nameof(Addresses));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating address for user");
+                
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, message = "Error: " + ex.Message });
+                
+                TempData["Error"] = "Error al crear la dirección: " + ex.Message;
                 return View(address);
-
-            address.UserId = GetCurrentUserId();
-            await _shippingAddressService.CreateAsync(address);
-
-            TempData["Success"] = "Dirección creada exitosamente";
-            return RedirectToAction(nameof(Addresses));
+            }
         }
 
         // GET: /customer/addresses/edit/{id}
