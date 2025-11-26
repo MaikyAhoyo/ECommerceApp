@@ -3,6 +3,7 @@ using ECommerce.Services.Interfaces;
 using ECommerce.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 
 namespace ECommerce.Controllers
@@ -16,6 +17,7 @@ namespace ECommerce.Controllers
         private readonly IShippingAddressService _shippingAddressService;
         private readonly IPaymentService _paymentService;
         private readonly ICategoryService _categoryService;
+        private readonly ILogger<CustomerController> _logger;
 
         public CustomerController(
             IProductService productService,
@@ -23,7 +25,8 @@ namespace ECommerce.Controllers
             IReviewService reviewService,
             IShippingAddressService shippingAddressService,
             IPaymentService paymentService,
-            ICategoryService categoryService)
+            ICategoryService categoryService,
+            ILogger<CustomerController> logger)
         {
             _productService = productService;
             _orderService = orderService;
@@ -31,6 +34,7 @@ namespace ECommerce.Controllers
             _shippingAddressService = shippingAddressService;
             _paymentService = paymentService;
             _categoryService = categoryService;
+            _logger = logger;
         }
 
         #region Home & Products
@@ -369,9 +373,23 @@ namespace ECommerce.Controllers
             }
 
             var addresses = await _shippingAddressService.GetByUserIdAsync(userId);
-            ViewBag.Addresses = addresses;
 
-            return View(cart);
+            // Build view model expected by the view
+            var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var shipping = 0m;
+
+            var viewModel = new CustomerCheckoutViewModel
+            {
+                Cart = cart,
+                Addresses = addresses.ToList(),
+                Subtotal = subtotal,
+                Tax = tax,
+                Shipping = shipping,
+                Total = subtotal + tax + shipping
+            };
+
+            return View(viewModel);
         }
 
         // POST: /customer/checkout/process
@@ -434,12 +452,21 @@ namespace ECommerce.Controllers
         public async Task<IActionResult> MyOrders()
         {
             int userId = GetCurrentUserId();
-            var orders = await _orderService.GetByUserIdAsync(userId);
+            var orders = (await _orderService.GetByUserIdAsync(userId))
+                .Where(o => o.Status != "Cart")
+                .OrderByDescending(o => o.OrderDate)
+                .ToList();
 
-            // Filtrar el carrito activo
-            orders = orders.Where(o => o.Status != "Cart");
+            // Load details for each order so OrderItems are available in the view
+            var detailedOrders = new List<Order>();
+            foreach (var o in orders)
+            {
+                var full = await _orderService.GetOrderWithDetailsAsync(o.Id);
+                if (full != null)
+                    detailedOrders.Add(full);
+            }
 
-            return View(orders.OrderByDescending(o => o.OrderDate));
+            return View(detailedOrders);
         }
 
         // GET: /customer/orders/details/{id}
@@ -486,6 +513,137 @@ namespace ECommerce.Controllers
                 TempData["Error"] = "Error al cancelar la orden";
 
             return RedirectToAction(nameof(OrderDetails), new { id });
+        }
+
+        public class CreateOrderRequest
+        {
+            public bool Create { get; set; }
+        }
+
+        // POST: /customer/orders/create
+        [HttpPost("orders/create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateOrder(CreateOrderRequest? request)
+        {
+            // If request is null, try to read from form values (e.g., from FormData)
+            if (request == null && Request.HasFormContentType)
+            {
+                var createVal = Request.Form["create"].FirstOrDefault();
+                if (bool.TryParse(createVal, out var parsed))
+                {
+                    request = new CreateOrderRequest { Create = parsed };
+                }
+            }
+
+            int userId = GetCurrentUserId();
+            var cart = await _orderService.GetActiveCartAsync(userId);
+
+            if (cart == null)
+            {
+                TempData["Error"] = "Carrito no encontrado";
+                var isAjaxNull = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                                (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
+                if (isAjaxNull)
+                    return Json(new { success = false, message = "Carrito no encontrado" });
+
+                return RedirectToAction(nameof(Cart));
+            }
+
+            // Ensure we have the order details (items)
+            cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
+
+            if (cart.OrderItems == null || !cart.OrderItems.Any())
+            {
+                TempData["Error"] = "El carrito está vacío";
+                var isAjaxEmpty = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                                (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
+                if (isAjaxEmpty)
+                    return Json(new { success = false, message = "El carrito está vacío" });
+
+                return RedirectToAction(nameof(Cart));
+            }
+
+            // Build items info for logging/response
+            var itemsInfo = cart.OrderItems.Select(oi => new
+            {
+                ProductId = oi.ProductId,
+                ProductName = oi.Product?.Name ?? "(no name)",
+                Quantity = oi.Quantity,
+                UnitPrice = oi.UnitPrice,
+                Subtotal = oi.Quantity * oi.UnitPrice
+            }).ToList();
+
+            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                         (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
+
+            // If AJAX and request doesn't ask to create, just return items
+            if (isAjax && (request == null || request.Create == false))
+            {
+                _logger.LogInformation("(AJAX) Returning cart items for user {UserId}. Items: {Items}", userId, System.Text.Json.JsonSerializer.Serialize(itemsInfo));
+                return Json(new { success = true, items = itemsInfo });
+            }
+
+            // Proceed to create a new Order (copy items) so the cart can be reused later
+            // Calculate subtotal, tax and total
+            var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var shipping = 0m;
+            var total = subtotal + tax + shipping;
+
+            var newOrder = new Order
+            {
+                UserId = userId,
+                OrderDate = DateTime.UtcNow,
+                Status = "Pending",
+                Total = total
+            };
+
+            var newOrderId = await _orderService.CreateAsync(newOrder);
+
+            // Copy each item into the new order
+            foreach (var oi in cart.OrderItems)
+            {
+                var newItem = new OrderItem
+                {
+                    ProductId = oi.ProductId,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice
+                };
+
+                await _orderService.AddItemToOrderAsync(newOrderId, newItem);
+            }
+
+            // Recalculate new order total to ensure consistency
+            var newSubtotal = await _orderService.CalculateOrderTotalAsync(newOrderId);
+            var newTax = Math.Round(newSubtotal * 0.16m, 2);
+            var newTotal = newSubtotal + newTax + shipping;
+
+            var createdOrder = await _orderService.GetByIdAsync(newOrderId);
+            if (createdOrder != null)
+            {
+                createdOrder.Total = newTotal;
+                await _orderService.UpdateAsync(createdOrder);
+            }
+
+            // Clear items from the cart so user can create more orders later
+            foreach (var oi in cart.OrderItems.ToList())
+            {
+                await _orderService.RemoveItemFromOrderAsync(oi.Id);
+            }
+
+            // Ensure cart total reset
+            cart.Total = 0;
+            await _orderService.UpdateAsync(cart);
+
+            _logger.LogInformation("Created new order {OrderId} for user {UserId}. Items copied: {Count}", newOrderId, userId, itemsInfo.Count);
+
+            if (isAjax)
+            {
+                return Json(new { success = true, message = "Orden creada", orderId = newOrderId, items = itemsInfo, total = newTotal, tax = newTax });
+            }
+
+            TempData["Success"] = "Orden creada (modo prueba)";
+            return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
         #endregion

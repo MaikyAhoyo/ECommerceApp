@@ -27,9 +27,21 @@ namespace ECommerce.Controllers
             order.Total = 0;
 
             var orderId = await _orderService.CreateAsync(order);
-            var createdOrder = await _orderService.GetByIdAsync(orderId);
 
-            return CreatedAtAction(nameof(GetById), new { id = orderId }, createdOrder);
+            // Recalculate totals (include 16% IVA) after persisting
+            var subtotal = await _orderService.CalculateOrderTotalAsync(orderId);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var total = subtotal + tax;
+
+            var createdOrder = await _orderService.GetByIdAsync(orderId);
+            if (createdOrder != null)
+            {
+                createdOrder.Total = total;
+                await _orderService.UpdateAsync(createdOrder);
+            }
+
+            var result = await _orderService.GetByIdAsync(orderId);
+            return CreatedAtAction(nameof(GetById), new { id = orderId }, result);
         }
 
         // GET: api/orders/{id}
@@ -70,6 +82,12 @@ namespace ECommerce.Controllers
                 return NotFound(new { message = "No active cart found" });
 
             var cartWithDetails = await _orderService.GetOrderWithDetailsAsync(cart.Id);
+
+            // Recalculate totals including tax for the returned cart
+            var subtotal = await _orderService.CalculateOrderTotalAsync(cartWithDetails.Id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            cartWithDetails.Total = subtotal + tax;
+
             return Ok(cartWithDetails);
         }
 
@@ -100,8 +118,11 @@ namespace ECommerce.Controllers
             if (!success)
                 return BadRequest(new { message = "Failed to add item to order" });
 
-            // Recalculate total
-            var total = await _orderService.CalculateOrderTotalAsync(id);
+            // Recalculate subtotal and include IVA
+            var subtotal = await _orderService.CalculateOrderTotalAsync(id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var total = subtotal + tax;
+
             var order = await _orderService.GetByIdAsync(id);
             if (order != null)
             {
@@ -109,7 +130,7 @@ namespace ECommerce.Controllers
                 await _orderService.UpdateAsync(order);
             }
 
-            return Ok(new { message = "Item added successfully" });
+            return Ok(new { message = "Item added successfully", total = total, tax = tax });
         }
 
         // DELETE: api/orders/items/{itemId}
@@ -136,6 +157,7 @@ namespace ECommerce.Controllers
             if (!success)
                 return NotFound(new { message = "Order item not found" });
 
+            // Optionally recalculate the parent order total here if you can get order id from item
             return Ok(new { message = "Quantity updated successfully" });
         }
 
@@ -151,6 +173,16 @@ namespace ECommerce.Controllers
         [HttpPost("{id}/checkout")]
         public async Task<IActionResult> Checkout(int id)
         {
+            // Recalculate total including IVA before checkout
+            var subtotal = await _orderService.CalculateOrderTotalAsync(id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var order = await _orderService.GetByIdAsync(id);
+            if (order != null)
+            {
+                order.Total = subtotal + tax;
+                await _orderService.UpdateAsync(order);
+            }
+
             var success = await _orderService.CheckoutOrderAsync(id);
 
             if (!success)
