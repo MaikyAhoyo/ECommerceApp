@@ -107,7 +107,7 @@
                         <p>@Model.Product.Description</p>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="grid grid-cols-3 gap-4 mb-8">
                         <div class="bg-cream rounded-xl p-4 flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gold shadow-sm">
                                 <i class="ph-fill ph-sketch-logo text-xl"></i>
@@ -124,6 +124,15 @@
                             <div>
                                 <span class="block text-xs text-gray-500 uppercase">Purity</span>
                                 <span class="font-semibold text-primary">@Model.Product.Purity</span>
+                            </div>
+                        </div>
+                        <div class="bg-cream rounded-xl p-4 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gold shadow-sm">
+                                <i class="ph-fill ph-package text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase">Stock</span>
+                                <span class="font-semibold text-primary">@Model.Product.Stock</span>
                             </div>
                         </div>
                     </div>
@@ -184,9 +193,9 @@
             </div>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-8">
+        <div class="grid gap-8">
 
-            <div class="lg:col-span-2">
+            <div class="w-full">
                 <div class="flex items-center justify-between mb-8">
                     <h3 class="font-playfair text-3xl font-bold text-primary">Reviews</h3>
                     @if (User.Identity?.IsAuthenticated == true)
@@ -291,13 +300,13 @@
                 }
             </div>
 
-            <div class="lg:col-span-1">
+            <div class="w-full">
                 <h3 class="font-playfair text-2xl font-bold text-primary mb-8">Featured</h3>
 
                 @if (Model.RelatedProducts.Any())
                 {
-                    <div class="flex flex-col gap-6">
-                        @foreach (var product in Model.RelatedProducts.Take(3))
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        @foreach (var product in Model.RelatedProducts)
                         {
                             @await Html.PartialAsync("_ProductCardPartial", product)
                         }

@@ -5,7 +5,14 @@
 }
 
 <section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+    <nav aria-label="breadcrumb" class="mb-6 flex justify-center">
+        <ol class="flex items-center space-x-2 text-sm text-white/60">
+            <li><a asp-controller="Customer" asp-action="Home" class="hover:text-gold transition-colors">Home</a></li>
+            <li><i class="ph ph-caret-right text-xs"></i></li>
+            <li class="text-white font-medium truncate max-w-[200px]">Cart</li>
+        </ol>
+    </nav>
+
     <div class="container mx-auto px-4 text-center relative z-10 text-white">
         <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">Shopping Cart</h1>
         <p class="text-xl text-white/80">Review your items and checkout</p>
