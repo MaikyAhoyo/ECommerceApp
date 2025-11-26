@@ -8,7 +8,9 @@
 <div class="max-w-4xl mx-auto animate-fade-in">
     <div class="flex items-center justify-between mb-10">
         <div class="flex items-center space-x-3">
-            <a href="/vendor/products"
+            <a asp-controller="Vendor"
+               asp-action="MyProducts"
+               
                class="w-10 h-10 bg-gray-100 hover:bg-yellow-100 text-gray-600 hover:text-yellow-500 rounded-xl flex items-center justify-center transition-all duration-300">
                 <i class="ph ph-arrow-left text-2xl"></i>
             </a>
@@ -29,14 +31,7 @@
     <form method="post" asp-action="CreateProduct" class="space-y-8">
         @Html.AntiForgeryToken()
 
-        @if (ViewData.ModelState.ErrorCount > 0)
-        {
-            <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-xl text-sm shadow-sm">
-                <i class="ph ph-warning-circle text-base mr-2"></i>
-                Please correct the following errors:
-                @Html.ValidationSummary(true, "", new { @class = "mt-2 list-disc list-inside text-red-600" })
-            </div>
-        }
+        <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800 text-sm"></div>
 
         <div class="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
             <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 px-6 py-4">
@@ -48,70 +43,57 @@
 
             <div class="p-8 space-y-8">
                 <div class="group">
-                    <label for="Name" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Product Name</label>
+                    <label asp-for="Name" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Product Name</label>
                     <div class="relative">
                         <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <input id="Name"
-                               name="Name"
-                               type="text"
-                               value="@Model?.Name"
+                        <input asp-for="Name"
                                class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300"
                                placeholder="e.g., Diamond Gold Ring" required />
                     </div>
-                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
                 </div>
 
                 <div class="group">
-                    <label for="Description" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Description</label>
-                    <textarea id="Description"
-                              name="Description"
-                              value="@Model?.Description"
+                    <label asp-for="Description" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Description</label>
+                    <textarea asp-for="Description"
                               rows="4"
                               class="w-full rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 outline-none px-4 py-3 transition-all resize-none"
                               placeholder="Describe your product..." required></textarea>
-                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Description" class="text-red-500 text-sm"></span>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="group">
-                        <label for="Price" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Price ($)</label>
+                        <label asp-for="Price" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Price ($)</label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                            <input id="Price"
-                                   name="Price"
+                            <input asp-for="Price"
                                    type="number"
                                    step="0.01"
-                                   value="@Model?.Price"
                                    class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 outline-none transition-all duration-300"
                                    placeholder="0.00" required />
                         </div>
-                        @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-red-500 text-sm" })
+                        <span asp-validation-for="Price" class="text-red-500 text-sm"></span>
                     </div>
 
                     <div class="group">
-                        <label for="Stock" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Stock</label>
-                        <input id="Stock"
-                               name="Stock"
-                               type="number"
-                               value="@Model?.Stock"
+                        <label asp-for="Stock" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Stock</label>
+                        <input asp-for="Stock"
                                class="w-full rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 outline-none px-4 py-3 transition-all"
                                placeholder="0" required />
-                        @Html.ValidationMessageFor(m => m.Stock, "", new { @class = "text-red-500 text-sm" })
+                        <span asp-validation-for="Stock" class="text-red-500 text-sm"></span>
                     </div>
                 </div>
 
                 <div class="group">
-                    <label for="ImageUrl" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Image URL</label>
+                    <label asp-for="ImageUrl" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Image URL</label>
                     <div class="relative">
                         <i class="ph ph-image text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <input id="ImageUrl"
-                               name="ImageUrl"
-                               type="text"
-                               value="@Model?.ImageUrl"
+                        <input asp-for="ImageUrl"
                                class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 outline-none transition-all duration-300"
                                placeholder="https://example.com/image.jpg" />
                     </div>
-                    @Html.ValidationMessageFor(m => m.ImageUrl, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="ImageUrl" class="text-red-500 text-sm"></span>
                 </div>
             </div>
         </div>
@@ -126,29 +108,26 @@
 
             <div class="p-8 space-y-6">
                 <div class="group">
-                    <label for="Metal" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Metal Type</label>
-                    <select id="Metal"
-                            name="Metal"
+                    <label asp-for="Metal" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Metal Type</label>
+                    <select asp-for="Metal"
                             class="w-full rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 outline-none px-4 py-3 transition-all">
                         <option value="">Select Metal Type</option>
-                        <option value="Gold" @(Model?.Metal == "Gold" ? "selected" : "")>Gold</option>
-                        <option value="Silver" @(Model?.Metal == "Silver" ? "selected" : "")>Silver</option>
-                        <option value="Platinum" @(Model?.Metal == "Platinum" ? "selected" : "")>Platinum</option>
+                        <option value="Gold">Gold</option>
+                        <option value="Silver">Silver</option>
+                        <option value="Platinum">Platinum</option>
                     </select>
-                    @Html.ValidationMessageFor(m => m.Metal, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Metal" class="text-red-500 text-sm"></span>
                 </div>
 
                 <div class="group">
-                    <label for="Purity" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Purity</label>
-                    <input id="Purity"
-                           name="Purity"
+                    <label asp-for="Purity" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Purity</label>
+                    <input asp-for="Purity"
                            type="number"
                            step="0.001"
-                           value="@Model?.Purity"
                            class="w-full rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 outline-none px-4 py-3 transition-all"
                            placeholder="14, 18, 24, 925, 950" />
                     <p class="text-xs text-gray-500 mt-1">Gold (14k, 18k, 24k), Silver (925), Platinum (950)</p>
-                    @Html.ValidationMessageFor(m => m.Purity, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Purity" class="text-red-500 text-sm"></span>
                 </div>
             </div>
         </div>
@@ -186,7 +165,9 @@
                 <span>Add Product</span>
             </button>
 
-            <a href="/vendor/products"
+            <a asp-controller="Vendor"
+               asp-action="MyProducts"
+               
                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2">
                 <i class="ph ph-x-circle text-xl"></i>
                 <span>Cancel</span>

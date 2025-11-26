@@ -1,8 +1,9 @@
-﻿﻿using ECommerce.Models.Entities;
+﻿using ECommerce.Models.Entities;
 using ECommerce.Services.Interfaces;
 using ECommerce.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 
 namespace ECommerce.Controllers
@@ -16,6 +17,7 @@ namespace ECommerce.Controllers
         private readonly IShippingAddressService _shippingAddressService;
         private readonly IPaymentService _paymentService;
         private readonly ICategoryService _categoryService;
+        private readonly ILogger<CustomerController> _logger;
 
         public CustomerController(
             IProductService productService,
@@ -23,7 +25,8 @@ namespace ECommerce.Controllers
             IReviewService reviewService,
             IShippingAddressService shippingAddressService,
             IPaymentService paymentService,
-            ICategoryService categoryService)
+            ICategoryService categoryService,
+            ILogger<CustomerController> logger)
         {
             _productService = productService;
             _orderService = orderService;
@@ -31,6 +34,7 @@ namespace ECommerce.Controllers
             _shippingAddressService = shippingAddressService;
             _paymentService = paymentService;
             _categoryService = categoryService;
+            _logger = logger;
         }
 
         #region Home & Products
@@ -66,14 +70,28 @@ namespace ECommerce.Controllers
         decimal? minPrice = null,
         decimal? maxPrice = null,
         string? sortBy = null,
-        int page = 1)
+        int page = 1,
+        int pageSize = 12)
         {
-            var products = (await _productService.GetAllAsync()).ToList();
+            var allProducts = await _productService.GetAllAsync();
 
-            foreach (var p in products)
+            var products = new List<Product>();
+
+            foreach (var p in allProducts)
             {
                 var productCategories = await _categoryService.GetByProductIdAsync(p.Id);
                 p.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
+
+                if (categoryId.HasValue) { 
+                    if (productCategories.Any(c => c.Id == categoryId.Value))
+                    {
+                        products.Add(p);
+                    }
+                }
+                else
+                {
+                    products.Add(p);
+                }
             }
 
             if (!string.IsNullOrEmpty(search))
@@ -83,23 +101,14 @@ namespace ECommerce.Controllers
 
             if (!string.IsNullOrEmpty(metal))
                 products = products
-                    .Where(p => p.Metal.Equals(metal, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-            if (categoryId.HasValue)
-                products = products
-                    .Where(p => p.CategoryId == categoryId.Value)
+                    .Where(p => p.Metal != null && p.Metal.Equals(metal, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             if (minPrice.HasValue)
-                products = products
-                    .Where(p => p.Price >= minPrice.Value)
-                    .ToList();
+                products = products.Where(p => p.Price >= minPrice.Value).ToList();
 
             if (maxPrice.HasValue)
-                products = products
-                    .Where(p => p.Price <= maxPrice.Value)
-                    .ToList();
+                products = products.Where(p => p.Price <= maxPrice.Value).ToList();
 
             products = sortBy switch
             {
@@ -110,9 +119,10 @@ namespace ECommerce.Controllers
                 _ => products
             };
 
-            const int pageSize = 12;
             int totalProducts = products.Count;
             int totalPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
+
+            page = Math.Max(1, Math.Min(page, totalPages > 0 ? totalPages : 1));
 
             var paginatedProducts = products
                 .Skip((page - 1) * pageSize)
@@ -120,6 +130,8 @@ namespace ECommerce.Controllers
                 .ToList();
 
             var categories = (await _categoryService.GetAllAsync()).ToList();
+
+            ViewBag.PageSize = pageSize;
 
             var viewModel = new CustomerProductsViewModel
             {
@@ -130,6 +142,7 @@ namespace ECommerce.Controllers
                 CurrentMinPrice = minPrice,
                 CurrentMaxPrice = maxPrice,
                 CurrentSortBy = sortBy,
+                CurrentSearch = search,
                 SearchTerm = search,
                 TotalProducts = totalProducts,
                 CurrentPage = page,
@@ -142,14 +155,14 @@ namespace ECommerce.Controllers
         // GET: /customer/products/details/{id}
         [HttpGet("products/details/{id}")]
         public async Task<IActionResult> ProductDetails(int id)
-        {   
+        {
             var product = await _productService.GetByIdAsync(id);
             var productCategories = await _categoryService.GetByProductIdAsync(product.Id);
             product.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
 
             if (product == null)
             {
-                TempData["Error"] = "Producto no encontrado";
+                TempData["Error"] = "Product not found";
                 return RedirectToAction(nameof(Products));
             }
 
@@ -261,7 +274,7 @@ namespace ECommerce.Controllers
 
             // 2. Obtener el carrito activo para ver qué tenemos ya guardado
             var cart = await _orderService.GetActiveCartAsync(userId);
-            
+
             int currentQuantityInCart = 0;
 
             if (cart != null)
@@ -269,7 +282,7 @@ namespace ECommerce.Controllers
                 // Usamos el método GetOrderItemsAsync que ya existe en tu OrderService
                 var cartItems = await _orderService.GetOrderItemsAsync(cart.Id);
                 var existingItem = cartItems.FirstOrDefault(i => i.ProductId == productId);
-                
+
                 if (existingItem != null)
                 {
                     currentQuantityInCart = existingItem.Quantity;
@@ -279,9 +292,10 @@ namespace ECommerce.Controllers
             // 3. VALIDACIÓN CORREGIDA: (Lo que ya tengo + lo que quiero agregar) vs Stock
             if (currentQuantityInCart + quantity > product.Stock)
             {
-                return Json(new { 
-                    success = false, 
-                    message = $"Stock insuficiente. Solo hay {product.Stock} disponibles." 
+                return Json(new
+                {
+                    success = false,
+                    message = $"Stock insuficiente. Solo hay {product.Stock} disponibles."
                 });
             }
 
@@ -337,7 +351,7 @@ namespace ECommerce.Controllers
                 return Json(new { success = false, message = "Cantidad inválida" });
             }
 
-            try 
+            try
             {
                 int userId = GetCurrentUserId();
                 var cart = await _orderService.GetActiveCartAsync(userId);
@@ -357,9 +371,10 @@ namespace ECommerce.Controllers
 
                 if (itemToUpdate.Product != null && quantity > itemToUpdate.Product.Stock)
                 {
-                    return Json(new { 
-                        success = false, 
-                        message = $"Stock insuficiente. Solo hay {itemToUpdate.Product.Stock} unidades disponibles." 
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Stock insuficiente. Solo hay {itemToUpdate.Product.Stock} unidades disponibles."
                     });
                 }
 
@@ -384,11 +399,11 @@ namespace ECommerce.Controllers
 
             if (success)
             {
-                TempData["Success"] = "Producto eliminado del carrito";
+                TempData["Success"] = "Product removed from cart";
             }
             else
             {
-                TempData["Error"] = "Error al eliminar el producto";
+                TempData["Error"] = "Error removing product";
             }
 
             return RedirectToAction(nameof(Cart));
@@ -407,7 +422,7 @@ namespace ECommerce.Controllers
 
             if (cart == null)
             {
-                TempData["Error"] = "Tu carrito está vacío";
+                TempData["Error"] = "Your cart is empty";
                 return RedirectToAction(nameof(Cart));
             }
 
@@ -415,14 +430,28 @@ namespace ECommerce.Controllers
 
             if (cart.OrderItems == null || !cart.OrderItems.Any())
             {
-                TempData["Error"] = "Tu carrito está vacío";
+                TempData["Error"] = "Your cart is empty";
                 return RedirectToAction(nameof(Cart));
             }
 
             var addresses = await _shippingAddressService.GetByUserIdAsync(userId);
-            ViewBag.Addresses = addresses;
 
-            return View(cart);
+            // Build view model expected by the view
+            var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var shipping = 0m;
+
+            var viewModel = new CustomerCheckoutViewModel
+            {
+                Cart = cart,
+                Addresses = addresses.ToList(),
+                Subtotal = subtotal,
+                Tax = tax,
+                Shipping = shipping,
+                Total = subtotal + tax + shipping
+            };
+
+            return View(viewModel);
         }
 
         // POST: /customer/checkout/process
@@ -435,31 +464,31 @@ namespace ECommerce.Controllers
 
             if (cart == null)
             {
-                TempData["Error"] = "Carrito no encontrado";
+                TempData["Error"] = "Cart not found";
                 return RedirectToAction(nameof(Cart));
             }
 
-            // Realizar checkout
+            // Checkout
             var success = await _orderService.CheckoutOrderAsync(cart.Id);
 
             if (!success)
             {
-                TempData["Error"] = "Error al procesar la orden";
+                TempData["Error"] = "Error processing order";
                 return RedirectToAction(nameof(Checkout));
             }
 
-            // Procesar pago
+            // Process payment
             var total = await _orderService.CalculateOrderTotalAsync(cart.Id);
             var paymentSuccess = await _paymentService.ProcessPaymentAsync(cart.Id, paymentMethod, total);
 
             if (paymentSuccess)
             {
-                TempData["Success"] = "¡Orden procesada exitosamente!";
+                TempData["Success"] = "Order processed successfully!";
                 return RedirectToAction(nameof(OrderConfirmation), new { id = cart.Id });
             }
             else
             {
-                TempData["Error"] = "Error al procesar el pago";
+                TempData["Error"] = "Error processing payment";
                 return RedirectToAction(nameof(Checkout));
             }
         }
@@ -473,7 +502,7 @@ namespace ECommerce.Controllers
 
             if (order == null || order.UserId != userId)
             {
-                TempData["Error"] = "Orden no encontrada";
+                TempData["Error"] = "Order not found";
                 return RedirectToAction(nameof(Home));
             }
 
@@ -485,12 +514,20 @@ namespace ECommerce.Controllers
         public async Task<IActionResult> MyOrders()
         {
             int userId = GetCurrentUserId();
-            var orders = await _orderService.GetByUserIdAsync(userId);
+            var orders = (await _orderService.GetByUserIdAsync(userId))
+                .Where(o => o.Status != "Cart")
+                .OrderByDescending(o => o.OrderDate)
+                .ToList();
 
-            // Filtrar el carrito activo
-            orders = orders.Where(o => o.Status != "Cart");
+            var detailedOrders = new List<Order>();
+            foreach (var o in orders)
+            {
+                var full = await _orderService.GetOrderWithDetailsAsync(o.Id);
+                if (full != null)
+                    detailedOrders.Add(full);
+            }
 
-            return View(orders.OrderByDescending(o => o.OrderDate));
+            return View(detailedOrders);
         }
 
         // GET: /customer/orders/details/{id}
@@ -502,7 +539,7 @@ namespace ECommerce.Controllers
 
             if (order == null || order.UserId != userId)
             {
-                TempData["Error"] = "Orden no encontrada";
+                TempData["Error"] = "Order not found";
                 return RedirectToAction(nameof(MyOrders));
             }
 
@@ -519,24 +556,155 @@ namespace ECommerce.Controllers
 
             if (order == null || order.UserId != userId)
             {
-                TempData["Error"] = "Orden no encontrada";
+                TempData["Error"] = "Order not found";
                 return RedirectToAction(nameof(MyOrders));
             }
 
             if (order.Status != "Pending")
             {
-                TempData["Error"] = "Solo puedes cancelar órdenes pendientes";
+                TempData["Error"] = "You can only cancel pending orders";
                 return RedirectToAction(nameof(OrderDetails), new { id });
             }
 
             var success = await _orderService.UpdateStatusAsync(id, "Cancelled");
 
             if (success)
-                TempData["Success"] = "Orden cancelada exitosamente";
+                TempData["Success"] = "Order cancelled successfully!";
             else
-                TempData["Error"] = "Error al cancelar la orden";
+                TempData["Error"] = "Error cancelling order";
 
             return RedirectToAction(nameof(OrderDetails), new { id });
+        }
+
+        public class CreateOrderRequest
+        {
+            public bool Create { get; set; }
+        }
+
+        // POST: /customer/orders/create
+        [HttpPost("orders/create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateOrder(CreateOrderRequest? request)
+        {
+            // If request is null, try to read from form values (e.g., from FormData)
+            if (request == null && Request.HasFormContentType)
+            {
+                var createVal = Request.Form["create"].FirstOrDefault();
+                if (bool.TryParse(createVal, out var parsed))
+                {
+                    request = new CreateOrderRequest { Create = parsed };
+                }
+            }
+
+            int userId = GetCurrentUserId();
+            var cart = await _orderService.GetActiveCartAsync(userId);
+
+            if (cart == null)
+            {
+                TempData["Error"] = "Cart not found";
+                var isAjaxNull = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                                (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
+                if (isAjaxNull)
+                    return Json(new { success = false, message = "Cart not found" });
+
+                return RedirectToAction(nameof(Cart));
+            }
+
+            // Ensure we have the order details (items)
+            cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
+
+            if (cart.OrderItems == null || !cart.OrderItems.Any())
+            {
+                TempData["Error"] = "Cart is empty";
+                var isAjaxEmpty = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                                (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
+                if (isAjaxEmpty)
+                    return Json(new { success = false, message = "Cart is empty" });
+
+                return RedirectToAction(nameof(Cart));
+            }
+
+            // Build items info for logging/response
+            var itemsInfo = cart.OrderItems.Select(oi => new
+            {
+                ProductId = oi.ProductId,
+                ProductName = oi.Product?.Name ?? "(no name)",
+                Quantity = oi.Quantity,
+                UnitPrice = oi.UnitPrice,
+                Subtotal = oi.Quantity * oi.UnitPrice
+            }).ToList();
+
+            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                         (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
+
+            // If AJAX and request doesn't ask to create, just return items
+            if (isAjax && (request == null || request.Create == false))
+            {
+                _logger.LogInformation("(AJAX) Returning cart items for user {UserId}. Items: {Items}", userId, System.Text.Json.JsonSerializer.Serialize(itemsInfo));
+                return Json(new { success = true, items = itemsInfo });
+            }
+
+            // Proceed to create a new Order (copy items) so the cart can be reused later
+            // Calculate subtotal, tax and total
+            var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var shipping = 0m;
+            var total = subtotal + tax + shipping;
+
+            var newOrder = new Order
+            {
+                UserId = userId,
+                OrderDate = DateTime.UtcNow,
+                Status = "Pending",
+                Total = total
+            };
+
+            var newOrderId = await _orderService.CreateAsync(newOrder);
+
+            // Copy each item into the new order
+            foreach (var oi in cart.OrderItems)
+            {
+                var newItem = new OrderItem
+                {
+                    ProductId = oi.ProductId,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice
+                };
+
+                await _orderService.AddItemToOrderAsync(newOrderId, newItem);
+            }
+
+            // Recalculate new order total to ensure consistency
+            var newSubtotal = await _orderService.CalculateOrderTotalAsync(newOrderId);
+            var newTax = Math.Round(newSubtotal * 0.16m, 2);
+            var newTotal = newSubtotal + newTax + shipping;
+
+            var createdOrder = await _orderService.GetByIdAsync(newOrderId);
+            if (createdOrder != null)
+            {
+                createdOrder.Total = newTotal;
+                await _orderService.UpdateAsync(createdOrder);
+            }
+
+            // Clear items from the cart so user can create more orders later
+            foreach (var oi in cart.OrderItems.ToList())
+            {
+                await _orderService.RemoveItemFromOrderAsync(oi.Id);
+            }
+
+            // Ensure cart total reset
+            cart.Total = 0;
+            await _orderService.UpdateAsync(cart);
+
+            _logger.LogInformation("Created new order {OrderId} for user {UserId}. Items copied: {Count}", newOrderId, userId, itemsInfo.Count);
+
+            if (isAjax)
+            {
+                return Json(new { success = true, message = "Order created", orderId = newOrderId, items = itemsInfo, total = newTotal, tax = newTax });
+            }
+
+            TempData["Success"] = "Order created (test mode)";
+            return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
         #endregion
@@ -551,7 +719,7 @@ namespace ECommerce.Controllers
 
             if (product == null)
             {
-                TempData["Error"] = "Producto no encontrado";
+                TempData["Error"] = "Product not found";
                 return RedirectToAction(nameof(Products));
             }
 
@@ -575,7 +743,7 @@ namespace ECommerce.Controllers
             review.CreatedAt = DateTime.UtcNow;
 
             await _reviewService.CreateAsync(review);
-            TempData["Success"] = "Reseña creada exitosamente";
+            TempData["Success"] = "Review created successfully!";
 
             return RedirectToAction(nameof(ProductDetails), new { id = review.ProductId });
         }
@@ -598,7 +766,7 @@ namespace ECommerce.Controllers
 
             if (review == null || review.UserId != userId)
             {
-                TempData["Error"] = "Reseña no encontrada";
+                TempData["Error"] = "Review not found";
                 return RedirectToAction(nameof(MyReviews));
             }
 
@@ -618,7 +786,7 @@ namespace ECommerce.Controllers
 
             if (existingReview == null || existingReview.UserId != userId)
             {
-                TempData["Error"] = "Reseña no encontrada";
+                TempData["Error"] = "Review not found";
                 return RedirectToAction(nameof(MyReviews));
             }
 
@@ -633,9 +801,9 @@ namespace ECommerce.Controllers
             var success = await _reviewService.UpdateAsync(review);
 
             if (success)
-                TempData["Success"] = "Reseña actualizada exitosamente";
+                TempData["Success"] = "Review updated successfully!";
             else
-                TempData["Error"] = "Error al actualizar la reseña";
+                TempData["Error"] = "Error updating review";
 
             return RedirectToAction(nameof(MyReviews));
         }
@@ -650,16 +818,16 @@ namespace ECommerce.Controllers
 
             if (review == null || review.UserId != userId)
             {
-                TempData["Error"] = "Reseña no encontrada";
+                TempData["Error"] = "Review not found";
                 return RedirectToAction(nameof(MyReviews));
             }
 
             var success = await _reviewService.DeleteAsync(id);
 
             if (success)
-                TempData["Success"] = "Reseña eliminada exitosamente";
+                TempData["Success"] = "Review deleted successfully!";
             else
-                TempData["Error"] = "Error al eliminar la reseña";
+                TempData["Error"] = "Error deleting review";
 
             return RedirectToAction(nameof(MyReviews));
         }
@@ -689,14 +857,43 @@ namespace ECommerce.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAddress(ShippingAddress address)
         {
-            if (!ModelState.IsValid)
+            try
+            {
+                int userId = GetCurrentUserId();
+
+                // Validar ModelState
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors);
+                    var errorMessage = string.Join("; ", errors.Select(e => e.ErrorMessage));
+                    
+                    // Si es AJAX, devolver JSON
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        return Json(new { success = false, message = "Validation error: " + errorMessage });
+                    
+                    TempData["Error"] = "Por favor completa todos los campos requeridos";
+                    return View(address);
+                }
+
+                // Asignar UserId
+                address.UserId = userId;
+
+                // Crear la dirección
+                await _shippingAddressService.CreateAsync(address);
+
+                TempData["Success"] = "Dirección creada exitosamente";
+                return RedirectToAction(nameof(Addresses));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating address for user");
+                
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, message = "Error: " + ex.Message });
+                
+                TempData["Error"] = "Error al crear la dirección: " + ex.Message;
                 return View(address);
-
-            address.UserId = GetCurrentUserId();
-            await _shippingAddressService.CreateAsync(address);
-
-            TempData["Success"] = "Dirección creada exitosamente";
-            return RedirectToAction(nameof(Addresses));
+            }
         }
 
         // GET: /customer/addresses/edit/{id}
@@ -708,7 +905,7 @@ namespace ECommerce.Controllers
 
             if (address == null || address.UserId != userId)
             {
-                TempData["Error"] = "Dirección no encontrada";
+                TempData["Error"] = "Address not found";
                 return RedirectToAction(nameof(Addresses));
             }
 
@@ -725,7 +922,7 @@ namespace ECommerce.Controllers
 
             if (existingAddress == null || existingAddress.UserId != userId)
             {
-                TempData["Error"] = "Dirección no encontrada";
+                TempData["Error"] = "Address not found";
                 return RedirectToAction(nameof(Addresses));
             }
 
@@ -737,9 +934,9 @@ namespace ECommerce.Controllers
             var success = await _shippingAddressService.UpdateAsync(address);
 
             if (success)
-                TempData["Success"] = "Dirección actualizada exitosamente";
+                TempData["Success"] = "Address updated successfully!";
             else
-                TempData["Error"] = "Error al actualizar la dirección";
+                TempData["Error"] = "Error updating address";
 
             return RedirectToAction(nameof(Addresses));
         }
@@ -754,16 +951,16 @@ namespace ECommerce.Controllers
 
             if (address == null || address.UserId != userId)
             {
-                TempData["Error"] = "Dirección no encontrada";
+                TempData["Error"] = "Address not found";
                 return RedirectToAction(nameof(Addresses));
             }
 
             var success = await _shippingAddressService.DeleteAsync(id);
 
             if (success)
-                TempData["Success"] = "Dirección eliminada exitosamente";
+                TempData["Success"] = "Address deleted successfully!";
             else
-                TempData["Error"] = "Error al eliminar la dirección";
+                TempData["Error"] = "Error deleting address";
 
             return RedirectToAction(nameof(Addresses));
         }

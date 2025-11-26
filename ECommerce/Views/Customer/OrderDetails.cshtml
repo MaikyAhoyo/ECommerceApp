@@ -1,0 +1,149 @@
+@model ECommerce.Models.Entities.Order
+@{
+    ViewData["Title"] = $"Order #{Model.Id}";
+    Layout = "_CustomerLayout";
+}
+
+<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+    <div class="container mx-auto px-4 relative z-10 text-white text-center">
+        <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">Order Details</h1>
+        <p class="text-xl text-white/80">Order #@Model.Id &bull; @Model.OrderDate.ToString("MMMM dd, yyyy")</p>
+    </div>
+</section>
+
+<div class="bg-cream py-12 pb-24 min-h-[60vh]">
+    <div class="container mx-auto px-4 max-w-4xl">
+
+        <div class="mb-8">
+            <a href="/customer/orders" class="inline-flex items-center gap-2 text-gray-500 hover:text-primary font-semibold transition-colors">
+                <i class="ph-bold ph-arrow-left"></i>
+                Back to My Orders
+            </a>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+
+            <div class="bg-gray-50 px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Current Status</p>
+                    <div class="flex items-center gap-2">
+                        @if (Model.Status == "Pending")
+                        {
+                            <span class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></span>
+                            <span class="font-bold text-yellow-600 text-lg">Pending Processing</span>
+                        }
+                        else if (Model.Status == "Completed" || Model.Status == "Delivered")
+                        {
+                            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            <span class="font-bold text-green-600 text-lg">Delivered</span>
+                        }
+                        else if (Model.Status == "Cancelled")
+                        {
+                            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                            <span class="font-bold text-red-600 text-lg">Cancelled</span>
+                        }
+                        else if (Model.Status == "Shipped")
+                        {
+                            <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                            <span class="font-bold text-purple-600 text-lg">On the Way</span>
+                        }
+                        else
+                        {
+                            <span class="font-bold text-gray-700 text-lg">@Model.Status</span>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.Status == "Pending")
+                {
+                    <form method="post" 
+                          asp-controller="Customer" 
+                          asp-action="CancelOrder" 
+                          asp-route-id="@Model.Id" 
+                          onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="px-5 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 text-sm font-bold transition-colors flex items-center gap-2">
+                            <i class="ph-bold ph-x"></i> Cancel Order
+                        </button>
+                    </form>
+                }
+            </div>
+
+            <div class="p-8">
+                <h4 class="font-playfair text-2xl font-bold text-primary mb-6">Items Ordered</h4>
+
+                @if (Model.OrderItems != null && Model.OrderItems.Any())
+                {
+                    <div class="space-y-6">
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <a asp-controller="Customer"
+                               asp-action="ProductDetails"
+                               asp-route-id="@item.ProductId"
+                               class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 group">
+
+                                <div class="flex items-center gap-5 w-full sm:w-auto">
+                                    <div class="w-20 h-20 bg-white rounded-xl border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
+                                        @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                        {
+                                            <img src="@item.Product.ImageUrl" alt="@item.Product?.Name" class="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-500">
+                                        }
+                                        else
+                                        {
+                                            <i class="ph ph-image text-gray-300 text-3xl"></i>
+                                        }
+                                    </div>
+
+                                    <div>
+                                        <h5 class="font-bold text-primary text-lg mb-1 group-hover:text-gold transition-colors">@item.Product?.Name</h5>
+                                        <p class="text-sm text-gray-500">
+                                            Quantity: <span class="font-semibold text-gray-700">@item.Quantity</span>
+                                            &bull;
+                                            Unit Price: <span class="font-semibold text-gray-700">$@String.Format("{0:N2}", item.UnitPrice)</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 sm:mt-0 w-full sm:w-auto text-right">
+                                    <span class="block text-gold font-bold text-xl">$@((item.Quantity * item.UnitPrice).ToString("N2"))</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="bg-gray-50 px-8 py-6 border-t border-gray-100">
+                <div class="flex flex-col gap-3 max-w-xs ml-auto">
+                    <div class="flex justify-between text-gray-600 text-sm">
+                        <span>Subtotal</span>
+                        <span>$@((Model.Total / 1.16m).ToString("N2"))</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600 text-sm">
+                        <span>Tax (16%)</span>
+                        <span>$@(Math.Round(Model.Total - (Model.Total / 1.16m), 2).ToString("N2"))</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600 text-sm">
+                        <span>Shipping</span>
+                        <span class="text-green-600 font-semibold">Free</span>
+                    </div>
+                    <div class="h-px bg-gray-200 my-2"></div>
+                    <div class="flex justify-between items-end">
+                        <span class="font-playfair font-bold text-xl text-primary">Total</span>
+                        <span class="font-bold text-2xl text-gold">$@Model.Total.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-8 text-center">
+            <p class="text-gray-500 text-sm">
+                Need help with your order?
+                <a href="#" class="text-gold hover:underline font-semibold">Contact Support</a>
+            </p>
+        </div>
+
+    </div>
+</div>

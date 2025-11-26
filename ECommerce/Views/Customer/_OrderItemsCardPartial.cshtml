@@ -1,0 +1,140 @@
+﻿@using ECommerce.Models.Entities
+@model Order
+
+<div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 group">
+
+    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-6">
+
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <h3 class="font-playfair text-2xl font-bold text-primary">Order #@Model.Id</h3>
+
+                @if (Model.Status == "Pending")
+                {
+                    <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                        <i class="ph-fill ph-clock"></i> Pending
+                    </span>
+                }
+                else if (Model.Status == "Completed" || Model.Status == "Delivered")
+                {
+                    <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                        <i class="ph-fill ph-check-circle"></i> @Model.Status
+                    </span>
+                }
+                else if (Model.Status == "Cancelled")
+                {
+                    <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                        <i class="ph-fill ph-x-circle"></i> Cancelled
+                    </span>
+                }
+                else if (Model.Status == "Shipped")
+                {
+                    <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                        <i class="ph-fill ph-truck"></i> Shipped
+                    </span>
+                }
+                else
+                {
+                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold uppercase tracking-wider">
+                        @Model.Status
+                    </span>
+                }
+            </div>
+
+            <div class="flex items-center text-sm text-gray-500 gap-4">
+                <span class="flex items-center gap-1">
+                    <i class="ph ph-calendar"></i>
+                    @Model.OrderDate.ToString("MMM dd, yyyy")
+                </span>
+                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                <span class="flex items-center gap-1">
+                    <i class="ph ph-package"></i>
+                    @(Model.OrderItems?.Sum(i => i.Quantity) ?? 0) Items
+                </span>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:items-end gap-4">
+            <div class="text-left md:text-right">
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Amount</p>
+                <p class="text-2xl font-bold text-gold">$@String.Format("{0:N2}", Model.Total)</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                @if (Model.Status == "Pending")
+                {
+                    <form method="post" 
+                          asp-controller="Customer" 
+                          asp-action="Orders" 
+                          asp-route-id="@Model.Id" onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="px-4 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 text-sm font-semibold transition-colors flex items-center gap-2">
+                            <i class="ph-bold ph-x"></i> Cancel
+                        </button>
+                    </form>
+                }
+
+                <a asp-controller="Customer" 
+                   asp-action="OrderDetails" 
+                   asp-route-id="@Model.Id" 
+                   class="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary/90 text-sm font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                    <span>View Details</span>
+                    <i class="ph-bold ph-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.OrderItems != null && Model.OrderItems.Any())
+    {
+        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+            <div class="space-y-3">
+                @foreach (var item in Model.OrderItems.Take(3)) // Limit to 3 items for preview
+                {
+                    <a asp-controller="Customer"
+                       asp-action="ProductDetails"
+                       asp-route-id="@item.ProductId"
+                       class="flex items-center justify-between group/item p-2 rounded-xl hover:bg-white transition-colors">
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                {
+                                    <img src="@item.Product.ImageUrl" alt="@item.Product?.Name" class="w-full h-full object-contain p-1">
+                                }
+                                else
+                                {
+                                    <i class="ph ph-image text-gray-300 text-xl"></i>
+                                }
+                            </div>
+
+                            <div>
+                                <p class="text-sm font-bold text-primary group-hover/item:text-gold transition-colors line-clamp-1">
+                                    @item.Product?.Name
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    Qty: <span class="font-medium text-gray-700">@item.Quantity</span>
+                                    &bull;
+                                    $@String.Format("{0:N2}", item.UnitPrice)
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="text-sm font-semibold text-gray-700">
+                            $@String.Format("{0:N2}", item.Quantity * item.UnitPrice)
+                        </div>
+                    </a>
+                }
+
+                @if (Model.OrderItems.Count() > 3)
+                {
+                    <div class="pt-2 text-center border-t border-gray-200/50">
+                        <a href="/customer/orders/details/@Model.Id" class="text-xs font-semibold text-gray-500 hover:text-gold transition-colors">
+                            + @(Model.OrderItems.Count() - 3) more items...
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

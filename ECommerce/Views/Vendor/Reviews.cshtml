@@ -40,7 +40,7 @@
 <!-- Filters & Pagination Info -->
 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
     <div class="p-6 border-b border-gray-100">
-        <form method="get" action="/vendor/reviews" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <form method="get" asp-action="Reviews" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <input type="hidden" name="page" value="1">
             <input type="hidden" name="pageSize" value="@ViewBag.PageSize">
 
@@ -63,7 +63,7 @@
                     <option value="">All Products</option>
                     @foreach (var product in products)
                     {
-                        <option value="@product.Id" @(selectedProductId == product.Id ? "selected" : "")>@product.Name</option>
+                        <option value="@product.Id">@product.Name</option>
                     }
                 </select>
             </div>
@@ -98,10 +98,10 @@
             <select name="pageSize"
                     onchange="this.form.submit()"
                     class="rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-3 py-1.5 text-sm font-medium transition-all">
-                <option value="5" @(ViewBag.PageSize == 5 ? "selected" : "")>5</option>
-                <option value="10" @(ViewBag.PageSize == 10 ? "selected" : "")>10</option>
-                <option value="20" @(ViewBag.PageSize == 20 ? "selected" : "")>20</option>
-                <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
             </select>
         </form>
     </div>
@@ -219,7 +219,10 @@ else
             <h3 class="font-playfair text-2xl font-bold text-primary mb-2">No Reviews Yet</h3>
             <p class="text-gray-600 mb-8">Your products haven't received any reviews yet. Customer feedback will appear here once they start reviewing your products.</p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="/vendor/products" class="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
+                <a asp-controller="Vendor"
+                   asp-action="MyProducts"
+                    
+                   class="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
                     <i class="ph ph-package text-xl"></i>
                     <span>View Products</span>
                 </a>

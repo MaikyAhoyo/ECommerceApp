@@ -1,0 +1,29 @@
+﻿@using ECommerce.Models.Entities
+@model Category
+
+<a asp-controller="Customer"
+   asp-action="Products"
+   asp-route-categoryId="@Model.Id"
+   class="group relative bg-white rounded-2xl p-10 border border-gray-200 hover:border-gold transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
+    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+    <div class="relative z-10">
+        <div class="w-20 h-20 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <i class="ph-fill ph-tag text-white text-3xl"></i>
+        </div>
+
+        <h4 class="font-playfair text-2xl font-bold text-primary mb-3 group-hover:text-gold transition-colors">
+            @Model.Name
+        </h4>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <p class="text-gray-600 mb-4">@Model.Description</p>
+        }
+
+        <span class="inline-flex items-center space-x-2 text-gold font-semibold group-hover:translate-x-2 transition-transform">
+            <span>View Products</span>
+            <i class="ph ph-arrow-right"></i>
+        </span>
+    </div>
+</a>

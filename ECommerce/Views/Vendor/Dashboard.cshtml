@@ -93,7 +93,10 @@
             </div>
             <h5 class="font-semibold text-lg text-primary">Top Products</h5>
         </div>
-        <a href="/vendor/products" class="inline-flex items-center space-x-2 px-4 py-2 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-xl font-medium transition-all duration-300">
+        <a asp-controller="Vendor"
+           asp-action="Products"
+            
+           class="inline-flex items-center space-x-2 px-4 py-2 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-xl font-medium transition-all duration-300">
             <span class="text-sm">View All</span>
             <i class="ph ph-arrow-right"></i>
         </a>
@@ -148,7 +151,10 @@
             </div>
             <h5 class="font-semibold text-lg text-primary">Recent Orders</h5>
         </div>
-        <a href="/vendor/orders" class="inline-flex items-center space-x-2 px-4 py-2 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-xl font-medium transition-all duration-300">
+        <a asp-controller="Vendor"
+           asp-action="Orders"
+           
+           class="inline-flex items-center space-x-2 px-4 py-2 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-xl font-medium transition-all duration-300">
             <span class="text-sm">View All</span>
             <i class="ph ph-arrow-right"></i>
         </a>

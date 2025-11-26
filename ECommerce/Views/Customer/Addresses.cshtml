@@ -1,0 +1,62 @@
+﻿@model IEnumerable<ECommerce.Models.Entities.ShippingAddress>
+@{
+    ViewData["Title"] = "My Addresses";
+    Layout = "_CustomerLayout";
+}
+
+<div class="py-12 pb-20">
+    <div class="container mx-auto px-4">
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">My Addresses</h1>
+                <p class="text-gray-600">Manage your shipping addresses</p>
+            </div>
+            <a href="/customer/addresses/create" class="inline-flex items-center px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-lg font-semibold transition">
+                <i class="ph ph-plus mr-2"></i>Add New Address
+            </a>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                @foreach (var address in Model)
+                {
+                    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+                        <div class="space-y-3 mb-6">
+                            <p class="font-medium text-gray-800">@address.AddressLine1</p>
+                            @if (!string.IsNullOrEmpty(address.AddressLine2))
+                            {
+                                <p class="text-gray-600">@address.AddressLine2</p>
+                            }
+                            <p class="text-gray-600">@address.City, @address.State @address.PostalCode</p>
+                            <p class="text-gray-600">@address.Country</p>
+                        </div>
+
+                        <div class="flex gap-2 border-t pt-4">
+                            <a href="/customer/addresses/edit/@address.Id" class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition">
+                                <i class="ph-bold ph-pencil mr-2"></i>Edit
+                            </a>
+                            <form method="post" action="/customer/addresses/delete/@address.Id" class="flex-1" onsubmit="return confirm('Delete this address?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="w-full inline-flex items-center justify-center px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium transition">
+                                    <i class="ph-bold ph-trash mr-2"></i>Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="bg-white rounded-xl p-12 text-center border border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">No addresses yet</h2>
+                <p class="text-gray-600 mb-6">You haven't added any shipping addresses yet.</p>
+                <a href="/customer/addresses/create" class="inline-flex items-center px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-lg font-semibold transition">
+                    <i class="ph ph-plus mr-2"></i>Add Your First Address
+                </a>
+            </div>
+        }
+    </div>
+    <br />
+</div>

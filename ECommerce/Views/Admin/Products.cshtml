@@ -46,9 +46,9 @@
                 <select name="metal"
                         class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
                     <option value="">All Metals</option>
-                    <option value="Gold" @(currentMetal == "Gold" ? "selected" : "")>Gold</option>
-                    <option value="Silver" @(currentMetal == "Silver" ? "selected" : "")>Silver</option>
-                    <option value="Platinum" @(currentMetal == "Platinum" ? "selected" : "")>Platinum</option>
+                    <option value="Gold">Gold</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Platinum">Platinum</option>
                 </select>
             </div>
 
@@ -57,9 +57,9 @@
                 <select name="stock"
                         class="w-full rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-4 py-2.5 transition-all">
                     <option value="">All Stock</option>
-                    <option value="instock" @(currentStock == "instock" ? "selected" : "")>In Stock</option>
-                    <option value="lowstock" @(currentStock == "lowstock" ? "selected" : "")>Low Stock</option>
-                    <option value="outofstock" @(currentStock == "outofstock" ? "selected" : "")>Out of Stock</option>
+                    <option value="instock">In Stock</option>
+                    <option value="lowstock">Low Stock</option>
+                    <option value="outofstock">Out of Stock</option>
                 </select>
             </div>
 
@@ -85,7 +85,7 @@
             </span>
         </div>
 
-        <form method="get" action="/admin/products" class="flex items-center space-x-2">
+        <form method="get" asp-action="Products" class="flex items-center space-x-2">
             <input type="hidden" name="search" value="@currentSearch">
             <input type="hidden" name="metal" value="@currentMetal">
             <input type="hidden" name="stock" value="@currentStock">
@@ -95,10 +95,10 @@
             <select name="pageSize"
                     onchange="this.form.submit()"
                     class="rounded-xl border-2 border-gray-200 focus:border-gold focus:ring-2 focus:ring-gold/20 outline-none px-3 py-1.5 text-sm font-medium transition-all">
-                <option value="5" @(ViewBag.PageSize == 5 ? "selected" : "")>5</option>
-                <option value="10" @(ViewBag.PageSize == 10 ? "selected" : "")>10</option>
-                <option value="20" @(ViewBag.PageSize == 20 ? "selected" : "")>20</option>
-                <option value="50" @(ViewBag.PageSize == 50 ? "selected" : "")>50</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
             </select>
         </form>
     </div>
@@ -299,7 +299,10 @@
             <div class="flex justify-center gap-4">
                 @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentMetal) || !string.IsNullOrEmpty(currentStock))
                 {
-                    <a href="/admin/products" class="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
+                    <a asp-controller="Admin"
+                       asp-action="Products"
+                       
+                       class="inline-flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
                         <i class="ph ph-arrow-clockwise"></i>
                         <span>Clear Filters</span>
                     </a>

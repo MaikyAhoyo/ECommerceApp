@@ -108,7 +108,10 @@
             </div>
             <h5 class="font-semibold text-lg text-primary">Recent Orders</h5>
         </div>
-        <a href="/admin/orders" class="inline-flex items-center space-x-2 px-4 py-2 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-xl font-medium transition-all duration-300">
+        <a asp-controller="Admin"
+           asp-action="Orders"
+            
+           class="inline-flex items-center space-x-2 px-4 py-2 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-xl font-medium transition-all duration-300">
             <span class="text-sm">View All</span>
             <i class="ph ph-arrow-right"></i>
         </a>
@@ -175,7 +178,10 @@
                 </div>
                 <h3 class="font-semibold text-lg text-gray-900 mb-2">No Recent Orders</h3>
                 <p class="text-gray-500 mb-6">Orders will appear here once customers start purchasing.</p>
-                <a href="/admin/products" class="inline-flex items-center space-x-2 px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-xl font-semibold transition-all duration-300">
+                <a asp-controller="Admin"
+                   asp-action="CreateProduct"
+                   
+                   class="inline-flex items-center space-x-2 px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-xl font-semibold transition-all duration-300">
                     <i class="ph ph-plus-circle"></i>
                     <span>Add Products</span>
                 </a>
@@ -201,7 +207,6 @@
 
 @section Styles {
     <style>
-        /* Custom scrollbar for table */
         .overflow-x-auto::-webkit-scrollbar {
             height: 8px;
         }

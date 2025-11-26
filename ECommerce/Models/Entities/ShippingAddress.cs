@@ -12,6 +12,6 @@
         public string PostalCode { get; set; } = null!;
 
         // Relationships
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
     }
 }

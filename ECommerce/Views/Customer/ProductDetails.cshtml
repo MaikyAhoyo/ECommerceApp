@@ -4,308 +4,339 @@
     Layout = "_CustomerLayout";
 }
 
-<div class="py-10 pb-20">
-    <div class="container mx-auto px-4">
-        <!-- Breadcrumb -->
-        <nav aria-label="breadcrumb" class="mb-8">
-            <ol class="flex items-center space-x-2 text-sm">
-                <li><a href="/customer/home" class="text-gray-500 hover:text-yellow-500 transition">Inicio</a></li>
-                <li class="text-gray-400">/</li>
-                <li><a href="/customer/products" class="text-gray-500 hover:text-yellow-500 transition">Productos</a></li>
-                <li class="text-gray-400">/</li>
-                <li class="text-gray-700 font-medium">@Model.Product.Name</li>
-            </ol>
-        </nav>
+<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16">
+    <nav aria-label="breadcrumb" class="mb-6 flex justify-center">
+        <ol class="flex items-center space-x-2 text-sm text-white/60">
+            <li><a asp-controller="Customer" asp-action="Home" class="hover:text-gold transition-colors">Home</a></li>
+            <li><i class="ph ph-caret-right text-xs"></i></li>
+            <li><a asp-controller="Customer" asp-action="Products" class="hover:text-gold transition-colors">Products</a></li>
+            <li><i class="ph ph-caret-right text-xs"></i></li>
+            <li class="text-white font-medium truncate max-w-[200px]">@Model.Product.Name</li>
+        </ol>
+    </nav>
 
-        <div class="grid lg:grid-cols-2 gap-12">
-            <!-- Product Image -->
-            <div class="lg:sticky lg:top-24 lg:self-start">
-                <div class="relative bg-gray-100 rounded-3xl overflow-hidden h-[600px] flex items-center justify-center">
-                    @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
+    <div class="container mx-auto px-4 text-center text-white">
+        <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">
+            @Model.Product.Name
+        </h1>
+        <p class="text-xl text-white/90">@Model.Product.Metal Collection</p>
+    </div>
+</section>
+
+<div class="bg-cream py-12 pb-24">
+    <div class="container mx-auto px-4">
+
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 mb-16">
+            <div class="grid lg:grid-cols-2 gap-0">
+
+                <div class="bg-gray-50 p-8 lg:p-12 flex items-center justify-center relative group">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent opacity-50"></div>
+
+                    <div class="relative z-10 w-full h-[400px] lg:h-[500px] flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+                        @if (!string.IsNullOrEmpty(Model.Product.ImageUrl))
+                        {
+                            <img src="@Model.Product.ImageUrl" alt="@Model.Product.Name" id="mainImage" class="max-w-full max-h-full object-contain drop-shadow-2xl">
+                        }
+                        else
+                        {
+                            <div class="text-gray-300 text-8xl">
+                                <i class="ph ph-image"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="absolute top-6 left-6 flex flex-col gap-2">
+                        @if (Model.Product.Stock == 0)
+                        {
+                            <span class="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                                Out of Stock
+                            </span>
+                        }
+                        else if (Model.Product.Stock < 5)
+                        {
+                            <span class="bg-yellow-400 text-primary px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                                Last Pieces!
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="p-8 lg:p-12 flex flex-col justify-center">
+
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-sm uppercase tracking-wider text-gold font-bold">
+                            @Model.Product.Metal &bull; @Model.Product.Purity
+                        </span>
+
+                        <div class="flex items-center gap-2 bg-cream px-3 py-1 rounded-full">
+                            <div class="flex text-gold text-sm">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= Math.Floor(Model.AverageRating))
+                                    {
+                                        <i class="ph-fill ph-star"></i>
+                                    }
+                                    else if (i == Math.Ceiling(Model.AverageRating) && Model.AverageRating % 1 != 0)
+                                    {
+
+                                        <i class="ph-fill ph-star-half"></i>
+                                    }
+                                    else
+                                    {
+
+                                        <i class="ph ph-star text-gray-300"></i>
+                                    }
+                                }
+                            </div>
+                            <span class="text-xs font-semibold text-primary">@Model.AverageRating.ToString("0.0")</span>
+                            <span class="text-xs text-gray-500">(@Model.ReviewCount)</span>
+                        </div>
+                    </div>
+
+                    <h2 class="font-playfair text-4xl font-bold text-primary mb-6">@Model.Product.Name</h2>
+
+                    <div class="flex items-end gap-4 mb-8 pb-8 border-b border-gray-100">
+                        <span class="text-5xl font-bold text-gold">$@Model.Product.Price.ToString("N0")</span>
+                        @if (Model.Product.OriginalPrice > Model.Product.Price)
+                        {
+                            <span class="text-xl text-gray-400 line-through mb-2">$@Model.Product.OriginalPrice.ToString("N0")</span>
+                        }
+                    </div>
+
+                    <div class="prose prose-sm text-gray-600 mb-8">
+                        <p>@Model.Product.Description</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="bg-cream rounded-xl p-4 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gold shadow-sm">
+                                <i class="ph-fill ph-sketch-logo text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase">Material</span>
+                                <span class="font-semibold text-primary">@Model.Product.Metal</span>
+                            </div>
+                        </div>
+                        <div class="bg-cream rounded-xl p-4 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gold shadow-sm">
+                                <i class="ph-fill ph-certificate text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase">Purity</span>
+                                <span class="font-semibold text-primary">@Model.Product.Purity</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Categories.Any())
                     {
-                        <img src="@Model.Product.ImageUrl" alt="@Model.Product.Name" id="mainImage" class="w-full h-full object-contain">
+                        <div class="flex flex-wrap gap-2 mb-8">
+                            @foreach (var category in Model.Categories)
+                            {
+                                <a asp-controller="Customer" 
+                                   asp-action="Products" 
+                                   asp-route-categoryId="@category.Id"
+                                   class="px-3 py-1 rounded-lg border border-gray-200 text-sm text-gray-600 hover:border-gold hover:text-gold transition-colors">
+                                    #@category.Name
+                                </a>
+                            }
+                        </div>
+                    }
+
+                    @if (Model.Product.Stock > 0)
+                    {
+                        <div class="flex flex-col sm:flex-row gap-4 mt-auto">
+                            <div class="flex items-center bg-gray-50 rounded-full px-2 border border-gray-200 sm:w-auto w-full justify-between">
+                                <button type="button" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="decreaseQty()">
+                                    <i class="ph ph-minus font-bold"></i>
+                                </button>
+                                <input type="number" id="quantity" value="1" min="1" max="@Model.Product.Stock" class="w-12 text-center bg-transparent border-none font-bold text-primary focus:ring-0 p-0" readonly>
+                                <button type="button" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="increaseQty()">
+                                    <i class="ph ph-plus font-bold"></i>
+                                </button>
+                            </div>
+
+                            <button type="button" onclick="addToCart(@Model.Product.Id)"
+                                    class="flex-1 bg-primary hover:bg-primary/90 text-white h-14 rounded-full font-semibold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group">
+                                <span>Add to Cart</span>
+                                <i class="ph-bold ph-shopping-cart text-xl group-hover:text-gold transition-colors"></i>
+                            </button>
+                        </div>
                     }
                     else
                     {
-                        <div class="text-gray-400 text-8xl">
-                            <i class="ph ph-image"></i>
+                        <div class="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl flex items-center gap-3">
+                            <i class="ph-fill ph-bell-slash text-2xl"></i>
+                            <div>
+                                <span class="font-bold block">Out of Stock</span>
+                                <span class="text-sm">We will notify you when it becomes available.</span>
+                            </div>
                         </div>
                     }
-                    @if (Model.Product.Stock == 0)
-                    {
-                        <div class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center">
-                            <span class="bg-red-500 text-white px-10 py-4 text-2xl font-bold rounded-full">AGOTADO</span>
-                        </div>
-                    }
+
+                    <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500">
+                        <div class="flex items-center gap-1"><i class="ph-fill ph-shield-check text-green-500 text-lg"></i> Secure Purchase</div>
+                        <div class="flex items-center gap-1"><i class="ph-fill ph-truck text-gold text-lg"></i> Free Shipping</div>
+                        <div class="flex items-center gap-1"><i class="ph-fill ph-arrow-counter-clockwise text-blue-500 text-lg"></i> 30-Day Returns</div>
+                    </div>
+
                 </div>
             </div>
+        </div>
 
-            <!-- Product Info -->
-            <div>
-                <!-- Title & Price -->
-                <h1 class="text-4xl font-bold text-gray-800 mb-4">@Model.Product.Name</h1>
+        <div class="grid lg:grid-cols-3 gap-8">
 
-                <!-- Rating -->
-                <div class="flex items-center gap-3 mb-5">
-                    <div class="flex text-yellow-500 text-lg">
-                        @for (int i = 1; i <= 5; i++)
-                        {
-                            if (i <= Math.Floor(Model.AverageRating))
-                            {
-                                <i class="ph ph-star"></i>
-                            }
-                            else if (i == Math.Ceiling(Model.AverageRating) && Model.AverageRating % 1 != 0)
-                            {
-                                <i class="ph ph-star-half"></i>
-                            }
-                            else
-                            {
-                                <i class="far ph-star"></i>
-                            }
-                        }
-
-                    </div>
-                    <span class="text-gray-500 text-sm">@Model.AverageRating.ToString("0.0") (@Model.ReviewCount reseñas)</span>
-                </div>
-
-                <div class="py-5 my-8 border-t border-b border-gray-200">
-                    <span class="block text-5xl font-bold text-green-600 mb-1">$@Model.Product.Price.ToString("N2")</span>
-                    <span class="text-gray-500 text-sm">IVA incluido</span>
-                </div>
-
-                <!-- Specifications -->
-                <div class="grid grid-cols-3 gap-3 mb-8 p-4 bg-gray-100 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <i class="ph ph-sketch-logo text-xl text-yellow-500"></i>
-                        <div>
-                            <span class="block text-xs text-gray-500 uppercase tracking-wide">Metal</span>
-                            <span class="block font-semibold text-gray-800 text-sm">@GetMetalName(Model.Product.Metal)</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <i class="ph ph-certificate text-xl text-yellow-500"></i>
-                        <div>
-                            <span class="block text-xs text-gray-500 uppercase tracking-wide">Pureza</span>
-                            <span class="block font-semibold text-gray-800 text-sm">@Model.Product.Purity</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <i class="ph ph-package text-xl text-yellow-500"></i>
-                        <div>
-                            <span class="block text-xs text-gray-500 uppercase tracking-wide">Disponibilidad</span>
-                            <span class="block font-semibold text-xl">
-                                @if (Model.Product.Stock > 0)
-                                {
-                                    <span class="text-green-600">@Model.Product.Stock en Stock</span>
-                                }
-                                else
-                                {
-                                    <span class="text-red-600">Agotado</span>
-                                }
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Categories -->
-                @if (Model.Categories.Any())
-                {
-                    <div class="mb-5">
-                        <span class="font-semibold text-gray-800 mr-2">Categorías:</span>
-                        @foreach (var category in Model.Categories)
-                        {
-                            <a href="/customer/products?categoryId=@category.Id"
-                               class="inline-block px-4 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm mt-1 mr-2 hover:bg-yellow-500 hover:text-white transition">
-                                @category.Name
-                            </a>
-                        }
-                    </div>
-                }
-
-                <!-- Description -->
-                <div class="my-8">
-                    <h6 class="font-bold text-gray-800 mb-4">Descripción</h6>
-                    <p class="text-gray-500 leading-relaxed">@Model.Product.Description</p>
-                </div>
-
-                <!-- Add to Cart -->
-                @if (Model.Product.Stock > 0)
-                {
-                    <div class="flex gap-4 my-8">
-                        <div class="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
-                            <button type="button" class="w-12 h-12 bg-gray-100 hover:bg-yellow-500 hover:text-white transition" onclick="decreaseQty()">
-                                <i class="ph ph-minus"></i>
-                            </button>
-                            <input type="number" id="quantity" value="1" min="1" max="@Model.Product.Stock"
-                                   class="w-20 h-12 text-center border-none font-semibold text-lg" readonly>
-                            <button type="button" class="w-12 h-12 bg-gray-100 hover:bg-yellow-500 text-black hover:text-white transition" onclick="increaseQty()">
-                                <i class="ph ph-plus"></i>
-                            </button>
-                        </div>
-                        <button type="button" class="flex-1 h-14 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition" onclick="addToCart(@Model.Product.Id)">
-                            <i class="ph ph-shopping-cart mr-2"></i>Agregar al Carrito
+            <div class="lg:col-span-2">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="font-playfair text-3xl font-bold text-primary">Reviews</h3>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button type="button" onclick="openReviewModal()" class="text-gold font-semibold hover:underline flex items-center gap-2">
+                            <i class="ph ph-pencil-simple"></i> Write a Review
                         </button>
+                    }
+                </div>
+
+                @if (Model.Reviews.Any())
+                {
+                    <div class="space-y-4">
+                        @foreach (var review in Model.Reviews.Take(5))
+                        {
+                            <div class="bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 p-8 group h-full flex flex-col">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div>
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-full bg-gold/20 text-gold flex items-center justify-center font-bold text-sm">
+                                                    @review.User?.Name.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <h6 class="font-bold text-primary text-sm">@review.User?.Name</h6>
+                                            </div>
+                                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-cream text-gold text-xs font-bold rounded-full border border-gold/10">
+                                                @review.Rating
+                                                <i class="ph-fill ph-star"></i>
+                                            </span>
+                                        </div>
+                                        <p class="text-xs uppercase tracking-wider text-gray-400 font-bold flex items-center gap-2">
+                                            <i class="ph-bold ph-calendar-blank"></i>
+                                            @review.CreatedAt.ToString("MMMM dd, yyyy")
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="flex text-gold text-lg">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <i class="ph-fill ph-star"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="ph ph-star text-gray-200"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <span class="text-xs font-bold text-primary bg-gray-100 px-3 py-1 rounded-lg">
+                                        @switch (review.Rating)
+                                        {
+                                            case 5:
+                                                <span>Excellent</span>
+                                                ; break;
+                                            case 4:
+
+                                                <span>Good</span>
+                                                ; break;
+                                            case 3:
+
+                                                <span>Average</span>
+                                                ; break;
+                                            case 2:
+
+                                                <span>Poor</span>
+                                                ; break;
+                                            case 1:
+
+                                                <span>Very Poor</span>
+                                                ; break;
+                                            default:
+
+                                                <span>Rated</span>
+                                                ; break;
+                                        }
+                                    </span>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-2xl p-6 relative mb-6 flex-grow">
+                                    <i class="ph-fill ph-quotes text-gray-200 text-3xl absolute -top-3 -left-2 bg-white rounded-full p-1"></i>
+                                    <p class="text-gray-600 leading-relaxed italic relative z-10">"@review.Comment"</p>
+                                </div>
+                            </div>
+                        }
                     </div>
                 }
                 else
                 {
-                    <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-xl">
-                        <i class="ph ph-exclamation-triangle mr-2"></i>
-                        Este producto está agotado actualmente
+                    <div class="bg-white rounded-2xl p-10 text-center border border-dashed border-gray-200">
+                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                            <i class="ph-fill ph-chat-teardrop-text text-3xl"></i>
+                        </div>
+                        <p class="text-gray-500 mb-4">There are no reviews for this product yet.</p>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button onclick="openReviewModal()" class="text-gold font-semibold hover:underline">Be the first to leave a review</button>
+                        }
                     </div>
                 }
-
-                <!-- Trust Badges -->
-                <div class="flex flex-col md:flex-row gap-8 my-10 p-6  rounded-xl">
-                    <div class="flex items-center gap-3 text-gray-800">
-                        <i class="ph ph-shield text-2xl text-green-600"></i>
-                        <span>Compra Segura</span>
-                    </div>
-                    <div class="flex items-center gap-3 text-gray-800">
-                        <i class="ph ph-truck text-2xl text-green-600"></i>
-                        <span>Envío Gratis</span>
-                    </div>
-                    <div class="flex items-center gap-3 text-gray-800">
-                        <i class="ph ph-arrow-u-down-left text-2xl text-green-600"></i>
-                        <span>Devolución 30 días</span>
-                    </div>
-                </div>
             </div>
-        </div>
 
-        <!-- Reviews Section -->
-        <div class="mt-20">
-            <h3 class="text-3xl font-bold text-gray-800 mb-8">Reseñas de Clientes</h3>
+            <div class="lg:col-span-1">
+                <h3 class="font-playfair text-2xl font-bold text-primary mb-8">Featured</h3>
 
-            @if (Model.Reviews.Any())
-            {
-                <div class="space-y-5">
-                    @foreach (var review in Model.Reviews.Take(5))
-                    {
-                        <div class="bg-white border border-gray-200 rounded-xl p-6">
-                            <div class="flex justify-between mb-4">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-white font-bold text-xl">
-                                        @review.User?.Name.Substring(0, 1).ToUpper()
-                                    </div>
-                                    <div>
-                                        <h6 class="font-semibold text-gray-800 mb-1">@review.User?.Name</h6>
-                                        <div class="flex text-yellow-500">
-                                            @for (int i = 1; i <= 5; i++)
-                                            {
-                                                <i class="ph ph-star @(i <= review.Rating ? "" : "text-gray-300")"></i>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                                <span class="text-gray-500 text-sm">@review.CreatedAt.ToString("dd MMM yyyy")</span>
-                            </div>
-                            <p class="text-gray-500 leading-relaxed">@review.Comment</p>
-                        </div>
-                    }
-                </div>
-
-                @if (User.Identity?.IsAuthenticated == true)
+                @if (Model.RelatedProducts.Any())
                 {
-                    <div class="text-center mt-6">
-                        <button type="button" onclick="openReviewModal()"
-                                class="inline-block px-6 py-3 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl font-semibold transition">
-                            <i class="ph ph-star mr-2"></i>Escribir una Reseña
-                        </button>
+                    <div class="flex flex-col gap-6">
+                        @foreach (var product in Model.RelatedProducts.Take(3))
+                        {
+                            @await Html.PartialAsync("_ProductCardPartial", product)
+                        }
                     </div>
                 }
-            }
-            else
-            {
-                <div class="text-center py-16 bg-gray-100 rounded-xl">
-                    <i class="far ph-comment-dots text-6xl text-gray-300 mb-5"></i>
-                    <p class="text-gray-500 mb-5">Aún no hay reseñas para este producto</p>
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <button type="button" onclick="openReviewModal()"
-                                class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition">
-                            <i class="ph ph-star mr-2"></i>Sé el primero en opinar
-                        </button>
-                    }
-                </div>
-            }
+            </div>
         </div>
 
-        <!-- Related Products -->
-        @if (Model.RelatedProducts.Any())
-        {
-            <div class="mt-20">
-                <h3 class="text-3xl font-bold text-gray-800 mb-8">Productos Relacionados</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    @foreach (var product in Model.RelatedProducts.Take(4))
-                    {
-                        <div class="bg-white border border-gray-200 rounded-xl p-4 text-center hover:shadow-xl transition">
-                            <div class="h-52 bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                                @if (!string.IsNullOrEmpty(product.ImageUrl))
-                                {
-                                    <img src="@product.ImageUrl" alt="@product.Name" class="w-full h-full object-contain">
-                                }
-                                else
-                                {
-                                    <div class="flex items-center justify-center h-full text-gray-300 text-4xl">
-                                        <i class="ph ph-image"></i>
-                                    </div>
-                                }
-                            </div>
-                            <h6 class="text-sm text-gray-800 mb-2 min-h-[40px]">@product.Name</h6>
-                            <span class="block text-green-600 font-bold text-lg mb-4">$@product.Price.ToString("N2")</span>
-                            <a href="/customer/products/details/@product.Id"
-                               class="block w-full py-2 border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-sm font-semibold transition">
-                                Ver Detalles
-                            </a>
-                        </div>
-                    }
-                </div>
-            </div>
-        }
     </div>
 </div>
 
-@* Render the reusable partial modal (keeps view modular). Pass simple anonymous model. *@
 @{
     var reviewModalModel = new { ProductId = Model.Product.Id, ProductName = Model.Product.Name, UserName = User.Identity?.Name };
 }
-@Html.Partial("_ModalReview", reviewModalModel)
-
-@functions {
-    string GetMetalName(string metal)
-    {
-        return metal switch
-        {
-            "Gold" => "Oro",
-            "Silver" => "Plata",
-            "Platinum" => "Platino",
-            _ => metal
-        };
-    }
-}
+@await Html.PartialAsync("_ModalReview", reviewModalModel)
 
 @section Scripts {
     <script>
         let maxQty = @Model.Product.Stock;
 
         function increaseQty() {
-            let qty = parseInt(document.getElementById('quantity').value);
+            let qtyInput = document.getElementById('quantity');
+            let qty = parseInt(qtyInput.value);
             if (qty < maxQty) {
-                document.getElementById('quantity').value = qty + 1;
+                qtyInput.value = qty + 1;
             }
         }
 
         function decreaseQty() {
-            let qty = parseInt(document.getElementById('quantity').value);
+            let qtyInput = document.getElementById('quantity');
+            let qty = parseInt(qtyInput.value);
             if (qty > 1) {
-                document.getElementById('quantity').value = qty - 1;
+                qtyInput.value = qty - 1;
             }
         }
 
         function addToCart(productId) {
             if (typeof notificationModal === 'undefined') {
-                alert('Error: Modal de notificaciones no está cargado');
+                alert('Error: Notifications modal not loading');
                 return;
             }
 
@@ -325,31 +356,21 @@
             .then(data => {
                 if (data.success) {
                     notificationModal.success(
-                        '¡Producto Agregado!',
+                        'Product Added!',
                         data.message,
                         () => {
-                            updateCartCount();
+                            if(typeof updateCartCount === 'function') updateCartCount();
                             document.getElementById('quantity').value = 1;
                         }
                     );
                 } else {
-                    notificationModal.error(
-                        'Error',
-                        data.message
-                    );
+                    notificationModal.error('Error', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                notificationModal.error(
-                    'Error',
-                    'Error al agregar al carrito'
-                );
+                notificationModal.error('Error', 'There was a problem connecting to the server');
             });
-        }
-
-        function updateCartCount() {
-            // TODO: Implementar actualización del contador
         }
     </script>
 }

@@ -1,0 +1,89 @@
+@model IEnumerable<ECommerce.Models.Entities.Review>
+@{
+    ViewData["Title"] = "My Reviews";
+    Layout = "_CustomerLayout";
+}
+
+<!-- Page Header -->
+<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16">
+    <div class="container mx-auto px-4 text-center text-white">
+        <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">
+            Your Reviews
+        </h1>
+        <p class="text-xl text-white/90">Find all the reviews you've made</p>
+    </div>
+</section>
+
+<div class="py-12 pb-20">
+    <div class="container mx-auto px-4">
+        <!-- Reviews List or Empty State -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="space-y-6">
+                @foreach (var review in Model.OrderByDescending(r => r.CreatedAt))
+                {
+                    @await Html.PartialAsync("_ReviewCardPartial", review)
+                }
+            </div>
+
+            <!-- Statistics Summary -->
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-4 gap-4">
+                
+            </div>
+        }
+        else
+        {
+            <!-- Empty State -->
+            <div class="bg-gradient-to-b from-gray-50 to-gray-100 rounded-2xl p-12 text-center border border-gray-200">
+                <div class="mb-6 flex justify-center">
+                    <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="ph ph-star text-4xl text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">No Reviews Yet</h2>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                    You haven't written any reviews yet. Start sharing your experiences with our products!
+                </p>
+
+                <div class="space-y-3">
+                    <p class="text-gray-600 text-sm mb-4">How to write a review:</p>
+                    <ol class="text-left inline-block space-y-2 text-sm text-gray-700">
+                        <li class="flex items-center gap-2">
+                            <span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                            <span>Browse our products</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                            <span>Click on a product you've purchased</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                            <span>Click "Write a Review" button</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                            <span>Share your experience with other customers</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <a asp-controller="Customer" 
+                   asp-action="Products"
+                   class="inline-flex items-center gap-2 mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition">
+                    <i class="ph ph-shopping-bag"></i>
+                    Browse Products
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // You can add additional JavaScript for review interactions here if needed
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add any review-specific interactions
+        });
+    </script>
+}

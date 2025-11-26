@@ -7,7 +7,9 @@
 <div class="max-w-3xl mx-auto animate-fade-in">
     <div class="flex items-center justify-between mb-10">
         <div class="flex items-center space-x-3">
-            <a href="/admin/categories"
+            <a asp-controller="Admin"
+               asp-action="Users"
+               
                class="w-10 h-10 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 rounded-xl flex items-center justify-center transition-all duration-300">
                 <i class="ph ph-arrow-left text-2xl"></i>
             </a>
@@ -28,14 +30,7 @@
     <form method="post" asp-action="CreateUser" class="space-y-8">
         @Html.AntiForgeryToken()
 
-        @if (ViewData.ModelState.ErrorCount > 0)
-        {
-            <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-3 rounded-xl text-sm shadow-sm">
-                <i class="ph ph-warning-circle text-base mr-2"></i>
-                Please correct the following errors:
-                @Html.ValidationSummary(true, "", new { @class = "mt-2 list-disc list-inside text-red-600" })
-            </div>
-        }
+        <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800 text-sm"></div>
 
         <div class="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
             <div class="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
@@ -47,76 +42,70 @@
 
             <div class="p-8 space-y-8">
                 <div class="group">
-                    <label for="Name" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Name</label>
+                    <label asp-for="Name" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Name</label>
                     <div class="relative">
                         <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <input id="Name"
-                               name="Name"
+                        <input asp-for="Name"
                                type="text"
-                               value="@Model?.Name"
                                class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
                                placeholder="John Doe" 
                                required />
                     </div>
-                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
                 </div>
 
                 <div class="group">
-                    <label for="Email" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Email</label>
+                    <label asp-for="Email" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Email</label>
                     <div class="relative">
                         <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <input id="Email"
-                               name="Email"
+                        <input asp-for="Email"
                                type="email"
-                               value="@Model?.Email"
                                class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
                                placeholder="you@example.com" 
                                required />
                     </div>
-                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Email" class="text-red-500 text-sm"></span>
                 </div>
 
                 <div class="group">
-                    <label for="Password" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Password</label>
+                    <label asp-for="Password" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Password</label>
                     <div class="relative">
                         <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <input id="Password"
-                               name="Password"
+                        <input asp-for="Password"
                                type="password"
                                class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
                                placeholder="••••••••"
                                minlength="6"
                                required />
                     </div>
-                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="Password" class="text-red-500 text-sm"></span>
                 </div>
                 
                 <div class="group">
-                    <label for="ConfirmPassword" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Password</label>
+                    <label asp-for="ConfirmPassword" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Confirm Password</label>
                     <div class="relative">
                         <i class="ph ph-pencil-simple text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <input id="ConfirmPassword"
-                               name="ConfirmPassword"
+                        <input asp-for="ConfirmPassword"
                                type="password"
                                class="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400"
                                placeholder="••••••••"
                                minlength="6"
                                required />
                     </div>
-                    @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-red-500 text-sm" })
+                    <span asp-validation-for="ConfirmPassword" class="text-red-500 text-sm"></span>
                 </div>
 
                 <div class="group">
-                    <label for="Role" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Role</label>
+                    <label asp-for="Role" class="block text-sm font-semibold text-primary mb-2 tracking-wide">Role</label>
                     <div class="relative">
-                        <select id="Role"
-                                name="Role"
+                        <select asp-for="Role"
                                 class="w-full pl-4 pr-10 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 outline-none text-gray-800 placeholder-gray-400 transition-all duration-300 group-hover:border-blue-400">
-                            <option value="Customer" @(Model?.Role == "Customer" ? "selected" : "")>Customer</option>
-                            <option value="Vendor" @(Model?.Role == "Vendor" ? "selected" : "")>Vendor</option>
-                            <option value="Admin" @(Model?.Role == "Admin" ? "selected" : "")>Admin</option>
+                            <option value="Customer">Customer</option>
+                            <option value="Vendor">Vendor</option>
+                            <option value="Admin">Admin</option>
                         </select>
                     </div>
+                    <span asp-validation-for="Role" class="text-red-500 text-sm"></span>
                 </div>
             </div>
         </div>
@@ -128,7 +117,9 @@
                 <span>Add User</span>
             </button>
 
-            <a href="/admin/users"
+            <a asp-controller="Admin"
+               asp-action="Users"
+               
                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2">
                 <i class="ph ph-x-circle text-xl"></i>
                 <span>Cancel</span>

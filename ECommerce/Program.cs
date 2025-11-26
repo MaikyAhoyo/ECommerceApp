@@ -119,14 +119,14 @@ app.UseSession();
 // Ruta raíz: redirige al login del AuthController
 app.MapGet("/", context =>
 {
-    context.Response.Redirect("/auth/login");
+    context.Response.Redirect("/customer/home");
     return Task.CompletedTask;
 });
 
 // MVC Controllers
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Auth}/{action=Login}/{id?}");
+    pattern: "{controller=Customer}/{action=Home}/{id?}");
 
 // API Controllers
 app.MapControllers();
