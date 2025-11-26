@@ -5,6 +5,7 @@
     var metal = Model.CurrentSearch ?? "";
     var categoryId = Model.CurrentCategoryId?.ToString() ?? "";
     var search = Model.CurrentSearch ?? "";
+    int currentPageSize = Convert.ToInt32(ViewBag.PageSize ?? 12);
 }
 
 <!-- Page Header -->
@@ -13,27 +14,27 @@
         <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">
             @if (!string.IsNullOrEmpty(search))
             {
-                <span>Results for "<span class="text-gold">@search</span>"</span>
+                <span class="font-playfair">Results for "<span class="text-gold">@search</span>"</span>
             }
             else if (!string.IsNullOrEmpty(metal))
             {
-                <span><span class="text-gold">@GetMetalName(metal)</span> Collection</span>
+                <span class="font-playfair"><span class="text-gold">@GetMetalName(metal)</span> Collection</span>
             }
             else if (Model.CurrentCategoryId.HasValue)
             {
                 var category = Model.Categories.FirstOrDefault(c => c.Id == Model.CurrentCategoryId.Value);
                 if (category != null)
                 {
-                    <span><span class="text-gold">@category.Name</span></span>
+                    <span class="font-playfair"><span class="text-gold">@category.Name</span></span>
                 }
                 else
                 {
-                    <span>All Products</span>
+                    <span class="font-playfair">All Products</span>
                 }
             }
             else
             {
-                <span>All Products</span>
+                <span class="font-playfair">All Products</span>
             }
         </h1>
         <p class="text-xl text-white/90">Find your perfect piece</p>
@@ -52,7 +53,10 @@
                         <h5 class="font-semibold text-lg text-primary">Filters</h5>
                     </div>
 
-                    <form method="get" action="/customer/products" class="space-y-6">
+                    <form method="get" 
+                          asp-controller="Customer" 
+                          asp-action="Products" 
+                          class="space-y-6">
 
                         <!-- Search -->
                         <div>
@@ -134,7 +138,8 @@
                                 <i class="ph ph-funnel text-lg"></i>
                                 <span>Apply Filters</span>
                             </button>
-                            <a href="/customer/products"
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
                                class="w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-xl transition-all duration-300 border-2 border-gray-200 flex items-center justify-center space-x-2">
                                 <i class="ph ph-arrow-clockwise text-lg"></i>
                                 <span>Clear All</span>
@@ -146,17 +151,23 @@
                     <div class="mt-8 pt-6 border-t-2 border-gray-100">
                         <h6 class="text-sm font-semibold text-primary mb-3">Quick Links</h6>
                         <div class="space-y-2">
-                            <a href="/customer/products?metal=Gold"
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
+                               asp-route-metal="Gold"
                                class="flex items-center space-x-3 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors group">
                                 <i class="ph-fill ph-crown text-gold text-lg"></i>
                                 <span class="text-gray-700 group-hover:text-gold transition-colors">Gold Collection</span>
                             </a>
-                            <a href="/customer/products?metal=Silver"
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
+                               asp-route-metal="Silver"
                                class="flex items-center space-x-3 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors group">
                                 <i class="ph-fill ph-star text-gray-400 text-lg"></i>
                                 <span class="text-gray-700 group-hover:text-gold transition-colors">Silver Collection</span>
                             </a>
-                            <a href="/customer/products?metal=Platinum"
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
+                               asp-route-metal="Platinum"
                                class="flex items-center space-x-3 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors group">
                                 <i class="ph-fill ph-diamond text-slate-500 text-lg"></i>
                                 <span class="text-gray-700 group-hover:text-gold transition-colors">Platinum Collection</span>
@@ -166,24 +177,34 @@
                 </div>
             </div>
 
-            <!-- Products Grid -->
             <div class="lg:col-span-3">
 
-                <!-- Results Info -->
                 <div class="bg-white rounded-2xl p-4 shadow-lg mb-8 flex justify-between items-center">
                     <span class="font-semibold text-primary">
-                        <span class="text-gold">@Model.Products.Count()</span> products found
+                        <span class="text-gold">@Model.TotalProducts</span> products found
                     </span>
-                    <div class="flex items-center space-x-2">
-                        <i class="ph ph-funnel-simple text-gray-400"></i>
-                        <span class="text-sm text-gray-600 hidden sm:inline">Sorted by relevance</span>
-                    </div>
+
+                    <form method="get" asp-action="Products" class="flex items-center space-x-2">
+                        <input type="hidden" name="search" value="@Model.SearchTerm">
+                        <input type="hidden" name="metal" value="@Model.CurrentMetal">
+                        <input type="hidden" name="categoryId" value="@Model.CurrentCategoryId">
+                        <input type="hidden" name="minPrice" value="@Model.CurrentMinPrice">
+                        <input type="hidden" name="maxPrice" value="@Model.CurrentMaxPrice">
+                        <input type="hidden" name="sortBy" value="@Model.CurrentSortBy">
+                        <input type="hidden" name="page" value="1"> <label class="text-sm text-gray-600 hidden sm:inline">Show:</label>
+                        <select name="pageSize"
+                                onchange="this.form.submit()"
+                                class="rounded-xl border-2 border-gray-200 focus:border-gold outline-none px-2 py-1 text-sm font-medium transition-all">
+                            <option value="12" selected="@(currentPageSize == 12)">12</option>
+                            <option value="24" selected="@(currentPageSize == 24)">24</option>
+                            <option value="48" selected="@(currentPageSize == 48)">48</option>
+                        </select>
+                    </form>
                 </div>
 
-                <!-- Products Grid -->
                 @if (Model.Products != null && Model.Products.Any())
                 {
-                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         @foreach (var product in Model.Products)
                         {
                             @await Html.PartialAsync("_ProductCardPartial", product)
@@ -192,23 +213,78 @@
                 }
                 else
                 {
-                    <!-- Empty State -->
                     <div class="bg-white rounded-2xl p-20 text-center">
-                        <div class="max-w-md mx-auto">
-                            <i class="ph ph-magnifying-glass text-8xl text-gray-300 mb-6"></i>
-                            <h3 class="font-playfair text-3xl font-bold text-primary mb-4">No Products Found</h3>
-                            <p class="text-gray-600 mb-8">
-                                Try adjusting your filters or explore our full catalog
-                            </p>
-                            <a href="/customer/products"
-                               class="inline-flex items-center space-x-2 bg-gold hover:bg-gold-dark text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
-                                <span>View All Products</span>
-                                <i class="ph ph-arrow-right"></i>
-                            </a>
+                    </div>
+                }
+
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="bg-white rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="text-sm text-gray-600">
+                            Page <span class="font-semibold text-primary">@Model.CurrentPage</span> of <span class="font-semibold text-primary">@Model.TotalPages</span>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            @if (Model.CurrentPage > 2)
+                            {
+                                <a href="@GetPageUrl(1)"
+                                   class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                                   title="First Page">
+                                    <i class="ph ph-caret-double-left"></i>
+                                </a>
+                            }
+
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <a href="@GetPageUrl(Model.CurrentPage - 1)"
+                                   class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                                   title="Previous">
+                                    <i class="ph ph-caret-left"></i>
+                                </a>
+                            }
+
+                            @{
+                                var startPage = Math.Max(1, Model.CurrentPage - 2);
+                                var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                            }
+
+                            @for (int i = startPage; i <= endPage; i++)
+                            {
+                                if (i == Model.CurrentPage)
+                                {
+                                    <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gold text-white font-bold shadow-md">@i</div>
+                                }
+                                else
+                                {
+                                    <a href="@GetPageUrl(i)"
+                                       class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all font-medium">@i</a>
+                                }
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <a href="@GetPageUrl(Model.CurrentPage + 1)"
+                                   class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                                   title="Next">
+                                    <i class="ph ph-caret-right"></i>
+                                </a>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages - 1)
+                            {
+                                <a href="@GetPageUrl(Model.TotalPages)"
+                                   class="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-gold hover:bg-gold hover:text-white transition-all"
+                                   title="Last Page">
+                                    <i class="ph ph-caret-double-right"></i>
+                                </a>
+                            }
                         </div>
                     </div>
                 }
             </div>
+        </div>
+    </div>
+</div>
         </div>
     </div>
 </div>
@@ -223,6 +299,36 @@
             "Platinum" => "Platinum",
             _ => metal
         };
+    }
+
+    string GetPageUrl(int page)
+    {
+        var pageSize = ViewBag.PageSize;
+        var queryParams = new List<string>
+        {
+            $"page={page}",
+            $"pageSize={pageSize}"
+        };
+
+        if (!string.IsNullOrEmpty(Model.SearchTerm))
+            queryParams.Add($"search={Uri.EscapeDataString(Model.SearchTerm)}");
+
+        if (!string.IsNullOrEmpty(Model.CurrentMetal))
+            queryParams.Add($"metal={Uri.EscapeDataString(Model.CurrentMetal)}");
+
+        if (Model.CurrentCategoryId.HasValue)
+            queryParams.Add($"categoryId={Model.CurrentCategoryId}");
+
+        if (Model.CurrentMinPrice.HasValue)
+            queryParams.Add($"minPrice={Model.CurrentMinPrice}");
+
+        if (Model.CurrentMaxPrice.HasValue)
+            queryParams.Add($"maxPrice={Model.CurrentMaxPrice}");
+
+        if (!string.IsNullOrEmpty(Model.CurrentSortBy))
+            queryParams.Add($"sortBy={Model.CurrentSortBy}");
+
+        return $"/customer/products?{string.Join("&", queryParams)}";
     }
 }
 

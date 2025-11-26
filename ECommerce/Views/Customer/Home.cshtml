@@ -24,29 +24,7 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 @foreach (var category in Model.Categories.Take(3))
                 {
-                    <a href="/customer/products?categoryId=@category.Id" class="group relative bg-white rounded-2xl p-10 border border-gray-200 hover:border-gold transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div class="relative z-10">
-                            <div class="w-20 h-20 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                                <i class="ph-fill ph-tag text-white text-3xl"></i>
-                            </div>
-                            
-                            <h4 class="font-playfair text-2xl font-bold text-primary mb-3 group-hover:text-gold transition-colors">
-                                @category.Name
-                            </h4>
-                            
-                            @if (!string.IsNullOrEmpty(category.Description))
-                            {
-                                <p class="text-gray-600 mb-4">@category.Description</p>
-                            }
-                            
-                            <span class="inline-flex items-center space-x-2 text-gold font-semibold group-hover:translate-x-2 transition-transform">
-                                <span>View Products</span>
-                                <i class="ph ph-arrow-right"></i>
-                            </span>
-                        </div>
-                    </a>
+                    @await Html.PartialAsync("_CategoryCardPartial", category)
                 }
             </div>
         </div>
@@ -75,7 +53,9 @@
             </div>
 
             <div class="text-center mt-12">
-                <a href="/customer/products" class="inline-flex items-center space-x-2 bg-white hover:bg-gold hover:text-white border-2 border-gold text-gold px-10 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
+                <a asp-controller="Customer" 
+                   asp-action="Products" 
+                   class="inline-flex items-center space-x-2 bg-white hover:bg-gold hover:text-white border-2 border-gold text-gold px-10 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl">
                     <span>View All Products</span>
                     <i class="ph ph-arrow-right"></i>
                 </a>
@@ -115,7 +95,10 @@ else
                     </div>
                     <h3 class="font-playfair text-3xl font-bold mb-4">Gold</h3>
                     <p class="text-white/90 mb-8">Timeless elegance in 14k, 18k and 24k</p>
-                    <a href="/customer/products?metal=Gold" class="inline-flex items-center space-x-2 bg-white text-yellow-600 hover:bg-yellow-50 px-8 py-3 rounded-full font-semibold transition-all duration-300">
+                    <a asp-controller="Customer" 
+                       asp-action="Products" 
+                       asp-route-metal="Gold" 
+                       class="inline-flex items-center space-x-2 bg-white text-yellow-600 hover:bg-yellow-50 px-8 py-3 rounded-full font-semibold transition-all duration-300">
                         <span>View Collection</span>
                         <i class="ph ph-arrow-right"></i>
                     </a>
@@ -131,7 +114,10 @@ else
                     </div>
                     <h3 class="font-playfair text-3xl font-bold mb-4">Silver</h3>
                     <p class="text-primary/80 mb-8">Brilliant sophistication in 925 sterling</p>
-                    <a href="/customer/products?metal=Silver" class="inline-flex items-center space-x-2 bg-primary text-white hover:bg-primary/90 px-8 py-3 rounded-full font-semibold transition-all duration-300">
+                    <a asp-controller="Customer" 
+                       asp-action="Products" 
+                       asp-route-metal="Silver" 
+                       class="inline-flex items-center space-x-2 bg-primary text-white hover:bg-primary/90 px-8 py-3 rounded-full font-semibold transition-all duration-300">
                         <span>View Collection</span>
                         <i class="ph ph-arrow-right"></i>
                     </a>
@@ -147,7 +133,10 @@ else
                     </div>
                     <h3 class="font-playfair text-3xl font-bold mb-4">Platinum</h3>
                     <p class="text-white/90 mb-8">Exclusive luxury in 950 platinum</p>
-                    <a href="/customer/products?metal=Platinum" class="inline-flex items-center space-x-2 bg-white text-slate-600 hover:bg-slate-50 px-8 py-3 rounded-full font-semibold transition-all duration-300">
+                    <a asp-controller="Customer" 
+                       asp-action="Products" 
+                       asp-route-metal="Platinum" 
+                       class="inline-flex items-center space-x-2 bg-white text-slate-600 hover:bg-slate-50 px-8 py-3 rounded-full font-semibold transition-all duration-300">
                         <span>View Collection</span>
                         <i class="ph ph-arrow-right"></i>
                     </a>

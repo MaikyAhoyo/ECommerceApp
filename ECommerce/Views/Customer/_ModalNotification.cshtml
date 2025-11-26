@@ -14,52 +14,43 @@
 
             <!-- Title -->
             <h3 id="modalTitle" class="text-2xl font-bold text-gray-800 text-center mb-3">
-                Éxito
+                Success
             </h3>
 
             <!-- Message -->
             <p id="modalMessage" class="text-gray-600 text-center leading-relaxed mb-8">
-                Tu mensaje aquí
+                Your message here
             </p>
 
-            <!-- Action Button -->
             <button type="button" id="modalCloseBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200">
-                Aceptar
+                Accept
             </button>
         </div>
     </div>
 </div>
 
 <script>
-    // Definir notificationModal globalmente
     (function () {
         function applyShowAnimation(modal, panel) {
-            // ensure starting state
             panel.classList.remove('opacity-100', 'scale-100');
             panel.classList.add('opacity-0', 'scale-95');
 
-            // Force reflow so transition triggers
             void panel.offsetWidth;
 
-            // animate to visible
             panel.classList.remove('opacity-0', 'scale-95');
             panel.classList.add('opacity-100', 'scale-100');
 
-            // animate backdrop opacity
             modal.classList.remove('bg-opacity-0');
             modal.classList.add('bg-opacity-50');
         }
 
         function applyHideAnimation(modal, panel, onHidden) {
-            // animate to hidden
             panel.classList.remove('opacity-100', 'scale-100');
             panel.classList.add('opacity-0', 'scale-95');
 
-            // backdrop fade
             modal.classList.remove('bg-opacity-50');
             modal.classList.add('bg-opacity-0');
 
-            // wait for transition to finish (match duration-200 => 200ms)
             setTimeout(function () {
                 if (typeof onHidden === 'function') onHidden();
             }, 220);
@@ -87,11 +78,9 @@
                 const modalHeader = document.getElementById('modalHeader');
                 const closeBtn = document.getElementById('modalCloseBtn');
 
-                // Configurar título y mensaje
                 modalTitle.textContent = title;
                 modalMessage.textContent = message;
 
-                // Configurar estilos según tipo
                 const configs = {
                     success: {
                         header: 'bg-gradient-to-r from-green-500 to-green-600',
@@ -121,21 +110,17 @@
 
                 const config = configs[type] || configs.info;
 
-                // Aplicar estilos
                 modalHeader.className = `h-2 ${config.header}`;
                 modalIcon.className = `w-16 h-16 rounded-full flex items-center justify-center text-3xl ${config.icon}`;
                 modalIcon.innerHTML = `<i class="ph ${config.iconClass}"></i>`;
                 const newBtnClass = `w-full py-3 ${config.button} text-white font-semibold rounded-lg transition duration-200`;
-                // replace class safely
                 document.getElementById('modalCloseBtn').className = newBtnClass;
 
-                // show modal
                 modal.classList.remove('hidden');
                 modal.style.display = 'flex';
 
                 applyShowAnimation(modal, panel);
 
-                // remove previous listeners
                 const clone = closeBtn.cloneNode(true);
                 closeBtn.parentNode.replaceChild(clone, closeBtn);
 
@@ -144,10 +129,8 @@
                     if (callback && typeof callback === 'function') callback();
                 });
 
-                // clicking outside panel closes
                 modal.addEventListener('click', function outsideHandler(e) {
                     if (e.target === modal) {
-                        // remove this handler after invoked
                         modal.removeEventListener('click', outsideHandler);
                         window.notificationModal.hide();
                         if (callback && typeof callback === 'function') callback();
