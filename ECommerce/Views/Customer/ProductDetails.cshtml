@@ -202,25 +202,76 @@
                     <div class="space-y-4">
                         @foreach (var review in Model.Reviews.Take(5))
                         {
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-gold/20 text-gold flex items-center justify-center font-bold text-sm">
-                                            @review.User?.Name.Substring(0, 1).ToUpper()
+                            <div class="bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 p-8 group h-full flex flex-col">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div>
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-full bg-gold/20 text-gold flex items-center justify-center font-bold text-sm">
+                                                    @review.User?.Name.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <h6 class="font-bold text-primary text-sm">@review.User?.Name</h6>
+                                            </div>
+                                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-cream text-gold text-xs font-bold rounded-full border border-gold/10">
+                                                @review.Rating
+                                                <i class="ph-fill ph-star"></i>
+                                            </span>
                                         </div>
-                                        <div>
-                                            <h6 class="font-bold text-primary text-sm">@review.User?.Name</h6>
-                                            <span class="text-xs text-gray-400">@review.CreatedAt.ToString("dd MMM yyyy")</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex text-gold text-xs">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            <i class="ph-fill ph-star @(i <= review.Rating ? "" : "text-gray-200")"></i>
-                                        }
+                                        <p class="text-xs uppercase tracking-wider text-gray-400 font-bold flex items-center gap-2">
+                                            <i class="ph-bold ph-calendar-blank"></i>
+                                            @review.CreatedAt.ToString("MMMM dd, yyyy")
+                                        </p>
                                     </div>
                                 </div>
-                                <p class="text-gray-600 text-sm leading-relaxed">@review.Comment</p>
+
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="flex text-gold text-lg">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <i class="ph-fill ph-star"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="ph ph-star text-gray-200"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <span class="text-xs font-bold text-primary bg-gray-100 px-3 py-1 rounded-lg">
+                                        @switch (review.Rating)
+                                        {
+                                            case 5:
+                                                <span>Excellent</span>
+                                                ; break;
+                                            case 4:
+
+                                                <span>Good</span>
+                                                ; break;
+                                            case 3:
+
+                                                <span>Average</span>
+                                                ; break;
+                                            case 2:
+
+                                                <span>Poor</span>
+                                                ; break;
+                                            case 1:
+
+                                                <span>Very Poor</span>
+                                                ; break;
+                                            default:
+
+                                                <span>Rated</span>
+                                                ; break;
+                                        }
+                                    </span>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-2xl p-6 relative mb-6 flex-grow">
+                                    <i class="ph-fill ph-quotes text-gray-200 text-3xl absolute -top-3 -left-2 bg-white rounded-full p-1"></i>
+                                    <p class="text-gray-600 leading-relaxed italic relative z-10">"@review.Comment"</p>
+                                </div>
                             </div>
                         }
                     </div>
