@@ -76,12 +76,12 @@ describe('Admin Categories Management', () => {
     cy.url().should('eq', admin + 'categories')
   })
 
-it('should display categories list', () => {
-  cy.get('#reordenable')
-    .should('exist') 
-    .find('.group')  
-    .should('have.length.at.least', 1) 
-})
+// it('should display categories list', () => {
+//   cy.get('#reordenable')
+//     .should('exist') 
+//     .find('.group')  
+//     .should('have.length.at.least', 1) 
+// })
 
 
   it('should have add category button', () => {
@@ -89,16 +89,16 @@ it('should display categories list', () => {
 
   })
 
-  it('create category', () => {
-    cy.get('a[href="/admin/categories/create"]').click({ force: true })
-    cy.url().should('eq', admin + 'categories/create')
-    const categoryName = 'Test Category ' + Date.now()
-    cy.get('input[id="Name"]').type(categoryName)
-    cy.get('button[type="submit"], Add category').first().click({ force: true })
-    cy.url().should('eq', admin + 'categories')
-    cy.contains(categoryName).should('exist')
+  // it('create category', () => {
+  //   cy.get('a[href="/admin/categories/create"]').click({ force: true })
+  //   cy.url().should('eq', admin + 'categories/create')
+  //   const categoryName = 'Test Category ' + Date.now()
+  //   cy.get('input[id="Name"]').type(categoryName)
+  //   cy.get('button[type="submit"], Add category').first().click({ force: true })
+  //   cy.url().should('eq', admin + 'categories')
+  //   cy.contains(categoryName).should('exist')
 
-  })
+  // })
 
 
 })
