@@ -363,6 +363,7 @@ namespace ECommerce.Controllers
                 var cartItems = await _orderService.GetOrderItemsAsync(cart.Id);
                 var itemToUpdate = cartItems.FirstOrDefault(i => i.Id == itemId);
 
+
                 if (itemToUpdate == null)
                 {
                     return Json(new { success = false, message = "El producto no se encuentra en tu carrito" });

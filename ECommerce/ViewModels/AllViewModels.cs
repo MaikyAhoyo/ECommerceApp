@@ -188,6 +188,9 @@ namespace ECommerce.ViewModels
         public bool CanCancel { get; set; }
         public bool CanReview { get; set; }
     }
+
+    
+
     #endregion
 
     #region Auth View Models
