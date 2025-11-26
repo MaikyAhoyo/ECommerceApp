@@ -7,6 +7,7 @@ namespace ECommerce.Models.Entities
     {
         public int Id { get; set; }
         public int UserId { get; set; }
+        public int AddressId { get; set; } = 1;
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
         public DateTime? ArrivalDate { get; set; }
         public string Status { get; set; } = "Cart"; // Cart, Pending, Confirmed, Shipped, Delivered, Cancelled
