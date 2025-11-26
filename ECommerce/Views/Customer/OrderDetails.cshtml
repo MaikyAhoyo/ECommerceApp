@@ -1,0 +1,68 @@
+@model ECommerce.Models.Entities.Order
+@{
+    ViewData["Title"] = $"Order #{Model.Id}";
+    Layout = "_CustomerLayout";
+}
+
+<div class="py-12 pb-20">
+    <div class="container mx-auto px-4">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Order #@Model.Id</h1>
+            <p class="text-gray-600">Placed on @Model.OrderDate.ToString("MMMM dd, yyyy")</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-500">Status:</p>
+                    <p class="font-semibold text-lg">@Model.Status</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Total</p>
+                    <p class="text-2xl font-bold text-gray-800">$@Model.Total.ToString("N2")</p>
+                </div>
+            </div>
+
+            @if (Model.OrderItems != null && Model.OrderItems.Any())
+            {
+                <div class="mt-6">
+                    <h4 class="font-semibold mb-4">Items</h4>
+                    <ul class="space-y-4">
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <li class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+                                        @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                        {
+                                            <img src="@item.Product.ImageUrl" alt="@item.Product?.Name" class="w-full h-full object-contain">
+                                        }
+                                        else
+                                        {
+                                            <i class="ph ph-image text-gray-300 text-2xl"></i>
+                                        }
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">@item.Product?.Name</p>
+                                        <p class="text-sm text-gray-500">Qty: @item.Quantity</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold">$@((item.Quantity * item.UnitPrice).ToString("N2"))</p>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="mt-6 border-t pt-4 text-right">
+                <p class="text-sm text-gray-500">IVA (16%): <span class="font-semibold">$@(Math.Round((Model.Total - (Model.Total / 1.16m)),2).ToString("N2"))</span></p>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <a href="/customer/orders" class="px-4 py-2 bg-gray-100 rounded-lg">Back to Orders</a>
+        </div>
+    </div>
+</div>
