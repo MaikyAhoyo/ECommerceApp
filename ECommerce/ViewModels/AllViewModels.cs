@@ -125,6 +125,7 @@ namespace ECommerce.ViewModels
 
     public class CustomerProductDetailsViewModel
     {
+        public Boolean LoggedIn { get; set; }
         public Product Product { get; set; } = null!;
         public List<Review> Reviews { get; set; } = new List<Review>();
         public double AverageRating { get; set; }
