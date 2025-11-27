@@ -757,57 +757,6 @@ namespace ECommerce.Controllers
             return View(reviews);
         }
 
-        // GET: /customer/reviews/edit/{id}
-        [HttpGet("reviews/edit/{id}")]
-        public async Task<IActionResult> EditReview(int id)
-        {
-            int userId = GetCurrentUserId();
-            var review = await _reviewService.GetByIdAsync(id);
-
-            if (review == null || review.UserId != userId)
-            {
-                TempData["Error"] = "Review not found";
-                return RedirectToAction(nameof(MyReviews));
-            }
-
-            var product = await _productService.GetByIdAsync(review.ProductId);
-            ViewBag.Product = product;
-
-            return View(review);
-        }
-
-        // POST: /customer/reviews/edit/{id}
-        [HttpPost("reviews/edit/{id}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditReview(int id, Review review)
-        {
-            int userId = GetCurrentUserId();
-            var existingReview = await _reviewService.GetByIdAsync(id);
-
-            if (existingReview == null || existingReview.UserId != userId)
-            {
-                TempData["Error"] = "Review not found";
-                return RedirectToAction(nameof(MyReviews));
-            }
-
-            if (!ModelState.IsValid)
-            {
-                var product = await _productService.GetByIdAsync(review.ProductId);
-                ViewBag.Product = product;
-                return View(review);
-            }
-
-            review.Id = id;
-            var success = await _reviewService.UpdateAsync(review);
-
-            if (success)
-                TempData["Success"] = "Review updated successfully!";
-            else
-                TempData["Error"] = "Error updating review";
-
-            return RedirectToAction(nameof(MyReviews));
-        }
-
         // POST: /customer/reviews/delete/{id}
         [HttpPost("reviews/delete/{id}")]
         [ValidateAntiForgeryToken]

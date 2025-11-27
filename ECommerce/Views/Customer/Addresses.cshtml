@@ -4,15 +4,29 @@
     Layout = "_CustomerLayout";
 }
 
-<div class="py-12 pb-20">
+<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 relative overflow-hidden">
+    <nav aria-label="breadcrumb" class="mb-6 flex justify-center">
+        <ol class="flex items-center space-x-2 text-sm text-white/60">
+            <li><a asp-controller="Customer" asp-action="Home" class="hover:text-gold transition-colors">Home</a></li>
+            <li><i class="ph ph-caret-right text-xs"></i></li>
+            <li class="text-white font-medium truncate max-w-[200px]">My Addresses</li>
+        </ol>
+    </nav>
+
+    <div class="container mx-auto px-4 relative z-10 text-white text-center">
+        <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">My Addresses</h1>
+        <p class="text-xl text-white/80">Manage your shipping destinations</p>
+    </div>
+</section>
+
+<div class="bg-cream py-12 pb-24 min-h-[60vh]">
     <div class="container mx-auto px-4">
-        <div class="mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-4xl font-bold text-gray-800 mb-2">My Addresses</h1>
-                <p class="text-gray-600">Manage your shipping addresses</p>
-            </div>
-            <a href="/customer/addresses/create" class="inline-flex items-center px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-lg font-semibold transition">
-                <i class="ph ph-plus mr-2"></i>Add New Address
+
+        <div class="flex justify-end mb-8">
+            <a asp-controller="Customer" 
+               asp-action="CreateAddress" 
+               class="inline-flex items-center px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                <i class="ph-bold ph-plus mr-2"></i>Add New Address
             </a>
         </div>
 
@@ -21,27 +35,46 @@
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach (var address in Model)
                 {
-                    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
-                        <div class="space-y-3 mb-6">
-                            <p class="font-medium text-gray-800">@address.AddressLine1</p>
-                            @if (!string.IsNullOrEmpty(address.AddressLine2))
-                            {
-                                <p class="text-gray-600">@address.AddressLine2</p>
-                            }
-                            <p class="text-gray-600">@address.City, @address.State @address.PostalCode</p>
-                            <p class="text-gray-600">@address.Country</p>
-                        </div>
+                    <div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
 
-                        <div class="flex gap-2 border-t pt-4">
-                            <a href="/customer/addresses/edit/@address.Id" class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition">
-                                <i class="ph-bold ph-pencil mr-2"></i>Edit
-                            </a>
-                         <form method="post" action="/customer/addresses/delete/@address.Id" class="flex-1 delete-form">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="w-full inline-flex items-center justify-center px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium transition">
-                                <i class="ph-bold ph-trash mr-2"></i>Delete
-                            </button>
-                        </form>
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gold/10 to-transparent rounded-bl-full -mr-4 -mt-4 transition-opacity"></div>
+
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-full bg-cream text-gold flex items-center justify-center shadow-sm">
+                                    <i class="ph-fill ph-map-pin text-xl"></i>
+                                </div>
+                                <h3 class="font-playfair font-bold text-xl text-primary">Shipping Address</h3>
+                            </div>
+
+                            <div class="space-y-2 text-gray-600 mb-8 min-h-[100px]">
+                                <p class="font-semibold text-gray-800 text-lg">@address.AddressLine1</p>
+                                @if (!string.IsNullOrEmpty(address.AddressLine2))
+                                {
+                                    <p>@address.AddressLine2</p>
+                                }
+                                <p>@address.City, @address.State @address.PostalCode</p>
+                                <p class="uppercase tracking-wide text-xs font-bold text-gray-400">@address.Country</p>
+                            </div>
+
+                            <div class="flex gap-3 pt-6 border-t border-gray-100">
+                                <a asp-controller="Customer" 
+                                   asp-action="EditAddress" 
+                                   asp-route-id="@address.Id" 
+                                   class="flex-1 inline-flex items-center justify-center px-4 py-2.5 border-2 border-gray-200 text-gray-600 font-semibold rounded-xl hover:border-primary hover:text-primary hover:bg-gray-50 transition-all">
+                                    <i class="ph-bold ph-pencil-simple mr-2"></i>Edit
+                                </a>
+
+                                <form method="post" 
+                                      asp-controller="Customer" 
+                                      asp-action="DeleteAddress" 
+                                      asp-route-id="@address.Id" class="flex-1 delete-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-red-50 text-red-500 font-semibold rounded-xl hover:bg-red-100 hover:text-red-600 transition-all">
+                                        <i class="ph-bold ph-trash mr-2"></i>Delete
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 }
@@ -49,19 +82,20 @@
         }
         else
         {
-            <div class="bg-white rounded-xl p-12 text-center border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">No addresses yet</h2>
-                <p class="text-gray-600 mb-6">You haven't added any shipping addresses yet.</p>
-                <a href="/customer/addresses/create" class="inline-flex items-center px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-lg font-semibold transition">
-                    <i class="ph ph-plus mr-2"></i>Add Your First Address
+            <div class="bg-white rounded-3xl p-16 text-center border border-dashed border-gray-200 shadow-sm max-w-2xl mx-auto">
+                <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                    <i class="ph-fill ph-map-pin text-4xl"></i>
+                </div>
+                <h2 class="font-playfair text-3xl font-bold text-primary mb-3">No addresses yet</h2>
+                <p class="text-gray-500 mb-8 text-lg">Save your shipping details for a faster checkout experience.</p>
+                <a asp-controller="Customer" asp-action="CreateAddress" class="inline-flex items-center px-8 py-4 bg-primary hover:bg-primary/90 text-white rounded-full font-bold shadow-lg hover:shadow-xl transition-all">
+                    <i class="ph-bold ph-plus mr-2"></i>Add Your First Address
                 </a>
             </div>
         }
     </div>
-    <br />
 </div>
 
-<!-- DELETE CONFIRMATION MODAL -->
 <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden items-center justify-center z-[9999]">
     <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-xl border border-gray-200">
         
@@ -84,46 +118,43 @@
     </div>
 </div>
 
-
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("deleteModal");
-    const confirmBtn = document.getElementById("confirmDelete");
-    const cancelBtn = document.getElementById("cancelDelete");
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("deleteModal");
+        const confirmBtn = document.getElementById("confirmDelete");
+        const cancelBtn = document.getElementById("cancelDelete");
 
-    let formToSubmit = null;
+        let formToSubmit = null;
 
-    // Manejar clic en cualquier formulario de eliminación
-    document.addEventListener("submit", function (e) {
-        const form = e.target;
-        if (!form.classList.contains("delete-form")) return;
+        document.addEventListener("submit", function (e) {
+            const form = e.target;
+            if (!form.classList.contains("delete-form")) return;
 
-        e.preventDefault();
-        formToSubmit = form;
+            e.preventDefault();
+            formToSubmit = form;
 
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-    });
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        });
 
-    cancelBtn.addEventListener("click", () => {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-        formToSubmit = null;
-    });
-
-    confirmBtn.addEventListener("click", () => {
-        if (formToSubmit) {
-            formToSubmit.submit();
-        }
-    });
-
-    // Cerrar al hacer clic fuera del modal
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
+        cancelBtn.addEventListener("click", () => {
             modal.classList.add("hidden");
             modal.classList.remove("flex");
             formToSubmit = null;
-        }
+        });
+
+        confirmBtn.addEventListener("click", () => {
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
+
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+                formToSubmit = null;
+            }
+        });
     });
-});
 </script>

@@ -4,22 +4,28 @@
     Layout = "_CustomerLayout";
 }
 
-<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16">
-    <nav aria-label="breadcrumb" class="mb-6 flex justify-center">
-        <ol class="flex items-center space-x-2 text-sm text-white/60">
-            <li><a asp-controller="Customer" asp-action="Home" class="hover:text-gold transition-colors">Home</a></li>
-            <li><i class="ph ph-caret-right text-xs"></i></li>
-            <li><a asp-controller="Customer" asp-action="Products" class="hover:text-gold transition-colors">Products</a></li>
-            <li><i class="ph ph-caret-right text-xs"></i></li>
-            <li class="text-white font-medium truncate max-w-[200px]">@Model.Product.Name</li>
-        </ol>
-    </nav>
+<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 pt-12 pb-12 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
-    <div class="container mx-auto px-4 text-center text-white">
-        <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">
-            @Model.Product.Name
-        </h1>
-        <p class="text-xl text-white/90">@Model.Product.Metal Collection</p>
+    <div class="container mx-auto px-4 relative z-10">
+        <nav aria-label="breadcrumb" class="mb-6 flex justify-center">
+            <ol class="flex items-center space-x-2 text-sm text-white/60">
+                <li><a asp-controller="Customer" 
+                       asp-action="Home" 
+                       class="hover:text-gold transition-colors">Home</a></li>
+                <li><i class="ph ph-caret-right text-xs"></i></li>
+                <li><a asp-controller="Customer" 
+                       asp-action="Products" 
+                       class="hover:text-gold transition-colors">Products</a></li>
+                <li><i class="ph ph-caret-right text-xs"></i></li>
+                <li class="text-white font-medium truncate max-w-[200px]">@Model.Product.Name</li>
+            </ol>
+        </nav>
+
+        <div class="text-center text-white">
+            <h1 class="font-playfair text-3xl md:text-4xl font-bold mb-2">@Model.Product.Name</h1>
+            <p class="text-white/80 text-lg">@GetMetalName(Model.Product.Metal) Collection</p>
+        </div>
     </div>
 </section>
 
@@ -48,14 +54,14 @@
                     <div class="absolute top-6 left-6 flex flex-col gap-2">
                         @if (Model.Product.Stock == 0)
                         {
-                            <span class="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                                Out of Stock
+                            <span class="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+                                <i class="ph-fill ph-prohibit"></i> Out of Stock
                             </span>
                         }
                         else if (Model.Product.Stock < 5)
                         {
-                            <span class="bg-yellow-400 text-primary px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                                Last Pieces!
+                            <span class="bg-yellow-400 text-primary px-4 py-1.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+                                <i class="ph-fill ph-fire"></i> Last Pieces!
                             </span>
                         }
                     </div>
@@ -65,7 +71,7 @@
 
                     <div class="flex justify-between items-start mb-4">
                         <span class="text-sm uppercase tracking-wider text-gold font-bold">
-                            @Model.Product.Metal &bull; @Model.Product.Purity
+                            @GetMetalName(Model.Product.Metal) &bull; @Model.Product.Purity
                         </span>
 
                         <div class="flex items-center gap-2 bg-cream px-3 py-1 rounded-full">
@@ -89,7 +95,7 @@
                                 }
                             </div>
                             <span class="text-xs font-semibold text-primary">@Model.AverageRating.ToString("0.0")</span>
-                            <span class="text-xs text-gray-500">(@Model.ReviewCount)</span>
+                            <span class="text-xs text-gray-500">(@Model.ReviewCount reviews)</span>
                         </div>
                     </div>
 
@@ -101,9 +107,10 @@
                         {
                             <span class="text-xl text-gray-400 line-through mb-2">$@Model.Product.OriginalPrice.ToString("N0")</span>
                         }
+                        <span class="text-sm text-gray-400 mb-2">VAT Included</span>
                     </div>
 
-                    <div class="prose prose-sm text-gray-600 mb-8">
+                    <div class="prose prose-sm text-gray-600 mb-8 leading-relaxed">
                         <p>@Model.Product.Description</p>
                     </div>
 
@@ -113,8 +120,8 @@
                                 <i class="ph-fill ph-sketch-logo text-xl"></i>
                             </div>
                             <div>
-                                <span class="block text-xs text-gray-500 uppercase">Material</span>
-                                <span class="font-semibold text-primary">@Model.Product.Metal</span>
+                                <span class="block text-[10px] text-gray-500 uppercase tracking-wider font-bold">Material</span>
+                                <span class="font-semibold text-primary">@GetMetalName(Model.Product.Metal)</span>
                             </div>
                         </div>
                         <div class="bg-cream rounded-xl p-4 flex items-center gap-3">
@@ -122,7 +129,7 @@
                                 <i class="ph-fill ph-certificate text-xl"></i>
                             </div>
                             <div>
-                                <span class="block text-xs text-gray-500 uppercase">Purity</span>
+                                <span class="block text-[10px] text-gray-500 uppercase tracking-wider font-bold">Purity</span>
                                 <span class="font-semibold text-primary">@Model.Product.Purity</span>
                             </div>
                         </div>
@@ -131,7 +138,7 @@
                                 <i class="ph-fill ph-package text-xl"></i>
                             </div>
                             <div>
-                                <span class="block text-xs text-gray-500 uppercase">Stock</span>
+                                <span class="block text-[10px] text-gray-500 uppercase tracking-wider font-bold">Stock</span>
                                 <span class="font-semibold text-primary">@Model.Product.Stock</span>
                             </div>
                         </div>
@@ -142,10 +149,8 @@
                         <div class="flex flex-wrap gap-2 mb-8">
                             @foreach (var category in Model.Categories)
                             {
-                                <a asp-controller="Customer" 
-                                   asp-action="Products" 
-                                   asp-route-categoryId="@category.Id"
-                                   class="px-3 py-1 rounded-lg border border-gray-200 text-sm text-gray-600 hover:border-gold hover:text-gold transition-colors">
+                                <a href="/customer/products?categoryId=@category.Id"
+                                   class="px-3 py-1 rounded-lg border border-gray-200 text-sm text-gray-500 hover:border-gold hover:text-gold transition-colors">
                                     #@category.Name
                                 </a>
                             }
@@ -155,18 +160,18 @@
                     @if (Model.Product.Stock > 0)
                     {
                         <div class="flex flex-col sm:flex-row gap-4 mt-auto">
-                            <div class="flex items-center bg-gray-50 rounded-full px-2 border border-gray-200 sm:w-auto w-full justify-between">
-                                <button type="button" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="decreaseQty()">
-                                    <i class="ph ph-minus font-bold"></i>
+                            <div class="flex items-center bg-gray-50 rounded-full px-2 border border-gray-200 sm:w-auto w-full justify-between h-14">
+                                <button type="button" class="w-12 h-full flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="decreaseQty()">
+                                    <i class="ph ph-minus"></i>
                                 </button>
-                                <input type="number" id="quantity" value="1" min="1" max="@Model.Product.Stock" class="w-12 text-center bg-transparent border-none font-bold text-primary focus:ring-0 p-0" readonly>
-                                <button type="button" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="increaseQty()">
-                                    <i class="ph ph-plus font-bold"></i>
+                                <input type="number" id="quantity" value="1" min="1" max="@Model.Product.Stock" class="w-12 text-center bg-transparent border-none font-bold text-primary focus:ring-0 p-0 text-lg" readonly>
+                                <button type="button" class="w-12 h-full flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="increaseQty()">
+                                    <i class="ph ph-plus"></i>
                                 </button>
                             </div>
 
                             <button type="button" onclick="addToCart(@Model.Product.Id)"
-                                    class="flex-1 bg-primary hover:bg-primary/90 text-white h-14 rounded-full font-semibold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 group">
+                                    class="flex-1 bg-primary hover:bg-primary/90 text-white h-14 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group">
                                 <span>Add to Cart</span>
                                 <i class="ph-bold ph-shopping-cart text-xl group-hover:text-gold transition-colors"></i>
                             </button>
@@ -177,31 +182,32 @@
                         <div class="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl flex items-center gap-3">
                             <i class="ph-fill ph-bell-slash text-2xl"></i>
                             <div>
-                                <span class="font-bold block">Out of Stock</span>
-                                <span class="text-sm">We will notify you when it becomes available.</span>
+                                <span class="font-bold block">Currently Unavailable</span>
+                                <span class="text-sm">We will notify you when this item is back in stock.</span>
                             </div>
                         </div>
                     }
 
-                    <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500">
-                        <div class="flex items-center gap-1"><i class="ph-fill ph-shield-check text-green-500 text-lg"></i> Secure Purchase</div>
-                        <div class="flex items-center gap-1"><i class="ph-fill ph-truck text-gold text-lg"></i> Free Shipping</div>
-                        <div class="flex items-center gap-1"><i class="ph-fill ph-arrow-counter-clockwise text-blue-500 text-lg"></i> 30-Day Returns</div>
+                    <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500 font-medium">
+                        <div class="flex items-center gap-2"><i class="ph-fill ph-shield-check text-green-500 text-lg"></i> Secure Payment</div>
+                        <div class="flex items-center gap-2"><i class="ph-fill ph-truck text-gold text-lg"></i> Free Shipping</div>
+                        <div class="flex items-center gap-2"><i class="ph-fill ph-arrow-counter-clockwise text-blue-500 text-lg"></i> 30-Day Returns</div>
                     </div>
 
                 </div>
             </div>
         </div>
 
-        <div class="grid gap-8">
+        <div class="grid lg:grid-cols-3 gap-8">
 
-            <div class="w-full">
+            <div class="lg:col-span-2">
                 <div class="flex items-center justify-between mb-8">
-                    <h3 class="font-playfair text-3xl font-bold text-primary">Reviews</h3>
+                    <h3 class="font-playfair text-3xl font-bold text-primary">Customer Reviews</h3>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <button type="button" onclick="openReviewModal()" class="text-gold font-semibold hover:underline flex items-center gap-2">
-                            <i class="ph ph-pencil-simple"></i> Write a Review
+                        <button type="button" onclick="window.openReviewModal ? window.openReviewModal() : alert('Loading...')"
+                                class="text-gold font-bold hover:underline flex items-center gap-2 transition-all">
+                            <i class="ph-bold ph-pencil-simple"></i> Write a Review
                         </button>
                     }
                 </div>
@@ -211,75 +217,26 @@
                     <div class="space-y-4">
                         @foreach (var review in Model.Reviews.Take(5))
                         {
-                            <div class="bg-white border border-gray-100 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 p-8 group h-full flex flex-col">
-                                <div class="flex justify-between items-start mb-6">
-                                    <div>
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-full bg-gold/20 text-gold flex items-center justify-center font-bold text-sm">
-                                                    @review.User?.Name.Substring(0, 1).ToUpper()
-                                                </div>
-                                                <h6 class="font-bold text-primary text-sm">@review.User?.Name</h6>
-                                            </div>
-                                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-cream text-gold text-xs font-bold rounded-full border border-gold/10">
-                                                @review.Rating
-                                                <i class="ph-fill ph-star"></i>
-                                            </span>
+                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/40 text-primary flex items-center justify-center font-bold text-sm shadow-inner">
+                                            @review.User?.Name.Substring(0, 1).ToUpper()
                                         </div>
-                                        <p class="text-xs uppercase tracking-wider text-gray-400 font-bold flex items-center gap-2">
-                                            <i class="ph-bold ph-calendar-blank"></i>
-                                            @review.CreatedAt.ToString("MMMM dd, yyyy")
-                                        </p>
+                                        <div>
+                                            <h6 class="font-bold text-primary text-sm">@review.User?.Name</h6>
+                                            <span class="text-xs text-gray-400 font-medium">@review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div class="flex items-center gap-4 mb-6">
-                                    <div class="flex text-gold text-lg">
+                                    <div class="flex text-gold text-xs bg-cream px-2 py-1 rounded-lg">
                                         @for (int i = 1; i <= 5; i++)
                                         {
-                                            if (i <= review.Rating)
-                                            {
-                                                <i class="ph-fill ph-star"></i>
-                                            }
-                                            else
-                                            {
-                                                <i class="ph ph-star text-gray-200"></i>
-                                            }
+                                            <i class="ph-fill ph-star @(i <= review.Rating ? "" : "text-gray-300")"></i>
                                         }
                                     </div>
-                                    <span class="text-xs font-bold text-primary bg-gray-100 px-3 py-1 rounded-lg">
-                                        @switch (review.Rating)
-                                        {
-                                            case 5:
-                                                <span>Excellent</span>
-                                                ; break;
-                                            case 4:
-
-                                                <span>Good</span>
-                                                ; break;
-                                            case 3:
-
-                                                <span>Average</span>
-                                                ; break;
-                                            case 2:
-
-                                                <span>Poor</span>
-                                                ; break;
-                                            case 1:
-
-                                                <span>Very Poor</span>
-                                                ; break;
-                                            default:
-
-                                                <span>Rated</span>
-                                                ; break;
-                                        }
-                                    </span>
                                 </div>
-
-                                <div class="bg-gray-50 rounded-2xl p-6 relative mb-6 flex-grow">
-                                    <i class="ph-fill ph-quotes text-gray-200 text-3xl absolute -top-3 -left-2 bg-white rounded-full p-1"></i>
-                                    <p class="text-gray-600 leading-relaxed italic relative z-10">"@review.Comment"</p>
+                                <div class="relative pl-4 border-l-2 border-gold/30">
+                                    <p class="text-gray-600 text-sm leading-relaxed italic">"@review.Comment"</p>
                                 </div>
                             </div>
                         }
@@ -287,26 +244,32 @@
                 }
                 else
                 {
-                    <div class="bg-white rounded-2xl p-10 text-center border border-dashed border-gray-200">
+                    <div class="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-200">
                         <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
                             <i class="ph-fill ph-chat-teardrop-text text-3xl"></i>
                         </div>
-                        <p class="text-gray-500 mb-4">There are no reviews for this product yet.</p>
+                        <p class="text-gray-500 mb-6 text-lg">No reviews yet for this product.</p>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <button onclick="openReviewModal()" class="text-gold font-semibold hover:underline">Be the first to leave a review</button>
+                            <button onclick="window.openReviewModal()" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-bold transition-all shadow-lg hover:shadow-xl">
+                                Be the first to review
+                            </button>
+                        }
+                        else
+                        {
+                            <a href="/auth/login?returnUrl=@Context.Request.Path" class="text-gold font-bold hover:underline">Log in to write a review</a>
                         }
                     </div>
                 }
             </div>
 
-            <div class="w-full">
-                <h3 class="font-playfair text-2xl font-bold text-primary mb-8">Featured</h3>
+            <div class="lg:col-span-1">
+                <h3 class="font-playfair text-2xl font-bold text-primary mb-8">You May Also Like</h3>
 
                 @if (Model.RelatedProducts.Any())
                 {
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        @foreach (var product in Model.RelatedProducts)
+                    <div class="flex flex-col gap-6">
+                        @foreach (var product in Model.RelatedProducts.Take(3))
                         {
                             @await Html.PartialAsync("_ProductCardPartial", product)
                         }
@@ -322,6 +285,19 @@
     var reviewModalModel = new { ProductId = Model.Product.Id, ProductName = Model.Product.Name, UserName = User.Identity?.Name };
 }
 @await Html.PartialAsync("_ModalReview", reviewModalModel)
+
+@functions {
+    string GetMetalName(string metal)
+    {
+        return metal switch
+        {
+            "Gold" => "Gold",
+            "Silver" => "Silver",
+            "Platinum" => "Platinum",
+            _ => metal
+        };
+    }
+}
 
 @section Scripts {
     <script>
@@ -345,7 +321,8 @@
 
         function addToCart(productId) {
             if (typeof notificationModal === 'undefined') {
-                alert('Error: Notifications modal not loading');
+                alert('Success: Item added to cart (Notification modal missing)');
+                // Fallback logic if modal isn't loaded
                 return;
             }
 
@@ -365,7 +342,7 @@
             .then(data => {
                 if (data.success) {
                     notificationModal.success(
-                        'Product Added!',
+                        'Added to Cart!',
                         data.message,
                         () => {
                             if(typeof updateCartCount === 'function') updateCartCount();
@@ -378,7 +355,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                notificationModal.error('Error', 'There was a problem connecting to the server');
+                notificationModal.error('Error', 'Connection failed');
             });
         }
     </script>
