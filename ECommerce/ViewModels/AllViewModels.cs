@@ -171,6 +171,17 @@ namespace ECommerce.ViewModels
         public decimal Total { get; set; }
     }
 
+    public class CheckoutAddressSelectionViewModel
+    {
+        public Order Cart { get; set; } = null!;
+        public List<ShippingAddress> Addresses { get; set; } = new List<ShippingAddress>();
+        public int? SelectedAddressId { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal Tax { get; set; }
+        public decimal Shipping { get; set; }
+        public decimal Total { get; set; }
+    }
+
     public class CustomerOrderHistoryViewModel
     {
         public List<Order> Orders { get; set; } = new List<Order>();

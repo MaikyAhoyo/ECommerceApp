@@ -14,72 +14,17 @@
             <div class="row g-4">
                 <!-- Checkout Steps -->
                 <div class="col-lg-8">
-                    <!-- Step 1: Shipping Address -->
+                    <!-- Step 1: Payment Method -->
                     <div class="checkout-section">
                         <div class="section-header">
                             <span class="step-number">1</span>
-                            <h4>Dirección de Envío</h4>
-                        </div>
-
-                        @if (Model.Addresses != null && Model.Addresses.Any())
-                        {
-                            <div class="addresses-grid">
-                                @foreach (var address in Model.Addresses)
-                                {
-                                    <div class="address-card">
-                                        <input type="radio"
-                                               name="SelectedAddressId"
-                                               value="@address.Id"
-                                               id="address_@address.Id"
-                                               required>
-                                        <label for="address_@address.Id">
-                                            <div class="address-info">
-                                                <i class="fas fa-map-marker-alt"></i>
-                                                <div>
-                                                    <p class="address-line">@address.AddressLine1</p>
-                                                    @if (!string.IsNullOrEmpty(address.AddressLine2))
-                                                    {
-                                                        <p class="address-line">@address.AddressLine2</p>
-                                                    }
-                                                    <p class="address-line">
-                                                        @address.City, @address.State, @address.PostalCode
-                                                    </p>
-                                                    <p class="address-line">@address.Country</p>
-                                                </div>
-                                            </div>
-                                            <i class="fas fa-check-circle check-icon"></i>
-                                        </label>
-                                    </div>
-                                }
-                            </div>
-
-                            <div class="add-address-link">
-                                <a href="/customer/addresses/create?returnUrl=/customer/checkout">
-                                    <i class="fas fa-plus-circle me-2"></i>Agregar Nueva Dirección
-                                </a>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                No tienes direcciones guardadas.
-                                <a href="/customer/addresses/create?returnUrl=/customer/checkout">Agregar una dirección</a>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Step 2: Payment Method -->
-                    <div class="checkout-section">
-                        <div class="section-header">
-                            <span class="step-number">2</span>
                             <h4>Método de Pago</h4>
                         </div>
 
                         <div class="payment-methods">
                             <div class="payment-option">
                                 <input type="radio"
-                                       name="SelectedPaymentMethod"
+                                       name="paymentMethod"
                                        value="Card"
                                        id="payment_card"
                                        checked
@@ -98,7 +43,7 @@
 
                             <div class="payment-option">
                                 <input type="radio"
-                                       name="SelectedPaymentMethod"
+                                       name="paymentMethod"
                                        value="PayPal"
                                        id="payment_paypal">
                                 <label for="payment_paypal">
@@ -115,7 +60,7 @@
 
                             <div class="payment-option">
                                 <input type="radio"
-                                       name="SelectedPaymentMethod"
+                                       name="paymentMethod"
                                        value="Transfer"
                                        id="payment_transfer">
                                 <label for="payment_transfer">
@@ -132,10 +77,10 @@
                         </div>
                     </div>
 
-                    <!-- Step 3: Order Review -->
+                    <!-- Step 2: Order Review -->
                     <div class="checkout-section">
                         <div class="section-header">
-                            <span class="step-number">3</span>
+                            <span class="step-number">2</span>
                             <h4>Revisar Pedido</h4>
                         </div>
 
@@ -169,6 +114,9 @@
                             }
                         </div>
                     </div>
+
+                    <!-- Hidden field for shipping address (selected in previous step) -->
+                    <input type="hidden" name="shippingAddressId" value="@(Model?.SelectedAddressId ?? 0)" />
                 </div>
 
                 <!-- Order Summary -->
@@ -284,84 +232,6 @@
             font-weight: 700;
             color: #2c3e50;
         }
-
-        /* Addresses */
-        .addresses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-        }
-
-        .address-card {
-            position: relative;
-        }
-
-            .address-card input[type="radio"] {
-                position: absolute;
-                opacity: 0;
-            }
-
-            .address-card label {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                padding: 20px;
-                border: 2px solid #e9ecef;
-                border-radius: 12px;
-                cursor: pointer;
-                transition: all 0.3s;
-            }
-
-            .address-card input[type="radio"]:checked + label {
-                border-color: #f39c12;
-                background: #fff9f0;
-            }
-
-            .address-card label:hover {
-                border-color: #f39c12;
-            }
-
-        .address-info {
-            display: flex;
-            gap: 15px;
-        }
-
-            .address-info i {
-                font-size: 24px;
-                color: #f39c12;
-                margin-top: 5px;
-            }
-
-        .address-line {
-            margin: 0 0 5px 0;
-            color: #2c3e50;
-            font-size: 14px;
-        }
-
-        .check-icon {
-            color: #f39c12;
-            font-size: 24px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .address-card input[type="radio"]:checked + label .check-icon {
-            opacity: 1;
-        }
-
-        .add-address-link {
-            margin-top: 15px;
-        }
-
-            .add-address-link a {
-                color: #f39c12;
-                text-decoration: none;
-                font-weight: 600;
-            }
-
-                .add-address-link a:hover {
-                    text-decoration: underline;
-                }
 
         /* Payment Methods */
         .payment-methods {
@@ -585,14 +455,7 @@
 @section Scripts {
     <script>
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-            const addressSelected = document.querySelector('input[name="SelectedAddressId"]:checked');
-            const paymentSelected = document.querySelector('input[name="SelectedPaymentMethod"]:checked');
-
-            if (!addressSelected) {
-                e.preventDefault();
-                alert('Por favor selecciona una dirección de envío');
-                return false;
-            }
+            const paymentSelected = document.querySelector('input[name="paymentMethod"]:checked');
 
             if (!paymentSelected) {
                 e.preventDefault();
