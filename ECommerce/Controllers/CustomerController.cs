@@ -202,7 +202,6 @@ namespace ECommerce.Controllers
 
             if (cart == null)
             {
-                // Crear un carrito vacío
                 var newCart = new Order
                 {
                     UserId = userId,
@@ -218,13 +217,11 @@ namespace ECommerce.Controllers
                 cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
             }
 
-            // Mapear Order -> CustomerCartViewModel
             var viewModel = new CustomerCartViewModel();
             if (cart != null)
             {
                 viewModel.Cart = cart;
 
-                // Map OrderItems to CartItemViewModel
                 if (cart.OrderItems != null && cart.OrderItems.Any())
                 {
                     foreach (var oi in cart.OrderItems)
@@ -245,10 +242,9 @@ namespace ECommerce.Controllers
                     }
                 }
 
-                // Calcular totales
                 viewModel.Subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
                 viewModel.Tax = Math.Round(viewModel.Subtotal * 0.16m, 2);
-                viewModel.Shipping = 0m; // lógica de envío simple
+                viewModel.Shipping = 0m;
                 viewModel.Total = viewModel.Subtotal + viewModel.Tax + viewModel.Shipping;
                 viewModel.ItemCount = viewModel.Items.Sum(i => i.Quantity);
             }
@@ -258,50 +254,36 @@ namespace ECommerce.Controllers
 
         // POST: /customer/cart/add
         [HttpPost("cart/add")]
-        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
+        public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
         {
-            int productId = request?.ProductId ?? 0;
-            int quantity = request?.Quantity ?? 1;
-
             int userId = GetCurrentUserId();
 
-            // 1. Obtener el producto para saber el Stock real
             var product = await _productService.GetByIdAsync(productId);
             if (product == null)
             {
-                return Json(new { success = false, message = "Producto no encontrado" });
+                TempData["Error"] = "Product not found.";
+                return RedirectToAction(nameof(Products));
             }
 
-            // 2. Obtener el carrito activo para ver qué tenemos ya guardado
             var cart = await _orderService.GetActiveCartAsync(userId);
-
             int currentQuantityInCart = 0;
 
             if (cart != null)
             {
-                // Usamos el método GetOrderItemsAsync que ya existe en tu OrderService
                 var cartItems = await _orderService.GetOrderItemsAsync(cart.Id);
                 var existingItem = cartItems.FirstOrDefault(i => i.ProductId == productId);
-
                 if (existingItem != null)
                 {
                     currentQuantityInCart = existingItem.Quantity;
                 }
             }
 
-            // 3. VALIDACIÓN CORREGIDA: (Lo que ya tengo + lo que quiero agregar) vs Stock
             if (currentQuantityInCart + quantity > product.Stock)
             {
-                return Json(new
-                {
-                    success = false,
-                    message = $"Stock insuficiente. Solo hay {product.Stock} disponibles."
-                });
+                TempData["Error"] = $"Insufficient stock. Only {product.Stock} left.";
+                return RedirectToAction(nameof(ProductDetails), new { id = productId });
             }
 
-            // --- A partir de aquí el código sigue igual que antes, pero debes mover la lógica de creación del carrito ---
-
-            // Si el carrito es null, lo creamos ahora (ya sabemos que el stock es válido)
             if (cart == null)
             {
                 var newCart = new Order
@@ -315,11 +297,10 @@ namespace ECommerce.Controllers
                 cart = await _orderService.GetByIdAsync(cartId);
             }
 
-            // Agregar item al carrito
             var item = new OrderItem
             {
                 ProductId = productId,
-                Quantity = quantity, // Aquí mandamos solo la cantidad nueva, tu OrderService ya hace la suma en SQL
+                Quantity = quantity,
                 UnitPrice = product.Price
             };
 
@@ -331,64 +312,67 @@ namespace ECommerce.Controllers
                 cart.Total = total;
                 await _orderService.UpdateAsync(cart);
 
-                return Json(new { success = true, message = "Producto agregado al carrito" });
+                TempData["Success"] = "Product successfully added to the cart";
+                return RedirectToAction(nameof(Cart));
             }
 
-            return Json(new { success = false, message = "Error al agregar al carrito" });
-        }
-        public class AddToCartRequest
-        {
-            public int ProductId { get; set; }
-            public int Quantity { get; set; } = 1;
+            TempData["Error"] = "There was a problem adding the product.";
+            return RedirectToAction(nameof(ProductDetails), new { id = productId });
         }
 
-        // POST: /customer/cart/update/{itemId}
-        [HttpPost("cart/update/{itemId}")]
+        // POST: /customer/cart/update
+        [HttpPost("cart/update")]
         public async Task<IActionResult> UpdateCartItem(int itemId, int quantity)
         {
             if (quantity <= 0)
             {
-                return Json(new { success = false, message = "Cantidad inválida" });
+                TempData["Error"] = "Quantity must be greater than 0.";
+                return RedirectToAction(nameof(Cart));
             }
 
             try
             {
                 int userId = GetCurrentUserId();
                 var cart = await _orderService.GetActiveCartAsync(userId);
+
                 if (cart == null)
                 {
-                    return Json(new { success = false, message = "Carrito no encontrado" });
+                    TempData["Error"] = "Cart not found.";
+                    return RedirectToAction(nameof(Home));
                 }
 
                 var cartItems = await _orderService.GetOrderItemsAsync(cart.Id);
                 var itemToUpdate = cartItems.FirstOrDefault(i => i.Id == itemId);
 
-
                 if (itemToUpdate == null)
                 {
-                    return Json(new { success = false, message = "El producto no se encuentra en tu carrito" });
+                    TempData["Error"] = "Product not in cart.";
+                    return RedirectToAction(nameof(Cart));
                 }
 
                 if (itemToUpdate.Product != null && quantity > itemToUpdate.Product.Stock)
                 {
-                    return Json(new
-                    {
-                        success = false,
-                        message = $"Stock insuficiente. Solo hay {itemToUpdate.Product.Stock} unidades disponibles."
-                    });
+                    TempData["Error"] = $"Insufficient stock. Maximum available: {itemToUpdate.Product.Stock}.";
+                    return RedirectToAction(nameof(Cart));
                 }
 
                 var success = await _orderService.UpdateOrderItemQuantityAsync(itemId, quantity);
 
                 if (success)
-                    return Json(new { success = true, message = "Cantidad actualizada" });
+                {
+                    TempData["Success"] = "Cart updated successfully.";
+                }
                 else
-                    return Json(new { success = false, message = "Error al actualizar" });
+                {
+                    TempData["Error"] = "Could not update quantity.";
+                }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                TempData["Error"] = "Error: " + ex.Message;
             }
+
+            return RedirectToAction(nameof(Cart));
         }
 
         // POST: /customer/cart/remove/{itemId}
@@ -399,11 +383,11 @@ namespace ECommerce.Controllers
 
             if (success)
             {
-                TempData["Success"] = "Product removed from cart";
+                TempData["Success"] = "Product successfully removed from the cart.";
             }
             else
             {
-                TempData["Error"] = "Error removing product";
+                TempData["Error"] = "Error removing product.";
             }
 
             return RedirectToAction(nameof(Cart));
@@ -477,7 +461,6 @@ namespace ECommerce.Controllers
 
             var addresses = await _shippingAddressService.GetByUserIdAsync(userId);
 
-            // Build view model expected by the view
             var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
             var tax = Math.Round(subtotal * 0.16m, 2);
             var shipping = 0m;
@@ -509,7 +492,6 @@ namespace ECommerce.Controllers
                 return RedirectToAction(nameof(Cart));
             }
 
-            // Checkout
             var success = await _orderService.CheckoutOrderAsync(cart.Id);
 
             if (!success)
@@ -518,7 +500,6 @@ namespace ECommerce.Controllers
                 return RedirectToAction(nameof(CheckoutAddressSelection));
             }
 
-            // Update the order with the shipping address
             var order = await _orderService.GetByIdAsync(cart.Id);
             if (order != null)
             {
@@ -526,7 +507,6 @@ namespace ECommerce.Controllers
                 await _orderService.UpdateAsync(order);
             }
 
-            // Process payment
             var total = await _orderService.CalculateOrderTotalAsync(cart.Id);
             var paymentSuccess = await _paymentService.ProcessPaymentAsync(cart.Id, paymentMethod, total);
 
@@ -595,6 +575,68 @@ namespace ECommerce.Controllers
             return View(order);
         }
 
+        // POST: /customer/orders/create
+        [HttpPost("orders/create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateOrder()
+        {
+            int userId = GetCurrentUserId();
+            var cart = await _orderService.GetActiveCartAsync(userId);
+
+            if (cart == null)
+            {
+                TempData["Error"] = "No se encontró el carrito.";
+                return RedirectToAction(nameof(Cart));
+            }
+
+            cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
+
+            if (cart.OrderItems == null || !cart.OrderItems.Any())
+            {
+                TempData["Error"] = "Tu carrito está vacío.";
+                return RedirectToAction(nameof(Cart));
+            }
+
+            var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var shipping = 0m;
+            var total = subtotal + tax + shipping;
+
+            var newOrder = new Order
+            {
+                UserId = userId,
+                OrderDate = DateTime.UtcNow,
+                Status = "Pending",
+                Total = total
+            };
+
+            var newOrderId = await _orderService.CreateAsync(newOrder);
+
+            foreach (var oi in cart.OrderItems)
+            {
+                var newItem = new OrderItem
+                {
+                    ProductId = oi.ProductId,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice
+                };
+                await _orderService.AddItemToOrderAsync(newOrderId, newItem);
+            }
+
+            foreach (var oi in cart.OrderItems.ToList())
+            {
+                await _orderService.RemoveItemFromOrderAsync(oi.Id);
+            }
+
+            cart.Total = 0;
+            await _orderService.UpdateAsync(cart);
+
+            _logger.LogInformation("Orden creada {OrderId} para usuario {UserId}", newOrderId, userId);
+
+            TempData["Success"] = "¡Orden creada exitosamente!";
+            return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
+        }
+
         // POST: /customer/orders/cancel/{id}
         [HttpPost("orders/cancel/{id}")]
         [ValidateAntiForgeryToken]
@@ -629,130 +671,6 @@ namespace ECommerce.Controllers
         {
             public bool Create { get; set; }
             public int? SelectedAddressId { get; set; }
-        }
-
-        // POST: /customer/orders/create
-        [HttpPost("orders/create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateOrder(CreateOrderRequest? request)
-        {
-            // If request is null, try to read from form values (e.g., from FormData)
-            if (request == null && Request.HasFormContentType)
-            {
-                var createVal = Request.Form["create"].FirstOrDefault();
-                if (bool.TryParse(createVal, out var parsed))
-                {
-                    request = new CreateOrderRequest { Create = parsed };
-                }
-
-                // Try to read selected address from form as well
-                var addrVal = Request.Form["SelectedAddressId"].FirstOrDefault();
-                if (int.TryParse(addrVal, out var parsedAddr))
-                {
-                    if (request == null) request = new CreateOrderRequest();
-                    request.SelectedAddressId = parsedAddr;
-                }
-            }
-
-            int userId = GetCurrentUserId();
-            var cart = await _orderService.GetActiveCartAsync(userId);
-
-            if (cart == null)
-            {
-                TempData["Error"] = "Cart not found";
-                var isAjaxNull = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
-                                (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
-                if (isAjaxNull)
-                    return Json(new { success = false, message = "Cart not found" });
-
-                return RedirectToAction(nameof(Cart));
-            }
-
-            // Ensure we have the order details (items)
-            cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
-
-            if (cart.OrderItems == null || !cart.OrderItems.Any())
-            {
-                TempData["Error"] = "Cart is empty";
-                var isAjaxEmpty = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
-                                (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
-                if (isAjaxEmpty)
-                    return Json(new { success = false, message = "Cart is empty" });
-
-                return RedirectToAction(nameof(Cart));
-            }
-
-            // Determine selected shipping address
-            int? selectedAddressId = null;
-            if (request != null && request.SelectedAddressId.HasValue)
-                selectedAddressId = request.SelectedAddressId.Value;
-
-            // Calculate subtotal, tax and total
-            var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
-            var tax = Math.Round(subtotal * 0.16m, 2);
-            var shipping = 0m;
-            var total = subtotal + tax + shipping;
-
-            var newOrder = new Order
-            {
-                UserId = userId,
-                OrderDate = DateTime.UtcNow,
-                Status = "Pending",
-                Total = total,
-                AddressId = selectedAddressId ?? 1 // default if none selected
-            };
-
-            var newOrderId = await _orderService.CreateAsync(newOrder);
-
-            // Copy items
-            foreach (var oi in cart.OrderItems)
-            {
-                var newItem = new OrderItem
-                {
-                    ProductId = oi.ProductId,
-                    Quantity = oi.Quantity,
-                    UnitPrice = oi.UnitPrice
-                };
-
-                await _orderService.AddItemToOrderAsync(newOrderId, newItem);
-            }
-
-            // Recalculate totals and update order
-            var newSubtotal = await _orderService.CalculateOrderTotalAsync(newOrderId);
-            var newTax = Math.Round(newSubtotal * 0.16m, 2);
-            var newTotal = newSubtotal + newTax + shipping;
-
-            var createdOrder = await _orderService.GetByIdAsync(newOrderId);
-            if (createdOrder != null)
-            {
-                createdOrder.Total = newTotal;
-                if (selectedAddressId.HasValue)
-                    createdOrder.AddressId = selectedAddressId.Value;
-                await _orderService.UpdateAsync(createdOrder);
-            }
-
-            // Clear cart items
-            foreach (var oi in cart.OrderItems.ToList())
-            {
-                await _orderService.RemoveItemFromOrderAsync(oi.Id);
-            }
-
-            // Reset cart total
-            cart.Total = 0;
-            await _orderService.UpdateAsync(cart);
-
-            _logger.LogInformation("Created new order {OrderId} for user {UserId}. Items copied: {Count}", newOrderId, userId, cart.OrderItems.Count);
-
-            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
-                         (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
-
-            if (isAjax)
-            {
-                return Json(new { success = true, message = "Order created", orderId = newOrderId, total = newTotal, tax = newTax });
-            }
-
-            TempData["Success"] = "Order created";
-            return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
         #endregion
