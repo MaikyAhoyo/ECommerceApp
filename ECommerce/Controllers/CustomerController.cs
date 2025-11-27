@@ -677,42 +677,46 @@ namespace ECommerce.Controllers
 
         #region Reviews
 
-        // GET: /customer/reviews/create/{productId}
-        [HttpGet("reviews/create/{productId}")]
-        public async Task<IActionResult> CreateReview(int productId)
-        {
-            var product = await _productService.GetByIdAsync(productId);
+       [HttpGet("reviews/create/{productId}")]
+public async Task<IActionResult> CreateReview(int productId)
+{
+    var product = await _productService.GetByIdAsync(productId);
 
-            if (product == null)
-            {
-                TempData["Error"] = "Product not found";
-                return RedirectToAction(nameof(Products));
-            }
+    if (product == null)
+    {
+        TempData["Error"] = "Product not found";
+        return RedirectToAction(nameof(Products));
+    }
 
-            ViewBag.Product = product;
-            return View();
-        }
+    TempData["Success"] = "Review created for " + product.Name;
 
-        // POST: /customer/reviews/create
-        [HttpPost("reviews/create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateReview(Review review)
-        {
-            if (!ModelState.IsValid)
-            {
-                var product = await _productService.GetByIdAsync(review.ProductId);
-                ViewBag.Product = product;
-                return View(review);
-            }
+    return RedirectToAction(nameof(ProductDetails), new { id = productId });
+}
 
-            review.UserId = GetCurrentUserId();
-            review.CreatedAt = DateTime.UtcNow;
 
-            await _reviewService.CreateAsync(review);
-            TempData["Success"] = "Review created successfully!";
+[HttpPost("reviews/create")]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> CreateReview(Review review)
+{
+    review.UserId = GetCurrentUserId();
+    review.CreatedAt = DateTime.UtcNow;
 
-            return RedirectToAction(nameof(ProductDetails), new { id = review.ProductId });
-        }
+    if (!ModelState.IsValid)
+    {
+        TempData["Error"] = "Please correct the errors in the form.";
+        return RedirectToAction(nameof(ProductDetails), new { id = review.ProductId });
+    }
+
+    review.UserId = GetCurrentUserId();
+    review.CreatedAt = DateTime.UtcNow;
+
+    await _reviewService.CreateAsync(review);
+
+    TempData["Success"] = "Review created successfully!";
+
+    return RedirectToAction(nameof(ProductDetails), new { id = review.ProductId });
+}
+
 
         // GET: /customer/reviews
         [HttpGet("reviews")]

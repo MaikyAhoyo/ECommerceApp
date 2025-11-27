@@ -16,10 +16,13 @@
                 @Model.ProductName
             </a>
         </h5>
-        <p class="text-sm text-gray-500 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-gold"></span>
-            @Model.Metal &bull; @Model.Purity
-        </p>
+        <div class="flex items-center gap-3 mb-1">
+            <p class="text-sm text-gray-500 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-gold"></span>
+                @Model.Metal &bull; @Model.Purity
+            </p>
+           
+        </div>
 
         <div class="flex justify-between items-center mt-4 md:hidden">
             <span class="text-gold font-bold text-lg">$@Model.Subtotal.ToString("N2")</span>
@@ -37,11 +40,11 @@
         </div>
     </div>
 
-    <div class="hidden md:flex justify-center">
+    <div class="hidden md:flex flex-col items-center gap-1">
         <div class="flex items-center bg-gray-50 rounded-full p-2 border border-gray-200">
             @if (Model.Quantity <= 1)
             {
-                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary cursor-not-allowed" disabled">
+                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary cursor-not-allowed" onclick="">
                     <i class="ph ph-minus"></i>
                 </button>
             }
@@ -52,10 +55,23 @@
                 </button>
             }
             <span class="text-sm font-bold w-6 text-center">@Model.Quantity</span>
-            <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary" onclick="updateQuantity(@Model.Id, @Model.Quantity + 1)">
-                <i class="ph ph-plus"></i>
-            </button>
+
+             @if (Model.Quantity == Model.MaxStock)
+            {
+                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary cursor-not-allowed " onclick="">
+                    <i class="ph ph-plus"></i>
+                </button>
+            }
+            else
+            {
+                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary transition" onclick="updateQuantity(@Model.Id, @Model.Quantity + 1)">
+                    <i class="ph ph-plus"></i>
+                </button>
+            }
         </div>
+        <span class="text-xs text-gray-400 font-medium">
+            Disponibles: @Model.MaxStock
+        </span>
     </div>
 
     <div class="hidden md:block text-center text-gray-500 font-medium text-sm">
