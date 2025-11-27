@@ -560,6 +560,7 @@ namespace ECommerce.Controllers
                 return RedirectToAction(nameof(CheckoutAddressSelection));
             }
 
+            // Actualizar la dirección de envío
             var order = await _orderService.GetByIdAsync(cart.Id);
             if (order != null)
             {
@@ -567,6 +568,7 @@ namespace ECommerce.Controllers
                 await _orderService.UpdateAsync(order);
             }
 
+            // Procesar el pago
             var total = await _orderService.CalculateOrderTotalAsync(cart.Id);
             var paymentSuccess = await _paymentService.ProcessPaymentAsync(cart.Id, paymentMethod, total);
 
@@ -692,6 +694,7 @@ namespace ECommerce.Controllers
 
             var newOrderId = await _orderService.CreateAsync(newOrder);
 
+            // ✅ RESTAR STOCK AL AGREGAR ITEMS
             foreach (var oi in cart.OrderItems)
             {
                 var newItem = new OrderItem
@@ -709,6 +712,7 @@ namespace ECommerce.Controllers
                 _logger.LogInformation("Stock reduced for product {ProductId}: {Quantity} units", product.Id, oi.Quantity);
             }
 
+            // Limpiar carrito
             foreach (var oi in cart.OrderItems.ToList())
             {
                 await _orderService.RemoveItemFromOrderAsync(oi.Id);
@@ -723,25 +727,48 @@ namespace ECommerce.Controllers
             return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
-        // POST: /customer/orders/cancel/{id}
-        [HttpPost("orders/cancel/{id}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelOrder(int id)
+
+// POST: /customer/orders/cancel/{id}
+[HttpPost("orders/cancel/{id}")]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> CancelOrder(int id)
+{
+    int userId = GetCurrentUserId();
+    var order = await _orderService.GetByIdAsync(id);
+
+    if (order == null || order.UserId != userId)
+    {
+        TempData["Error"] = "Order not found";
+        return RedirectToAction(nameof(MyOrders));
+    }
+
+    if (order.Status != "Pending")
+    {
+        TempData["Error"] = "You can only cancel pending orders";
+        return RedirectToAction(nameof(OrderDetails), new { id });
+    }
+
+    var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(id);
+    
+    if (orderWithDetails?.OrderItems != null)
+    {
+        foreach (var item in orderWithDetails.OrderItems)
         {
-            int userId = GetCurrentUserId();
-            var order = await _orderService.GetByIdAsync(id);
-
-            if (order == null || order.UserId != userId)
+            var product = await _productService.GetByIdAsync(item.ProductId);
+            if (product != null)
             {
-                TempData["Error"] = "Order not found";
-                return RedirectToAction(nameof(MyOrders));
+                product.Stock += item.Quantity;
+                await _productService.UpdateAsync(product);
+                
+                _logger.LogInformation(
+                    "Stock restored for product {ProductId}: +{Quantity} units (Cancelled order {OrderId})",
+                    product.Id,
+                    item.Quantity,
+                    id
+                );
             }
-
-            if (order.Status != "Pending")
-            {
-                TempData["Error"] = "You can only cancel pending orders";
-                return RedirectToAction(nameof(OrderDetails), new { id });
-            }
+        }
+    }
 
             var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(id);
 
@@ -771,8 +798,6 @@ namespace ECommerce.Controllers
             else
                 TempData["Error"] = "Error cancelling order";
 
-            return RedirectToAction(nameof(OrderDetails), new { id });
-        }
 
 
         public class CreateOrderRequest
