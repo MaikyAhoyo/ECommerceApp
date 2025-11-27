@@ -1,4 +1,5 @@
-﻿@model ECommerce.ViewModels.CustomerProductDetailsViewModel
+﻿@using ECommerce.ViewModels
+@model ECommerce.ViewModels.CustomerProductDetailsViewModel
 @{
     ViewData["Title"] = Model.Product.Name;
     Layout = "_CustomerLayout";
@@ -297,10 +298,15 @@
 </div>
 
 @{
-    var reviewModalModel = new { ProductId = Model.Product.Id, ProductName = Model.Product.Name, UserName = User.Identity?.Name };
+    var reviewModalModel = new ReviewCreateViewModel
+    {
+        ProductId = Model.Product.Id,
+        ProductName = Model.Product.Name,
+        ProductImageUrl = Model.Product.ImageUrl ?? string.Empty
+    };
 }
-@await Html.PartialAsync("_ModalReview", reviewModalModel)
 
+@await Html.PartialAsync("_ModalReview", reviewModalModel)
 @functions {
     string GetMetalName(string metal)
     {
