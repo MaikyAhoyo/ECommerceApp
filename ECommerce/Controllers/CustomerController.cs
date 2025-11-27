@@ -161,6 +161,8 @@ namespace ECommerce.Controllers
         [HttpGet("products/details/{id}")]
         public async Task<IActionResult> ProductDetails(int id)
         {
+            var userLoggedIn = User.Identity != null && User.Identity.IsAuthenticated;
+
             var product = await _productService.GetByIdAsync(id);
             var productCategories = await _categoryService.GetByProductIdAsync(product.Id);
             product.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
@@ -182,6 +184,7 @@ namespace ECommerce.Controllers
 
             var viewModel = new CustomerProductDetailsViewModel
             {
+                LoggedIn = userLoggedIn,
                 Product = product,
                 Reviews = reviews.Cast<Review>().ToList(),
                 AverageRating = avgRating,

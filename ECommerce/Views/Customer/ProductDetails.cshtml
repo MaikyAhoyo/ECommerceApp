@@ -161,28 +161,38 @@
 
                     @if (Model.Product.Stock > 0)
                     {
-                        <form asp-controller="Customer" asp-action="AddToCart" method="post" class="flex flex-col sm:flex-row gap-4 mt-auto">
-
-                            <input type="hidden" name="productId" value="@Model.Product.Id" />
+                        <div class="flex flex-col sm:flex-row gap-4 mt-auto">
 
                             <div class="flex items-center bg-gray-50 rounded-full px-2 border border-gray-200 sm:w-auto w-full justify-between h-14">
                                 <button type="button" class="w-12 h-full flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="decreaseQty()">
-                                    <i class="ph ph-minus"></i>
+                                    <i class="ph ph-minus font-bold"></i>
                                 </button>
 
-                                <input type="number" id="quantity" name="quantity" value="1" min="1" max="@Model.Product.Stock" class="w-12 text-center bg-transparent border-none font-bold text-primary focus:ring-0 p-0 text-lg" readonly>
+                                <input type="number" id="quantity" value="1" min="1" max="@Model.Product.Stock" class="w-12 text-center bg-transparent border-none font-bold text-primary focus:ring-0 p-0 text-lg" readonly>
 
                                 <button type="button" class="w-12 h-full flex items-center justify-center text-gray-500 hover:text-primary transition" onclick="increaseQty()">
-                                    <i class="ph ph-plus"></i>
+                                    <i class="ph ph-plus font-bold"></i>
                                 </button>
                             </div>
 
-                            <button type="submit"
-                                    class="flex-1 bg-primary hover:bg-primary/90 text-white h-14 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group">
-                                <span>Add to Cart</span>
-                                <i class="ph-bold ph-shopping-cart text-xl group-hover:text-gold transition-colors"></i>
-                            </button>
-                        </form>
+                            @if (Model.LoggedIn)
+                            {
+                                <button type="button" onclick="addToCart(@Model.Product.Id)"
+                                        class="flex-1 bg-primary hover:bg-primary/90 text-white h-14 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group">
+                                    <span>Add to Cart</span>
+                                    <i class="ph ph-shopping-cart font-bold text-xl group-hover:text-gold transition-colors"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="/auth/login?returnUrl=@Context.Request.Path"
+                                   class="flex-1 bg-primary hover:bg-primary/90 text-white h-14 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group">
+                                    <span>Add to Cart</span>
+                                    <i class="ph ph-shopping-cart font-bold text-xl group-hover:text-gold transition-colors"></i>
+                                </a>
+                            }
+
+                        </div>
                     }
                     else
                     {
@@ -200,7 +210,6 @@
                         <div class="flex items-center gap-2"><i class="ph-fill ph-truck text-gold text-lg"></i> Free Shipping</div>
                         <div class="flex items-center gap-2"><i class="ph-fill ph-arrow-counter-clockwise text-blue-500 text-lg"></i> 30-Day Returns</div>
                     </div>
-
                 </div>
             </div>
         </div>
