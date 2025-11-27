@@ -1,0 +1,611 @@
+@model ECommerce.ViewModels.CheckoutAddressSelectionViewModel
+@{
+    ViewData["Title"] = "Select Shipping Address";
+    Layout = "_CustomerLayout";
+}
+
+<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16">
+    <div class="container mx-auto px-4 text-center text-white">
+        <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">
+            Select Your Shipping Address
+        </h1>
+        <p class="text-xl text-white/90">Review your items and choose where you want to receive them</p>
+    </div>
+</section>
+
+<div class="py-12 pb-20">
+    <div class="container mx-auto px-4">
+        <div class="checkout-container">
+            <!-- Items Section -->
+            <div class="checkout-main">
+                <!-- Order Items Review -->
+                <div class="checkout-section">
+                    <div class="section-header">
+                        <span class="step-number">1</span>
+                        <h4>Order Summary</h4>
+                    </div>
+
+                    <div class="order-items-review">
+                        @if (Model.Cart != null && Model.Cart.OrderItems != null && Model.Cart.OrderItems.Any())
+                        {
+                            @foreach (var item in Model.Cart.OrderItems)
+                            {
+                                <div class="review-item">
+                                    <div class="item-image">
+                                        @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                        {
+                                            <img src="@item.Product.ImageUrl" alt="@item.Product.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="no-image">
+                                                <i class="ph ph-image"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="item-details">
+                                        <h6>@item.Product?.Name</h6>
+                                        <p class="metal-info">
+                                            @if (!string.IsNullOrEmpty(item.Product?.Metal))
+                                            {
+                                                <span>@item.Product.Metal - @item.Product.Purity</span>
+                                            }
+                                        </p>
+                                        <p class="quantity-info">Quantity: <strong>@item.Quantity</strong></p>
+                                    </div>
+                                    <div class="item-price">
+                                        <span>$@((item.Quantity * item.UnitPrice).ToString("N2"))</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="ph ph-exclamation-triangle me-2"></i>
+                                Your cart is empty
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Address Selection -->
+                <form asp-controller="Customer" asp-action="CreateOrder" method="post" id="addressForm">
+                    @Html.AntiForgeryToken()
+                    <div class="checkout-section">
+                        <div class="section-header">
+                            <span class="step-number">2</span>
+                            <h4>Shipping Address</h4>
+                        </div>
+
+                        @if (Model.Addresses != null && Model.Addresses.Any())
+                        {
+                            <div class="addresses-grid">
+                                @foreach (var address in Model.Addresses)
+                                {
+                                    <div class="address-card">
+                                        <input type="radio"
+                                               name="SelectedAddressId"
+                                               value="@address.Id"
+                                               id="address_@address.Id"
+                                               required>
+                                        <label for="address_@address.Id">
+                                            <div class="address-info">
+                                                <i class="ph ph-map-pin"></i>
+                                                <div>
+                                                    <p class="address-line">@address.AddressLine1</p>
+                                                    @if (!string.IsNullOrEmpty(address.AddressLine2))
+                                                    {
+                                                        <p class="address-line">@address.AddressLine2</p>
+                                                    }
+                                                    <p class="address-line">
+                                                        @address.City, @address.State, @address.PostalCode
+                                                    </p>
+                                                    <p class="address-line">@address.Country</p>
+                                                </div>
+                                            </div>
+                                            <i class="ph ph-check-circle check-icon"></i>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="add-address-link">
+                                <a href="/customer/addresses/create?returnUrl=/customer/checkout/address-selection" class="!no-underline border-none">
+                                    <i class="ph ph-plus-circle me-2"></i>Add New Address
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="ph ph-exclamation-triangle me-2"></i>
+                                You don't have any saved addresses.
+                                <a href="/customer/addresses/create?returnUrl=/customer/checkout/address-selection">Add an address</a>
+                            </div>
+                        }
+                    </div>
+                </form>
+            </div>
+
+            <!-- Summary Section -->
+            <div class="checkout-sidebar">
+                <div class="summary-card">
+                    <h4>Order Summary</h4>
+
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>$@Model.Subtotal.ToString("N2")</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span>
+                            @if (Model.Shipping == 0)
+                            {
+                                <span class="text-success">Free</span>
+                            }
+                            else
+                            {
+                                <span>$@Model.Shipping.ToString("N2")</span>
+                            }
+                        </span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Tax (16%)</span>
+                        <span>$@Model.Tax.ToString("N2")</span>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-total">
+                        <span>Total to Pay</span>
+                        <span>$@Model.Total.ToString("N2")</span>
+                    </div>
+
+                    <button type="submit" 
+                            form="addressForm"
+                            class="btn btn-primary w-100 btn-checkout"
+                            onclick="return validateForm()">
+                        <i class="ph ph-arrow-right me-2"></i>Confirm Checkout
+                    </button>
+
+                    <a href="/customer/cart" class="btn btn-secondary w-100 mt-3">
+                        <i class="ph ph-arrow-left me-2"></i>Back to Cart
+                    </a>
+
+                    <!-- Security Badges -->
+                    <div class="security-info">
+                        <div class="security-item">
+                            <i class="ph ph-shield"></i>
+                            <span>100% Secure Payment</span>
+                        </div>
+                        <div class="security-item">
+                            <i class="ph ph-lock"></i>
+                            <span>Encrypted Connection</span>
+                        </div>
+                        <div class="security-item">
+                            <i class="ph ph-check-circle"></i>
+                            <span>Satisfaction Guarantee</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 30px;
+        }
+
+        .checkout-main {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .checkout-sidebar {
+            height: fit-content;
+        }
+
+        /* Checkout Sections */
+        .checkout-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .section-header h4 {
+            margin: 0;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* Order Items Review */
+        .order-items-review {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .review-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #f39c12;
+            transition: all 0.3s;
+        }
+
+        .review-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+            .review-item .item-image {
+                width: 80px;
+                height: 80px;
+                background: white;
+                border-radius: 10px;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+
+                .review-item .item-image img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+            .review-item .no-image {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #adb5bd;
+                font-size: 32px;
+            }
+
+            .review-item .item-details {
+                flex: 1;
+            }
+
+            .review-item h6 {
+                margin: 0 0 8px 0;
+                font-size: 16px;
+                font-weight: 700;
+                color: #2c3e50;
+            }
+
+            .review-item .metal-info {
+                margin: 0 0 8px 0;
+                font-size: 13px;
+                color: #7f8c8d;
+            }
+
+            .review-item .quantity-info {
+                margin: 0;
+                font-size: 13px;
+                color: #555;
+            }
+
+            .review-item .item-price {
+                font-weight: 700;
+                color: #f39c12;
+                font-size: 18px;
+                min-width: 100px;
+                text-align: right;
+            }
+
+        /* Addresses */
+        .addresses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .address-card {
+            position: relative;
+        }
+
+            .address-card input[type="radio"] {
+                position: absolute;
+                opacity: 0;
+            }
+
+            .address-card label {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                padding: 20px;
+                border: 2px solid #e9ecef;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s;
+                height: 100%;
+            }
+
+            .address-card input[type="radio"]:checked + label {
+                border-color: #f39c12;
+                background: #fff9f0;
+            }
+
+            .address-card label:hover {
+                border-color: #f39c12;
+                box-shadow: 0 2px 8px rgba(243, 156, 18, 0.2);
+            }
+
+        .address-info {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+        }
+
+            .address-info i {
+                font-size: 24px;
+                color: #f39c12;
+                margin-top: 5px;
+                flex-shrink: 0;
+            }
+
+        .address-line {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .check-icon {
+            color: #f39c12;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            flex-shrink: 0;
+        }
+
+        .address-card input[type="radio"]:checked + label .check-icon {
+            opacity: 1;
+        }
+
+        .add-address-link {
+            margin-top: 15px;
+        }
+
+            .add-address-link a {
+                color: #f39c12;
+                text-decoration: none;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .add-address-link a:hover {
+                    text-decoration: underline;
+                }
+
+        /* Summary Card */
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 100px;
+        }
+
+            .summary-card h4 {
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 25px;
+            }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .summary-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 20px 0;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .btn-checkout {
+            height: 56px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #2c3e50;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        /* Security Info */
+        .security-info {
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            margin-top: 20px;
+        }
+
+        .security-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+
+            .security-item i {
+                color: #27ae60;
+                font-size: 16px;
+            }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+                color: white;
+            }
+
+        .w-100 {
+            width: 100%;
+        }
+
+        .mt-3 {
+            margin-top: 15px;
+        }
+
+        .text-success {
+            color: #27ae60;
+        }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+
+            .checkout-sidebar {
+                height: auto;
+            }
+
+            .summary-card {
+                position: static;
+            }
+
+            .addresses-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .review-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .review-item .item-details {
+                width: 100%;
+            }
+
+            .review-item .item-price {
+                text-align: center;
+                width: 100%;
+            }
+
+            .checkout-section {
+                padding: 20px;
+            }
+
+            .summary-card {
+                padding: 20px;
+            }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+            .alert-warning a {
+                color: #856404;
+                font-weight: 600;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function validateForm() {
+            const addressSelected = document.querySelector('input[name="SelectedAddressId"]:checked');
+
+            if (!addressSelected) {
+                alert('Please select a shipping address');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+}

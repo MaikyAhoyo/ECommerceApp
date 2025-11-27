@@ -79,10 +79,9 @@
                             </div>
                         </div>
 
-                        <form method="post" 
+                        <form method="get" 
                               asp-controller="Customer" 
-                              asp-action="CreateOrder" 
-                              id="createOrderForm">
+                              asp-action="CheckoutAddressSelection">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white h-14 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group">
                                 <i class="ph-bold ph-lock-key"></i>
@@ -185,67 +184,5 @@
                 alert('Error removing item');
             });
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('createOrderForm');
-            if (!form) return;
-
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
-                const token = tokenInput ? tokenInput.value : null;
-
-                const formData = new FormData();
-                if (token) formData.append('__RequestVerificationToken', token);
-                formData.append('create', 'true');
-
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Processing...';
-
-                fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: formData
-                })
-                .then(async r => {
-                    console.log('HTTP', r.status, r.statusText);
-                    const text = await r.text();
-                    try {
-                        return JSON.parse(text);
-                    } catch {
-                        console.log('Response text (not JSON):', text);
-                        return null;
-                    }
-                })
-                .then(data => {
-                    console.log('CreateOrder response:', data);
-                    if (data && data.success) {
-                        if (data.orderId) {
-                            window.location.href = `/customer/orders/details/${data.orderId}`;
-                            return;
-                        }
-                        window.location.href = '/customer/orders';
-                    } else if (data && !data.success) {
-                        alert('Server returned an error: ' + (data.message || 'Unknown error'));
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalText;
-                    } else {
-                        window.location.reload();
-                    }
-                })
-                .catch(err => {
-                    console.error('AJAX error:', err);
-                    alert('Connection error');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                });
-            });
-        });
     </script>
 }
