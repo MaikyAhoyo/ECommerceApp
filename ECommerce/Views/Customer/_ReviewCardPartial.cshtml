@@ -10,7 +10,7 @@
                 </h3>
                 <span class="inline-flex items-center gap-1 px-3 py-1 bg-cream text-gold text-xs font-bold rounded-full border border-gold/10">
                     @Model.Rating
-                    <i class="ph-fill ph-star"></i>
+                    <i class="ph ph-fill ph-star"></i>
                 </span>
             </div>
             <p class="text-xs uppercase tracking-wider text-gray-400 font-bold flex items-center gap-2">
@@ -23,8 +23,7 @@
               asp-controller="Customer" 
               asp-action="DeleteReview" 
               asp-route-id="@Model.Id" 
-              class="inline"
-              onsubmit="return confirm('Are you sure you want to delete this review? This action cannot be undone.');">
+              class="delete-review-form inline">
             @Html.AntiForgeryToken()
             <button type="submit"
                     class="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
@@ -53,27 +52,22 @@
             {
                 case 5:
                     <span>Excellent</span>
-                    ; break;
+                    break;
                 case 4:
-
                     <span>Good</span>
-                    ; break;
+                    break;
                 case 3:
-
                     <span>Average</span>
-                    ; break;
+                    break;
                 case 2:
-
                     <span>Poor</span>
-                    ; break;
+                    break;
                 case 1:
-
                     <span>Very Poor</span>
-                    ; break;
+                    break;
                 default:
-
                     <span>Rated</span>
-                    ; break;
+                    break;
             }
         </span>
     </div>
@@ -93,3 +87,143 @@
         </a>
     </div>
 </div>
+
+<!-- Delete Review Modal -->
+<div id="deleteReviewModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden items-center justify-center z-[9999]">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-200 transform transition-all scale-95 opacity-0" id="deleteReviewModalContent">
+        
+        <!-- Header con ícono de advertencia -->
+        <div class="flex items-center justify-center mb-6">
+            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+                <i class="ph ph-fill ph-warning-circle text-4xl text-red-500"></i>
+            </div>
+        </div>
+
+        <!-- Contenido del modal -->
+        <div class="text-center mb-8">
+            <h3 class=" text-2xl font-bold text-primary mb-3">Delete Review?</h3>
+            <p class="text-s text-gray-600 leading-relaxed">
+                Are you sure you want to delete this review? This action cannot be undone and your feedback will be permanently removed.
+            </p>
+        </div>
+
+        <!-- Información del review -->
+        <div class="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
+            <div class="flex items-center justify-between text-sm mb-2">
+                <span class="text-gray-600">Product:</span>
+                <span class="font-bold text-primary line-clamp-1" id="reviewProductName">---</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mb-2">
+                <span class="text-gray-600">Your Rating:</span>
+                <span class="font-bold text-gold flex items-center gap-1" id="reviewRating">
+                    <span>0</span>
+                    <i class="ph ph-fill ph-star"></i>
+                </span>
+            </div>
+            <div class="text-sm">
+                <span class="text-gray-600 block mb-1">Your Comment:</span>
+                <p class="text-gray-700 italic text-xs bg-white rounded-lg p-2 border border-gray-200 line-clamp-2" id="reviewComment">"..."</p>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex gap-3">
+            <button id="cancelDeleteReview" class="flex-1 px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all">
+                Keep Review
+            </button>
+            <button id="confirmDeleteReview" class="flex-1 px-6 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                <i class="ph ph-bold ph-trash"></i>
+                <span>Delete</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("deleteReviewModal");
+        const modalContent = document.getElementById("deleteReviewModalContent");
+        const confirmBtn = document.getElementById("confirmDeleteReview");
+        const cancelBtn = document.getElementById("cancelDeleteReview");
+        const productNameEl = document.getElementById("reviewProductName");
+        const ratingEl = document.getElementById("reviewRating");
+        const commentEl = document.getElementById("reviewComment");
+
+        let formToSubmit = null;
+
+        // Interceptar submit de formularios de eliminación de reviews
+        document.addEventListener("submit", function (e) {
+            const form = e.target;
+            if (!form.classList.contains("delete-review-form")) return;
+
+            e.preventDefault();
+            formToSubmit = form;
+
+            // Extraer datos del review del DOM cercano
+            const reviewCard = form.closest('.bg-white.rounded-3xl');
+            const productName = reviewCard?.querySelector('.font-playfair.text-xl')?.textContent?.trim() || '---';
+            const rating = reviewCard?.querySelector('.bg-cream.text-gold')?.textContent?.trim() || '0';
+            const comment = reviewCard?.querySelector('.text-gray-600.leading-relaxed')?.textContent?.replace(/"/g, '').trim() || '...';
+
+            // Actualizar modal con datos del review
+            productNameEl.textContent = productName;
+            ratingEl.querySelector('span').textContent = rating;
+            commentEl.textContent = `"${comment}"`;
+
+            // Mostrar modal con animación
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            
+            setTimeout(() => {
+                modalContent.classList.remove("scale-95", "opacity-0");
+                modalContent.classList.add("scale-100", "opacity-100");
+            }, 10);
+        });
+
+        // Botón "Keep Review" (cancelar eliminación)
+        cancelBtn.addEventListener("click", () => {
+            closeModal();
+        });
+
+        // Botón "Delete" (confirmar eliminación)
+        confirmBtn.addEventListener("click", () => {
+            if (formToSubmit) {
+                // Deshabilitar botón para evitar doble submit
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Deleting...';
+                
+                formToSubmit.submit();
+            }
+        });
+
+        // Cerrar al hacer clic fuera del modal
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Cerrar con tecla ESC
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && modal.classList.contains("flex")) {
+                closeModal();
+            }
+        });
+
+        function closeModal() {
+            // Animación de salida
+            modalContent.classList.remove("scale-100", "opacity-100");
+            modalContent.classList.add("scale-95", "opacity-0");
+            
+            setTimeout(() => {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+                formToSubmit = null;
+                
+                // Reset botón
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="ph ph-bold ph-trash"></i><span>Delete</span>';
+            }, 200);
+        }
+    });
+</script>
