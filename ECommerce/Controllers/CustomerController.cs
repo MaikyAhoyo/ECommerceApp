@@ -413,6 +413,47 @@ namespace ECommerce.Controllers
 
         #region Checkout & Orders
 
+        // GET: /customer/checkout/address-selection
+        [HttpGet("checkout/address-selection")]
+        public async Task<IActionResult> CheckoutAddressSelection()
+        {
+            int userId = GetCurrentUserId();
+            var cart = await _orderService.GetActiveCartAsync(userId);
+
+            if (cart == null)
+            {
+                TempData["Error"] = "Your cart is empty";
+                return RedirectToAction(nameof(Cart));
+            }
+
+            cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
+
+            if (cart.OrderItems == null || !cart.OrderItems.Any())
+            {
+                TempData["Error"] = "Your cart is empty";
+                return RedirectToAction(nameof(Cart));
+            }
+
+            var addresses = await _shippingAddressService.GetByUserIdAsync(userId);
+
+            // Build view model
+            var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
+            var tax = Math.Round(subtotal * 0.16m, 2);
+            var shipping = 0m;
+
+            var viewModel = new CheckoutAddressSelectionViewModel
+            {
+                Cart = cart,
+                Addresses = addresses.ToList(),
+                Subtotal = subtotal,
+                Tax = tax,
+                Shipping = shipping,
+                Total = subtotal + tax + shipping
+            };
+
+            return View(viewModel);
+        }
+
         // GET: /customer/checkout
         [HttpGet("checkout")]
         public async Task<IActionResult> Checkout()
@@ -474,7 +515,15 @@ namespace ECommerce.Controllers
             if (!success)
             {
                 TempData["Error"] = "Error processing order";
-                return RedirectToAction(nameof(Checkout));
+                return RedirectToAction(nameof(CheckoutAddressSelection));
+            }
+
+            // Update the order with the shipping address
+            var order = await _orderService.GetByIdAsync(cart.Id);
+            if (order != null)
+            {
+                order.AddressId = shippingAddressId;
+                await _orderService.UpdateAsync(order);
             }
 
             // Process payment
@@ -489,7 +538,7 @@ namespace ECommerce.Controllers
             else
             {
                 TempData["Error"] = "Error processing payment";
-                return RedirectToAction(nameof(Checkout));
+                return RedirectToAction(nameof(CheckoutAddressSelection));
             }
         }
 
@@ -579,6 +628,7 @@ namespace ECommerce.Controllers
         public class CreateOrderRequest
         {
             public bool Create { get; set; }
+            public int? SelectedAddressId { get; set; }
         }
 
         // POST: /customer/orders/create
@@ -593,6 +643,14 @@ namespace ECommerce.Controllers
                 if (bool.TryParse(createVal, out var parsed))
                 {
                     request = new CreateOrderRequest { Create = parsed };
+                }
+
+                // Try to read selected address from form as well
+                var addrVal = Request.Form["SelectedAddressId"].FirstOrDefault();
+                if (int.TryParse(addrVal, out var parsedAddr))
+                {
+                    if (request == null) request = new CreateOrderRequest();
+                    request.SelectedAddressId = parsedAddr;
                 }
             }
 
@@ -624,27 +682,11 @@ namespace ECommerce.Controllers
                 return RedirectToAction(nameof(Cart));
             }
 
-            // Build items info for logging/response
-            var itemsInfo = cart.OrderItems.Select(oi => new
-            {
-                ProductId = oi.ProductId,
-                ProductName = oi.Product?.Name ?? "(no name)",
-                Quantity = oi.Quantity,
-                UnitPrice = oi.UnitPrice,
-                Subtotal = oi.Quantity * oi.UnitPrice
-            }).ToList();
+            // Determine selected shipping address
+            int? selectedAddressId = null;
+            if (request != null && request.SelectedAddressId.HasValue)
+                selectedAddressId = request.SelectedAddressId.Value;
 
-            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
-                         (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
-
-            // If AJAX and request doesn't ask to create, just return items
-            if (isAjax && (request == null || request.Create == false))
-            {
-                _logger.LogInformation("(AJAX) Returning cart items for user {UserId}. Items: {Items}", userId, System.Text.Json.JsonSerializer.Serialize(itemsInfo));
-                return Json(new { success = true, items = itemsInfo });
-            }
-
-            // Proceed to create a new Order (copy items) so the cart can be reused later
             // Calculate subtotal, tax and total
             var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
             var tax = Math.Round(subtotal * 0.16m, 2);
@@ -656,12 +698,13 @@ namespace ECommerce.Controllers
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
                 Status = "Pending",
-                Total = total
+                Total = total,
+                AddressId = selectedAddressId ?? 1 // default if none selected
             };
 
             var newOrderId = await _orderService.CreateAsync(newOrder);
 
-            // Copy each item into the new order
+            // Copy items
             foreach (var oi in cart.OrderItems)
             {
                 var newItem = new OrderItem
@@ -674,7 +717,7 @@ namespace ECommerce.Controllers
                 await _orderService.AddItemToOrderAsync(newOrderId, newItem);
             }
 
-            // Recalculate new order total to ensure consistency
+            // Recalculate totals and update order
             var newSubtotal = await _orderService.CalculateOrderTotalAsync(newOrderId);
             var newTax = Math.Round(newSubtotal * 0.16m, 2);
             var newTotal = newSubtotal + newTax + shipping;
@@ -683,27 +726,32 @@ namespace ECommerce.Controllers
             if (createdOrder != null)
             {
                 createdOrder.Total = newTotal;
+                if (selectedAddressId.HasValue)
+                    createdOrder.AddressId = selectedAddressId.Value;
                 await _orderService.UpdateAsync(createdOrder);
             }
 
-            // Clear items from the cart so user can create more orders later
+            // Clear cart items
             foreach (var oi in cart.OrderItems.ToList())
             {
                 await _orderService.RemoveItemFromOrderAsync(oi.Id);
             }
 
-            // Ensure cart total reset
+            // Reset cart total
             cart.Total = 0;
             await _orderService.UpdateAsync(cart);
 
-            _logger.LogInformation("Created new order {OrderId} for user {UserId}. Items copied: {Count}", newOrderId, userId, itemsInfo.Count);
+            _logger.LogInformation("Created new order {OrderId} for user {UserId}. Items copied: {Count}", newOrderId, userId, cart.OrderItems.Count);
+
+            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                         (Request.Headers.ContainsKey("Accept") && Request.Headers["Accept"].ToString().Contains("application/json"));
 
             if (isAjax)
             {
-                return Json(new { success = true, message = "Order created", orderId = newOrderId, items = itemsInfo, total = newTotal, tax = newTax });
+                return Json(new { success = true, message = "Order created", orderId = newOrderId, total = newTotal, tax = newTax });
             }
 
-            TempData["Success"] = "Order created (test mode)";
+            TempData["Success"] = "Order created";
             return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
