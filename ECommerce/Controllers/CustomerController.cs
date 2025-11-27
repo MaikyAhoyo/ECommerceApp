@@ -161,11 +161,7 @@ namespace ECommerce.Controllers
         [HttpGet("products/details/{id}")]
         public async Task<IActionResult> ProductDetails(int id)
         {
-            var userLoggedIn = User.Identity != null && User.Identity.IsAuthenticated;
-
             var product = await _productService.GetByIdAsync(id);
-            var productCategories = await _categoryService.GetByProductIdAsync(product.Id);
-            product.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
 
             if (product == null)
             {
@@ -173,14 +169,20 @@ namespace ECommerce.Controllers
                 return RedirectToAction(nameof(Products));
             }
 
+            var productCategories = await _categoryService.GetByProductIdAsync(product.Id);
+            product.CategoryNames = string.Join(", ", productCategories.Select(c => ((Category)c).Name));
+
             var reviews = await _reviewService.GetByProductIdAsync(id);
             var avgRating = await _reviewService.GetAverageRatingByProductAsync(id);
             var reviewCount = await _reviewService.GetReviewCountByProductAsync(id);
             var categories = await _productService.GetProductCategoriesAsync(id);
+
             var relatedProducts = (await _productService.GetAllAsync())
                 .Where(p => p.CategoryId == product.CategoryId && p.Id != id)
                 .Take(4)
                 .ToList();
+
+            var userLoggedIn = User.Identity != null && User.Identity.IsAuthenticated;
 
             var viewModel = new CustomerProductDetailsViewModel
             {
@@ -663,7 +665,7 @@ namespace ECommerce.Controllers
 
             if (cart == null)
             {
-                TempData["Error"] = "No se encontró el carrito.";
+                TempData["Error"] = "Cart not found";
                 return RedirectToAction(nameof(Cart));
             }
 
@@ -671,7 +673,7 @@ namespace ECommerce.Controllers
 
             if (cart.OrderItems == null || !cart.OrderItems.Any())
             {
-                TempData["Error"] = "Tu carrito está vacío.";
+                TempData["Error"] = "Your cart is empty.";
                 return RedirectToAction(nameof(Cart));
             }
 
@@ -730,9 +732,9 @@ namespace ECommerce.Controllers
             cart.Total = 0;
             await _orderService.UpdateAsync(cart);
 
-            _logger.LogInformation("Orden creada {OrderId} para usuario {UserId}", newOrderId, userId);
+            _logger.LogInformation("Order created {OrderId} for user {UserId}", newOrderId, userId);
 
-            TempData["Success"] = "¡Orden creada exitosamente!";
+            TempData["Success"] = "Order created successfully!";
             return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
@@ -801,46 +803,54 @@ public async Task<IActionResult> CancelOrder(int id)
 
         #region Reviews
 
-       [HttpGet("reviews/create/{productId}")]
-public async Task<IActionResult> CreateReview(int productId)
-{
-    var product = await _productService.GetByIdAsync(productId);
+        [HttpGet("reviews/create/{productId}")]
+        public async Task<IActionResult> CreateReview(int productId)
+        {
+            var product = await _productService.GetByIdAsync(productId);
 
-    if (product == null)
-    {
-        TempData["Error"] = "Product not found";
-        return RedirectToAction(nameof(Products));
-    }
+            if (product == null)
+            {
+                TempData["Error"] = "Product not found";
+                return RedirectToAction(nameof(Products));
+            }
 
-    TempData["Success"] = "Review created for " + product.Name;
+            TempData["Success"] = "Review created for " + product.Name;
 
-    return RedirectToAction(nameof(ProductDetails), new { id = productId });
-}
+            return RedirectToAction(nameof(ProductDetails), new { id = productId });
+        }
 
 
-[HttpPost("reviews/create")]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> CreateReview(Review review)
-{
-    review.UserId = GetCurrentUserId();
-    review.CreatedAt = DateTime.UtcNow;
+        // POST: /customer/reviews/create
+        [HttpPost("reviews/create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateReview(ReviewCreateViewModel model)
+        {
+            ModelState.Remove(nameof(model.ProductName));
+            ModelState.Remove(nameof(model.ProductImageUrl));
 
-    if (!ModelState.IsValid)
-    {
-        TempData["Error"] = "Please correct the errors in the form.";
-        return RedirectToAction(nameof(ProductDetails), new { id = review.ProductId });
-    }
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                TempData["Error"] = "Error: " + string.Join(", ", errors);
 
-    review.UserId = GetCurrentUserId();
-    review.CreatedAt = DateTime.UtcNow;
+                return RedirectToAction(nameof(ProductDetails), new { id = model.ProductId });
+            }
 
-    await _reviewService.CreateAsync(review);
+            var review = new Review
+            {
+                ProductId = model.ProductId,
+                Rating = model.Rating,
+                Comment = model.Comment,
+                UserId = GetCurrentUserId(),
+                CreatedAt = DateTime.UtcNow
+            };
 
-    TempData["Success"] = "Review created successfully!";
+            await _reviewService.CreateAsync(review);
 
-    return RedirectToAction(nameof(ProductDetails), new { id = review.ProductId });
-}
+            TempData["Success"] = "Review created successfully!";
 
+            return RedirectToAction(nameof(ProductDetails), new { id = model.ProductId });
+        }
 
         // GET: /customer/reviews
         [HttpGet("reviews")]

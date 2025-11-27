@@ -229,19 +229,26 @@
                     }
                 </div>
 
-                @if (Model.Reviews.Any())
+                @{
+                    var reviewsWithText = Model.Reviews
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Comment))
+                    .ToList();
+                }
+
+                @if (reviewsWithText.Any())
                 {
                     <div class="space-y-4">
-                        @foreach (var review in Model.Reviews.Take(5))
+
+                        @foreach (var review in reviewsWithText.Take(5))
                         {
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                                 <div class="flex justify-between items-start mb-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/40 text-primary flex items-center justify-center font-bold text-sm shadow-inner">
-                                            @review.User?.Name.Substring(0, 1).ToUpper()
+                                            @(review.User?.Name?.Substring(0, 1).ToUpper() ?? "?")
                                         </div>
                                         <div>
-                                            <h6 class="font-bold text-primary text-sm">@review.User?.Name</h6>
+                                            <h6 class="font-bold text-primary text-sm">@(review.User?.Name ?? "Anonymous")</h6>
                                             <span class="text-xs text-gray-400 font-medium">@review.CreatedAt.ToString("MMM dd, yyyy")</span>
                                         </div>
                                     </div>
@@ -265,16 +272,17 @@
                         <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
                             <i class="ph-fill ph-chat-teardrop-text text-3xl"></i>
                         </div>
-                        <p class="text-gray-500 mb-6 text-lg">No reviews yet for this product.</p>
+                        <p class="text-gray-500 mb-6 text-lg">No written reviews yet.</p>
+
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <button onclick="window.openReviewModal()" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-bold transition-all shadow-lg hover:shadow-xl">
-                                Be the first to review
+                                Be the first to write one
                             </button>
                         }
                         else
                         {
-                            <a href="/auth/login?returnUrl=@Context.Request.Path" class="text-gold font-bold hover:underline">Log in to write a review</a>
+                            <a href="/auth/login?returnUrl=@Context.Request.Path" class="text-gold font-bold hover:underline">Log in to review</a>
                         }
                     </div>
                 }
@@ -299,7 +307,7 @@
 </div>
 
 @{
-    var reviewModalModel = new ReviewCreateViewModel
+    var reviewModalModel = new ECommerce.ViewModels.ReviewCreateViewModel
     {
         ProductId = Model.Product.Id,
         ProductName = Model.Product.Name,
@@ -308,6 +316,7 @@
 }
 
 @await Html.PartialAsync("_ModalReview", reviewModalModel)
+
 @functions {
     string GetMetalName(string metal)
     {

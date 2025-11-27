@@ -403,6 +403,7 @@ namespace ECommerce.ViewModels
     #endregion
 
     #region Review View Models
+
     // ========================================
     // REVIEW VIEW MODELS
     // ========================================
@@ -413,13 +414,13 @@ namespace ECommerce.ViewModels
         public string ProductName { get; set; } = null!;
         public string ProductImageUrl { get; set; } = null!;
 
-        [Required(ErrorMessage = "La calificación es requerida")]
-        [Range(1, 5, ErrorMessage = "La calificación debe ser entre 1 y 5")]
-        [Display(Name = "Calificación")]
+        [Required(ErrorMessage = "Rating is required")]
+        [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5")]
+        [Display(Name = "Rating")]
         public int Rating { get; set; }
 
-        [StringLength(1000, ErrorMessage = "El comentario no puede exceder 1000 caracteres")]
-        [Display(Name = "Comentario (opcional)")]
+        [StringLength(1000, ErrorMessage = "Comment cannot exceed 1000 characters")]
+        [Display(Name = "Comment (optional)")]
         public string? Comment { get; set; }
     }
 
@@ -429,15 +430,16 @@ namespace ECommerce.ViewModels
         public int ProductId { get; set; }
         public string ProductName { get; set; } = null!;
 
-        [Required(ErrorMessage = "La calificación es requerida")]
-        [Range(1, 5, ErrorMessage = "La calificación debe ser entre 1 y 5")]
-        [Display(Name = "Calificación")]
+        [Required(ErrorMessage = "Rating is required")]
+        [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5")]
+        [Display(Name = "Rating")]
         public int Rating { get; set; }
 
         [StringLength(1000)]
-        [Display(Name = "Comentario")]
+        [Display(Name = "Comment (optional)")]
         public string? Comment { get; set; }
     }
+
     #endregion
 
     #region Shared/Common View Models
