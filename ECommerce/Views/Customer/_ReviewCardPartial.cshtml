@@ -14,7 +14,7 @@
                 </span>
             </div>
             <p class="text-xs uppercase tracking-wider text-gray-400 font-bold flex items-center gap-2">
-                <i class="ph ph-bold ph-calendar-blank"></i>
+                <i class="ph ph-calendar-blank font-bold"></i>
                 @Model.CreatedAt.ToString("MMMM dd, yyyy")
             </p>
         </div>
@@ -43,7 +43,7 @@
                 }
                 else
                 {
-                    <i class="ph ph-star text-gray-200"></i>
+                    <i class="ph ph ph-star text-gray-200"></i>
                 }
             }
         </div>
@@ -83,7 +83,7 @@
            asp-route-id="@Model.ProductId"
            class="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-gold transition-colors group/link">
             <span>View Product</span>
-            <i class="ph ph-bold ph-arrow-right group-hover/link:translate-x-1 transition-transform"></i>
+            <i class="ph ph-arrow-right font-bold group-hover/link:translate-x-1 transition-transform"></i>
         </a>
     </div>
 </div>
