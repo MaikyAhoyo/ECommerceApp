@@ -26,7 +26,7 @@
             <a asp-controller="Customer" 
                asp-action="CreateAddress" 
                class="inline-flex items-center px-6 py-3 bg-gold hover:bg-gold-dark text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                <i class="ph-bold ph-plus mr-2"></i>Add New Address
+                <i class="ph ph-plus font-bold mr-2"></i>Add New Address
             </a>
         </div>
 
@@ -62,7 +62,7 @@
                                    asp-action="EditAddress" 
                                    asp-route-id="@address.Id" 
                                    class="flex-1 inline-flex items-center justify-center px-4 py-2.5 border-2 border-gray-200 text-gray-600 font-semibold rounded-xl hover:border-primary hover:text-primary hover:bg-gray-50 transition-all">
-                                    <i class="ph-bold ph-pencil-simple mr-2"></i>Edit
+                                    <i class="ph ph-pencil-simple font-bold mr-2"></i>Edit
                                 </a>
 
                                 <form method="post" 
@@ -71,7 +71,7 @@
                                       asp-route-id="@address.Id" class="flex-1 delete-form">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-red-50 text-red-500 font-semibold rounded-xl hover:bg-red-100 hover:text-red-600 transition-all">
-                                        <i class="ph-bold ph-trash mr-2"></i>Delete
+                                        <i class="ph ph-trash font-bold mr-2"></i>Delete
                                     </button>
                                 </form>
                             </div>
@@ -89,7 +89,7 @@
                 <h2 class="font-playfair text-3xl font-bold text-primary mb-3">No addresses yet</h2>
                 <p class="text-gray-500 mb-8 text-lg">Save your shipping details for a faster checkout experience.</p>
                 <a asp-controller="Customer" asp-action="CreateAddress" class="inline-flex items-center px-8 py-4 bg-primary hover:bg-primary/90 text-white rounded-full font-bold shadow-lg hover:shadow-xl transition-all">
-                    <i class="ph-bold ph-plus mr-2"></i>Add Your First Address
+                    <i class="ph ph-plus font-bold mr-2"></i>Add Your First Address
                 </a>
             </div>
         }

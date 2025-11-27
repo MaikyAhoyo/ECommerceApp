@@ -383,8 +383,9 @@ namespace ECommerce.Controllers
             return RedirectToAction(nameof(Cart));
         }
 
-        // POST: /customer/cart/remove/{itemId}
-        [HttpPost("cart/remove/{itemId}")]
+        // POST: /customer/cart/remove
+        [HttpPost("cart/remove")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveFromCart(int itemId)
         {
             var success = await _orderService.RemoveItemFromOrderAsync(itemId);

@@ -1,4 +1,7 @@
-﻿<div class="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr_120px_120px_120px_50px] gap-6 items-center py-6 border-b border-gray-100 last:border-b-0 group" data-item-id="@Model.Id">
+﻿@model ECommerce.ViewModels.CartItemViewModel
+
+<div class="grid grid-cols-[80px_1fr] md:grid-cols-[100px_1fr_120px_120px_120px_50px] gap-6 items-center py-6 border-b border-gray-100 last:border-b-0 group">
+
     <div class="w-20 h-20 md:w-24 md:h-24 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center border border-gray-100">
         @if (!string.IsNullOrEmpty(Model.ProductImageUrl))
         {
@@ -21,54 +24,60 @@
                 <span class="w-2 h-2 rounded-full bg-gold"></span>
                 @Model.Metal &bull; @Model.Purity
             </p>
-           
         </div>
 
         <div class="flex justify-between items-center mt-4 md:hidden">
             <span class="text-gold font-bold text-lg">$@Model.Subtotal.ToString("N2")</span>
 
             <div class="flex items-center gap-3">
-                <div class="flex items-center bg-gray-50 rounded-full px-2 border border-gray-200 h-8">
-                    <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary" onclick="updateQuantity(@Model.Id, @Model.Quantity - 1)">-</button>
-                    <span class="text-sm font-bold w-6 text-center">@Model.Quantity</span>
-                    <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary" onclick="updateQuantity(@Model.Id, @Model.Quantity + 1)">+</button>
-                </div>
-                <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeItem(@Model.Id)">
-                    <i class="ph-fill ph-trash text-xl"></i>
-                </button>
+                <form asp-controller="Customer" asp-action="UpdateCartItem" method="post" class="flex items-center bg-gray-50 rounded-full px-2 border border-gray-200 h-8">
+                    <input type="hidden" name="itemId" value="@Model.Id" />
+
+                    <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary"
+                            onclick="this.nextElementSibling.stepDown(); this.form.submit()">
+                        -
+                    </button>
+
+                    <input type="number" name="quantity" value="@Model.Quantity" min="1" max="@Model.MaxStock" readonly
+                           class="text-sm font-bold w-6 text-center bg-transparent border-none p-0 focus:ring-0 appearance-none" />
+
+                    <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary"
+                            onclick="this.previousElementSibling.stepUp(); this.form.submit()">
+                        +
+                    </button>
+                </form>
+
+                <form asp-controller="Customer" asp-action="RemoveFromCart" method="post">
+                    <input type="hidden" name="itemId" value="@Model.Id" />
+                    <button type="submit" class="text-gray-400 hover:text-red-500 pt-1">
+                        <i class="ph-fill ph-trash text-xl"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
     <div class="hidden md:flex flex-col items-center gap-1">
-        <div class="flex items-center bg-gray-50 rounded-full p-2 border border-gray-200">
-            @if (Model.Quantity <= 1)
-            {
-                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary cursor-not-allowed" onclick="">
-                    <i class="ph ph-minus"></i>
-                </button>
-            }
-            else
-            {
-                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary transition" onclick="updateQuantity(@Model.Id, @Model.Quantity - 1)">
-                    <i class="ph ph-minus"></i>
-                </button>
-            }
-            <span class="text-sm font-bold w-6 text-center">@Model.Quantity</span>
+        <form asp-controller="Customer" asp-action="UpdateCartItem" method="post" class="flex items-center bg-gray-50 rounded-full p-2 border border-gray-200">
+            <input type="hidden" name="itemId" value="@Model.Id" />
 
-             @if (Model.Quantity == Model.MaxStock)
-            {
-                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary cursor-not-allowed " onclick="">
-                    <i class="ph ph-plus"></i>
-                </button>
-            }
-            else
-            {
-                <button type="button" class="w-6 flex justify-center text-gray-500 hover:text-primary transition" onclick="updateQuantity(@Model.Id, @Model.Quantity + 1)">
-                    <i class="ph ph-plus"></i>
-                </button>
-            }
-        </div>
+            <button type="button"
+                    class="w-6 flex justify-center text-gray-500 hover:text-primary transition @(Model.Quantity <= 1 ? "opacity-50 cursor-not-allowed" : "")"
+                    onclick="if(this.nextElementSibling.value > 1) { this.nextElementSibling.stepDown(); this.form.submit(); }">
+                <i class="ph ph-minus"></i>
+            </button>
+
+            <input type="number" name="quantity" value="@Model.Quantity" min="1" max="@Model.MaxStock"
+                   class="text-sm font-bold w-8 text-center bg-transparent border-none p-0 focus:ring-0 appearance-none"
+                   onchange="this.form.submit()" />
+
+            <button type="button"
+                    class="w-6 flex justify-center text-gray-500 hover:text-primary transition @(Model.Quantity >= Model.MaxStock ? "opacity-50 cursor-not-allowed" : "")"
+                    onclick="if(this.previousElementSibling.value < @Model.MaxStock) { this.previousElementSibling.stepUp(); this.form.submit(); }">
+                <i class="ph ph-plus"></i>
+            </button>
+        </form>
+
         <span class="text-xs text-gray-400 font-medium">
             Disponibles: @Model.MaxStock
         </span>
@@ -83,8 +92,11 @@
     </div>
 
     <div class="hidden md:flex justify-end">
-        <button type="button" class="w-10 h-10 rounded-full bg-white hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors shadow-sm border border-gray-100" onclick="removeItem(@Model.Id)" title="Remove Item">
-            <i class="ph-fill ph-trash text-lg"></i>
-        </button>
+        <form asp-controller="Customer" asp-action="RemoveFromCart" method="post">
+            <input type="hidden" name="itemId" value="@Model.Id"/>
+            <button type="submit" class="w-10 h-10 rounded-full bg-white hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors shadow-sm border border-gray-100" title="Remove Item">
+                <i class="ph-fill ph-trash text-lg"></i>
+            </button>
+        </form>
     </div>
 </div>

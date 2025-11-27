@@ -45,10 +45,10 @@
                     </div>
 
                     <div class="mt-6">
-                        <a asp-controller="Customer" 
-                           asp-action="Products" 
+                        <a asp-controller="Customer"
+                           asp-action="Products"
                            class="inline-flex items-center px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition">
-                            <i class="ph ph-bold ph-arrow-left mr-2"></i>Continue Shopping
+                            <i class="ph ph-arrow-left font-bold mr-2"></i>Continue Shopping
                         </a>
                     </div>
                 </div>
@@ -70,6 +70,7 @@
                                 }
                                 else
                                 {
+
                                     <span class="font-semibold text-primary">$@Model.Shipping.ToString("N2")</span>
                                 }
                             </div>
@@ -86,14 +87,11 @@
                             </div>
                         </div>
 
-                        <form method="get" 
-                              asp-controller="Customer" 
-                              asp-action="CheckoutAddressSelection">
-                            @Html.AntiForgeryToken()
+                        <form method="get" asp-controller="Customer" asp-action="CheckoutAddressSelection">
                             <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white h-14 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group">
-                                <i class="ph-bold ph-lock-key"></i>
+                                <i class="ph ph-lock-key font-bold"></i>
                                 <span>Secure Checkout</span>
-                                <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                <i class="ph ph-arrow-right font-bold group-hover:translate-x-1 transition-transform"></i>
                             </button>
                         </form>
 
@@ -123,73 +121,13 @@
                 </div>
                 <h3 class="font-playfair text-3xl font-bold text-primary mb-4">Your cart is empty</h3>
                 <p class="text-gray-500 text-lg mb-8 max-w-md">Looks like you haven't added any jewelry to your cart yet.</p>
-                <a asp-controller="Customer" 
-                   asp-action="Products" 
+                <a asp-controller="Customer"
+                   asp-action="Products"
                    class="bg-gold hover:bg-gold-dark text-white px-8 py-4 rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2">
                     <span>Browse Collection</span>
-                    <i class="ph-bold ph-arrow-right"></i>
+                    <i class="ph ph-arrow-right font-bold"></i>
                 </a>
             </div>
         }
     </div>
 </div>
-
-@functions {
-    string GetMetalName(string metal)
-    {
-        return metal switch
-        {
-            "Gold" => "Gold",
-            "Silver" => "Silver",
-            "Platinum" => "Platinum",
-            _ => metal
-        };
-    }
-}
-
-@section Scripts {
-    <script>
-        function updateQuantity(itemId, newQuantity) {
-           if (newQuantity < 1) return;
-
-            fetch(`/customer/cart/update/${itemId}?quantity=${newQuantity}`, {
-                method: 'POST'
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Error de red');
-                return response.json();
-            })
-            .then(data => {
-                console.log("Respuesta:", data);
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error updating quantity');
-            });
-        };
-
-        function removeItem(itemId) {
-            if (!confirm('Remove this item from cart?')) return;
-
-            fetch(`/customer/cart/remove/${itemId}`, {
-                method: 'POST'
-            })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert('Error removing item');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error removing item');
-            });
-        }
-    </script>
-}
