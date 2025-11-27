@@ -174,8 +174,6 @@
         };
 
         function removeItem(itemId) {
-            if (!confirm('Remove this item from cart?')) return;
-
             fetch(`/customer/cart/remove/${itemId}`, {
                 method: 'POST'
             })
