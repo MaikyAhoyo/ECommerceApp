@@ -146,7 +146,38 @@
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold @GetStatusClasses(order.Status)">
                                     @order.Status
                                 </span>
+                                
+                                
+                                @if (order.Status == "Delivered" || order.Status == "Cancelled")
+                                {
+                                    <button class="px-3 mx-4 text-gray-300 cursor-not-allowed">
+                                        <i class="ph ph-check-circle"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                <form method="post" asp-action="UpdateStatus" class="inline-block">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="orderId" value="@order.Id" />
+    
+    <button type="submit" name="newStatus" value="@ChangeStatus(order.Status)" class="px-2 text-gray-600 hover:text-primary transition rounded-lg hover:bg-gray-100">
+        <span class="inline-flex items-center gap-2 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+            <i class="ph ph-arrow-right text-xs"></i>
+            Move to @ChangeStatus(order.Status)
+        </span>
+    </button>
+    
+    <button type="submit" name="newStatus" value="Cancelled" class="px-2 text-red-600 hover:text-red-800 transition rounded-lg hover:bg-red-100">
+        <span class="inline-flex items-center gap-2 bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+            <i class="ph ph-x-circle text-xs"></i>
+        </span>
+    </button>
+</form>
+
+                                }
+
                             </td>
+                            
                         </tr>
                     }
                 </tbody>
@@ -260,6 +291,18 @@
             _ => "bg-gray-100 text-gray-700"
         };
     }
+
+    string ChangeStatus(string status)
+{
+    return status switch
+    {
+        "Pending"   => "Confirmed",
+        "Confirmed" => "Shipped",
+        "Shipped"   => "Delivered",
+        _ => status 
+    };
+}
+
 
     string GetPageUrl(int page)
     {
