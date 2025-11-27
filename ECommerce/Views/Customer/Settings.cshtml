@@ -1,0 +1,323 @@
+﻿@model ECommerce.ViewModels.CustomerSettingsViewModel
+@{
+    ViewData["Title"] = "Settings";
+    Layout = "_CustomerLayout";
+}
+
+<section class="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+    <div class="container mx-auto px-4 relative z-10 text-white text-center">
+        <h1 class="font-playfair text-4xl md:text-5xl font-bold mb-4">Settings</h1>
+        <p class="text-xl text-white/80">Manage your account and preferences</p>
+    </div>
+</section>
+
+<div class="bg-cream py-12 pb-24 min-h-[60vh]">
+    <div class="container mx-auto px-4">
+
+        <div class="grid lg:grid-cols-3 gap-8">
+
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 text-center sticky top-24">
+
+                    <div class="w-32 h-32 mx-auto bg-gradient-to-br from-gold to-gold-dark rounded-full p-1 shadow-lg mb-6 relative group cursor-pointer">
+                        <div class="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden relative">
+                            <span class="text-4xl font-bold text-primary">@Model.Name.Substring(0, 1).ToUpper()</span>
+                        </div>
+                    </div>
+
+                    <h2 class="font-playfair text-2xl font-bold text-primary mb-1">@Model.Name</h2>
+                    <p class="text-gray-500 text-sm mb-6">@Model.Email</p>
+
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                            <div class="flex items-center gap-3 text-sm font-semibold text-gray-700">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><i class="ph-fill ph-shield-check"></i></div>
+                                Verified Account
+                            </div>
+                            <i class="ph-bold ph-check text-green-500"></i>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                            <div class="flex items-center gap-3 text-sm font-semibold text-gray-700">
+                                <div class="w-8 h-8 rounded-full bg-gold/20 text-gold flex items-center justify-center"><i class="ph-fill ph-crown"></i></div>
+                                Gold Member
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-8">
+
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+                        <div class="w-10 h-10 rounded-full bg-cream text-gold flex items-center justify-center">
+                            <i class="ph-fill ph-user text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-playfair text-xl font-bold text-primary">Personal Information</h3>
+                            <p class="text-sm text-gray-500">Update your contact details</p>
+                        </div>
+                    </div>
+
+                    <form method="post" 
+                          asp-controller="Customer" 
+                          asp-action="UpdateProfile">
+                        <div class="grid md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-bold text-primary mb-2">Full Name</label>
+                                <div class="relative">
+                                    <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                                    <input asp-for="Name" 
+                                           class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gold focus:ring-4 focus:ring-gold/10 outline-none transition-all placeholder-gray-400" placeholder="Your full name">
+                                </div>
+                                <span asp-validation-for="Name" class="text-red-500 text-xs mt-1 font-semibold"></span>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-bold text-primary mb-2">Email Address</label>
+                                <div class="relative">
+                                    <i class="ph ph-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                                    <input asp-for="Email" 
+                                           class="w-full pl-11 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed" readonly>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                                    <i class="ph-fill ph-info"></i> To change your email, please contact support.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-gold hover:bg-gold-dark text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
+                                <i class="ph-bold ph-floppy-disk"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+                        <div class="w-10 h-10 rounded-full bg-cream text-primary flex items-center justify-center">
+                            <i class="ph-fill ph-lock-key text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-playfair text-xl font-bold text-primary">Security</h3>
+                            <p class="text-sm text-gray-500">Update your password</p>
+                        </div>
+                    </div>
+
+                    <form method="post"
+                          asp-controller="Customer"
+                          asp-action="ChangePassword">
+                        <div class="space-y-6 mb-6">
+
+                            <div>
+                                <label asp-for="CurrentPassword" 
+                                       class="block text-sm font-bold text-primary mb-2">Current Password</label>
+                                <div class="relative">
+                                    <input asp-for="CurrentPassword" 
+                                           type="password" 
+                                           id="CurrentPassword"
+                                           class="w-full pl-5 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all">
+                                </div>
+                                <span asp-validation-for="CurrentPassword" 
+                                      class="text-red-500 text-xs mt-1 font-semibold"></span>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label asp-for="NewPassword" 
+                                           class="block text-sm font-bold text-primary mb-2">New Password</label>
+                                    <div class="relative">
+                                        <input asp-for="NewPassword" 
+                                               type="password" 
+                                               id="NewPassword"
+                                               class="w-full pl-5 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all">
+
+                                        <button type="button" 
+                                                onclick="togglePassword('NewPassword', this)"
+                                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
+                                            <i class="ph ph-eye text-xl"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="NewPassword" 
+                                          class="text-red-500 text-xs mt-1 font-semibold"></span>
+                                </div>
+
+                                <div>
+                                    <label asp-for="ConfirmNewPassword" 
+                                           class="block text-sm font-bold text-primary mb-2">
+                                           Confirm New Password</label>
+                                    <div class="relative">
+                                        <input asp-for="ConfirmNewPassword" type="password" id="ConfirmNewPassword"
+                                               class="w-full pl-5 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all">
+
+                                        <button type="button" onclick="togglePassword('ConfirmNewPassword', this)"
+                                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
+                                            <i class="ph ph-eye text-xl"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="ConfirmNewPassword" class="text-red-500 text-xs mt-1 font-semibold"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
+                                <i class="ph-bold ph-shield-check"></i>
+                                Update Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-cream text-gray-600 flex items-center justify-center">
+                            <i class="ph-fill ph-sliders text-xl"></i>
+                        </div>
+                        <h3 class="font-playfair text-xl font-bold text-primary">Preferences</h3>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-gray-800">Newsletter & Offers</p>
+                                <p class="text-sm text-gray-500">Receive emails about new collections and exclusive discounts.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold"></div>
+                            </label>
+                        </div>
+
+                        <hr class="border-gray-100">
+
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-gray-800">Two-Factor Authentication (2FA)</p>
+                                <p class="text-sm text-gray-500">Add an extra layer of security to your account.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 rounded-3xl border border-red-100 p-8">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-playfair text-lg font-bold text-red-700">Danger Zone</h3>
+                            <p class="text-sm text-red-600/80">Once you delete your account, there is no going back.</p>
+                        </div>
+                        <button type="button" id="btnDeleteAccount" class="px-6 py-2.5 bg-white border border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm">
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="deleteAccountModal" class="fixed inset-0 z-[9999] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-primary/60 backdrop-blur-sm transition-opacity opacity-0" id="deleteBackdrop"></div>
+
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+
+            <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg scale-95 opacity-0" id="deletePanel">
+
+                <div class="bg-white px-8 pt-8 pb-6">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="mx-auto flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-red-50 mb-6">
+                            <i class="ph-fill ph-warning text-red-600 text-4xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 font-playfair mb-2">Are you absolutely sure?</h3>
+                        <p class="text-sm text-gray-500 mb-6">
+                            This action will permanently delete your account, order history, and saved preferences. <br />
+                            <span class="font-bold text-red-500">This cannot be undone.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 px-8 py-6 flex flex-col sm:flex-row gap-3">
+                    <button type="button" id="btnCancelDelete" class="w-full inline-flex justify-center items-center px-6 py-3.5 border border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-white hover:border-gray-400 transition-all">
+                        Cancel, keep my account
+                    </button>
+
+                    <form asp-action="DeleteAccount" method="post" class="w-full">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="w-full inline-flex justify-center items-center px-6 py-3.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-lg hover:shadow-red-500/30 transition-all">
+                            Yes, Delete Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('ph-eye');
+                icon.classList.add('ph-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('ph-eye-slash');
+                icon.classList.add('ph-eye');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const modal = document.getElementById("deleteAccountModal");
+            const backdrop = document.getElementById("deleteBackdrop");
+            const panel = document.getElementById("deletePanel");
+            const btnOpen = document.getElementById("btnDeleteAccount");
+            const btnCancel = document.getElementById("btnCancelDelete");
+
+            function openModal() {
+                modal.classList.remove("hidden");
+                setTimeout(() => {
+                    backdrop.classList.remove("opacity-0");
+                    panel.classList.remove("scale-95", "opacity-0");
+                    panel.classList.add("scale-100", "opacity-100");
+                }, 10);
+            }
+
+            function closeModal() {
+                backdrop.classList.add("opacity-0");
+                panel.classList.remove("scale-100", "opacity-100");
+                panel.classList.add("scale-95", "opacity-0");
+
+                setTimeout(() => {
+                    modal.classList.add("hidden");
+                }, 300);
+            }
+
+            btnOpen.addEventListener("click", openModal);
+            btnCancel.addEventListener("click", closeModal);
+
+            modal.addEventListener("click", (e) => {
+                if (e.target === backdrop) closeModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+}

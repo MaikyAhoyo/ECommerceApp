@@ -14,13 +14,6 @@ namespace ECommerce.Services.Implementations
             _context = context;
         }
 
-        public async Task<User?> LoginAsync(string email, string password)
-        {
-            using var connection = _context.CreateConnection();
-            var sql = "SELECT * FROM Users WHERE Email = @Email AND PasswordHash = @Password";
-            return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email, Password = password });
-        }
-
         public async Task<int> RegisterAsync(User user)
         {
             using var connection = _context.CreateConnection();
@@ -55,8 +48,12 @@ namespace ECommerce.Services.Implementations
         {
             using var connection = _context.CreateConnection();
             var sql = @"UPDATE Users 
-                        SET Name = @Name, Email = @Email, Role = @Role
+                        SET Name = @Name, 
+                            Email = @Email, 
+                            Role = @Role,
+                            PasswordHash = @PasswordHash 
                         WHERE Id = @Id";
+
             var rowsAffected = await connection.ExecuteAsync(sql, user);
             return rowsAffected > 0;
         }
@@ -67,33 +64,6 @@ namespace ECommerce.Services.Implementations
             var sql = "DELETE FROM Users WHERE Id = @Id";
             var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id });
             return rowsAffected > 0;
-        }
-
-        public async Task<bool> ChangePasswordAsync(int id, string currentPassword, string newPassword)
-        {
-            using var connection = _context.CreateConnection();
-
-            // Verify current password
-            var verifySql = "SELECT COUNT(1) FROM Users WHERE Id = @Id AND PasswordHash = @CurrentPassword";
-            var isValid = await connection.ExecuteScalarAsync<int>(verifySql,
-                new { Id = id, CurrentPassword = currentPassword });
-
-            if (isValid == 0)
-                return false;
-
-            // Update password
-            var updateSql = "UPDATE Users SET PasswordHash = @NewPassword WHERE Id = @Id";
-            var rowsAffected = await connection.ExecuteAsync(updateSql,
-                new { Id = id, NewPassword = newPassword });
-
-            return rowsAffected > 0;
-        }
-
-        public async Task<IEnumerable<User>> GetVendorsAsync()
-        {
-            using var connection = _context.CreateConnection();
-            var sql = "SELECT * FROM Users WHERE Role = 'Vendor'";
-            return await connection.QueryAsync<User>(sql);
         }
 
         public async Task<int> GetTotalUsersCountAsync()
