@@ -1,9 +1,11 @@
 ﻿using ECommerce.Models.Entities;
+using ECommerce.Services.Implementations;
 using ECommerce.Services.Interfaces;
 using ECommerce.ViewModels;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 
 namespace ECommerce.Controllers
@@ -17,6 +19,7 @@ namespace ECommerce.Controllers
         private readonly IShippingAddressService _shippingAddressService;
         private readonly IPaymentService _paymentService;
         private readonly ICategoryService _categoryService;
+        private readonly IUserService _userService;
         private readonly ILogger<CustomerController> _logger;
 
         public CustomerController(
@@ -26,6 +29,7 @@ namespace ECommerce.Controllers
             IShippingAddressService shippingAddressService,
             IPaymentService paymentService,
             ICategoryService categoryService,
+            IUserService userService,
             ILogger<CustomerController> logger)
         {
             _productService = productService;
@@ -34,6 +38,7 @@ namespace ECommerce.Controllers
             _shippingAddressService = shippingAddressService;
             _paymentService = paymentService;
             _categoryService = categoryService;
+            _userService = userService;
             _logger = logger;
         }
 
@@ -894,6 +899,115 @@ namespace ECommerce.Controllers
                 return userId;
 
             throw new Exception("User ID it's not a valid format.");
+        }
+
+        #endregion
+
+        #region Settings
+
+        // GET: /customer/settings
+        [HttpGet("settings")]
+        public async Task<IActionResult> Settings()
+        {
+            int userId = GetCurrentUserId();
+            var user = await _userService.GetByIdAsync(userId);
+
+            if (user == null) return RedirectToAction("Login", "Auth");
+
+            var model = new CustomerSettingsViewModel
+            {
+                Name = user.Name,
+                Email = user.Email,
+            };
+
+            return View(model);
+        }
+
+        // POST: /customer/settings/profile
+        [HttpPost("settings/profile")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(CustomerSettingsViewModel model)
+        {
+            ModelState.Remove("CurrentPassword");
+            ModelState.Remove("NewPassword");
+            ModelState.Remove("ConfirmNewPassword");
+
+            if (!ModelState.IsValid) return View("Settings", model);
+
+            try
+            {
+                int userId = GetCurrentUserId();
+                var user = await _userService.GetByIdAsync(userId);
+
+                user.Name = model.Name;
+                user.Email = model.Email;
+
+                await _userService.UpdateAsync(user);
+
+                TempData["Success"] = "Profile updated successfully!";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating profile");
+                TempData["Error"] = "An error occurred while updating the profile.";
+            }
+
+            return RedirectToAction(nameof(Settings));
+        }
+
+        [HttpPost("settings/security")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(CustomerSettingsViewModel model)
+        {
+            int userId = GetCurrentUserId();
+            var user = await _userService.GetByIdAsync(userId);
+
+            model.Name = user.Name;
+            model.Email = user.Email;
+
+            if (string.IsNullOrEmpty(model.CurrentPassword) || string.IsNullOrEmpty(model.NewPassword))
+            {
+                TempData["Error"] = "All fields are required.";
+                return View("Settings", model);
+            }
+
+            bool isCurrentPasswordCorrect = BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash);
+
+            if (!isCurrentPasswordCorrect)
+            {
+                TempData["Error"] = "Current password is incorrect.";
+                return View("Settings", model);
+            }
+
+            var newHashedPassword = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+
+            user.PasswordHash = newHashedPassword;
+            await _userService.UpdateAsync(user);
+
+            TempData["Success"] = "Password updated successfully!";
+            return RedirectToAction(nameof(Settings));
+        }
+
+        // POST: /customer/settings/delete-account
+        [HttpPost("settings/delete-account")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            try
+            {
+                int userId = GetCurrentUserId();
+
+                await _userService.DeleteAsync(userId);
+
+                await HttpContext.SignOutAsync();
+
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error deleting account. Please contact support.";
+                return RedirectToAction(nameof(Settings));
+            }
         }
 
         #endregion

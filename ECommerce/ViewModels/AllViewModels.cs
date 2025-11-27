@@ -200,7 +200,31 @@ namespace ECommerce.ViewModels
         public bool CanReview { get; set; }
     }
 
-    
+    public class CustomerSettingsViewModel
+    {
+        [Required(ErrorMessage = "Full name required")]
+        [Display(Name = "Full Name")]
+        public string Name { get; set; } = null!;
+
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = null!;
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Current Password")]
+        public string? CurrentPassword { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "New Password")]
+        [MinLength(6, ErrorMessage = "Minimum 6 characters")]
+        public string? NewPassword { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm New Password")]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
+        public string? ConfirmNewPassword { get; set; }
+    }
 
     #endregion
 

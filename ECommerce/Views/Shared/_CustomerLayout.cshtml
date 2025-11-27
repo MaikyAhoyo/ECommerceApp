@@ -96,12 +96,16 @@
                     }
                     else
                     {
-                        <a href="/auth/login" class="flex items-center space-x-1 hover:text-gold transition-colors">
+                        <a asp-controller="Auth" 
+                           asp-action="Login" 
+                           class="flex items-center space-x-1 hover:text-gold transition-colors">
                             <i class="ph ph-sign-in text-base"></i>
                             <span>Sign In</span>
                         </a>
                         <span class="text-white/40">|</span>
-                        <a href="/auth/register" class="flex items-center space-x-1 hover:text-gold transition-colors">
+                        <a asp-controller="Auth" 
+                           asp-action="Register" 
+                           class="flex items-center space-x-1 hover:text-gold transition-colors">
                             <i class="ph ph-user-plus text-base"></i>
                             <span>Register</span>
                         </a>
@@ -123,7 +127,9 @@
 
                 <!-- Logo -->
                 <div class="flex-1 flex justify-center md:justify-start">
-                    <a href="/customer/home" class="flex items-center space-x-2 group">
+                    <a asp-controller="Customer" 
+                       asp-action="Home" 
+                       class="flex items-center space-x-2 group">
                         <i class="ph-fill ph-gem text-gold text-2xl group-hover:scale-110 transition-transform"></i>
                         <h1 class="font-playfair text-2xl md:text-3xl font-bold tracking-tight hover:text-gold transition-colors">
                             Lumière
@@ -133,17 +139,22 @@
 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-8 flex-1 justify-center">
-                    <a href="/customer/home" class="hover:text-gold transition-colors duration-300 font-medium">Home</a>
-                    <a href="/customer/products" class="hover:text-gold transition-colors duration-300 font-medium">Products</a>
+                    <a asp-controller="Customer" 
+                       asp-action="Home" 
+                       class="hover:text-gold transition-colors duration-300 font-medium">Home</a>
+                    <a asp-controller="Customer" 
+                       asp-action="Products" 
+                       class="hover:text-gold transition-colors duration-300 font-medium">Products</a>
                 </div>
 
                 <!-- Right Actions -->
                 <div class="flex items-center space-x-4 flex-1 justify-end">
                     <!-- Cart -->
-
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <a href="/customer/cart" class="relative p-2 hover:bg-gray-100 rounded-lg transition-colors group">
+                        <a asp-controller="Customer" 
+                           asp-action="Cart" 
+                           class="relative p-2 hover:bg-gray-100 rounded-lg transition-colors group">
                             <i class="ph ph-shopping-cart text-xl group-hover:text-gold transition-colors"></i>
                             <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
                         </a>
@@ -173,20 +184,35 @@
                                     <p class="text-sm font-semibold text-gray-900">@User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</p>
                                     <p class="text-xs text-gray-500">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</p>
                                 </div>
-                                <a href="/customer/orders" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                <a asp-controller="Customer" 
+                                   asp-action="Orders" 
+                                   class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
                                     <i class="ph ph-package text-lg text-gray-600"></i>
                                     <span class="text-sm text-gray-700">My Orders</span>
                                 </a>
-                                <a href="/customer/reviews" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                <a asp-controller="Customer" 
+                                   asp-action="Reviews" 
+                                   class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
                                     <i class="ph ph-star text-lg text-gray-600"></i>
                                     <span class="text-sm text-gray-700">My Reviews</span>
                                 </a>
-                                <a href="/customer/addresses" class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                <a asp-controller="Customer" 
+                                   asp-action="Addresses" 
+                                   class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
                                     <i class="ph ph-map-pin text-lg text-gray-600"></i>
                                     <span class="text-sm text-gray-700">Addresses</span>
                                 </a>
+                                <a asp-controller="Customer"
+                                   asp-action="Settings"
+                                   class="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                                    <i class="ph ph-gear text-lg text-gray-600"></i>
+                                    <span class="text-sm text-gray-700">Account Settings</span>
+                                </a>
                                 <div class="border-t border-gray-100 mt-2 pt-2">
-                                    <form method="post" action="/auth/logout" class="px-4 py-2.5">
+                                    <form method="post" 
+                                          asp-controller="Auth" 
+                                          asp-action="Logout" 
+                                          class="px-4 py-2.5">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="flex items-center space-x-3 text-red-600 hover:text-red-700 transition-colors w-full">
                                             <i class="ph ph-sign-out text-lg"></i>
@@ -204,8 +230,12 @@
         <!-- Mobile Menu -->
         <div id="mobileMenu" class="hidden md:hidden border-t border-gray-200 bg-white">
             <div class="container mx-auto px-4 py-4 space-y-2">
-                <a href="/customer/home" class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Home</a>
-                <a href="/customer/products" class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Products</a>
+                <a asp-controller="Customer" 
+                   asp-action="Home" 
+                   class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Home</a>
+                <a asp-controller="Customer" 
+                   asp-action="Products" 
+                   class="block py-2 px-4 hover:bg-gray-50 rounded-lg transition-colors">Products</a>
             </div>
         </div>
     </nav>
@@ -273,10 +303,41 @@
                 <div>
                     <h4 class="font-semibold mb-4 tracking-wide text-gold">Shop</h4>
                     <ul class="space-y-2.5 text-sm text-white/80">
-                        <li><a href="/customer/products" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>All Products</span></a></li>
-                        <li><a href="/customer/products?metal=Gold" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Gold</span></a></li>
-                        <li><a href="/customer/products?metal=Silver" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Silver</span></a></li>
-                        <li><a href="/customer/products?metal=Platinum" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Platinum</span></a></li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                               <i class="ph ph-caret-right text-xs"></i>
+                               <span>All Products</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
+                               asp-route-metal="Gold" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                                <i class="ph ph-caret-right text-xs"></i>
+                                <span>Gold</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
+                               asp-route-metal="Silver" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                                <i class="ph ph-caret-right text-xs"></i>
+                                <span>Silver</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Products" 
+                               asp-route-metal="Platinum" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                                <i class="ph ph-caret-right text-xs"></i>
+                                <span>Platinum</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
 
@@ -284,10 +345,38 @@
                 <div>
                     <h4 class="font-semibold mb-4 tracking-wide text-gold">My Account</h4>
                     <ul class="space-y-2.5 text-sm text-white/80">
-                        <li><a href="/customer/orders" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>My Orders</span></a></li>
-                        <li><a href="/customer/cart" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Shopping Cart</span></a></li>
-                        <li><a href="/customer/reviews" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>My Reviews</span></a></li>
-                        <li><a href="/customer/addresses" class="hover:text-gold transition-colors duration-300 flex items-center space-x-2"><i class="ph ph-caret-right text-xs"></i><span>Addresses</span></a></li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Orders" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                               <i class="ph ph-caret-right text-xs"></i>
+                               <span>My Orders</span>
+                           </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Cart" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                               <i class="ph ph-caret-right text-xs"></i>
+                               <span>Shopping Cart</span>
+                           </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Reviews" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                               <i class="ph ph-caret-right text-xs"></i>
+                               <span>My Reviews</span>
+                           </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Customer" 
+                               asp-action="Addresses" 
+                               class="hover:text-gold transition-colors duration-300 flex items-center space-x-2">
+                               <i class="ph ph-caret-right text-xs"></i>
+                               <span>Addresses</span>
+                           </a>
+                        </li>
                     </ul>
                 </div>
 
