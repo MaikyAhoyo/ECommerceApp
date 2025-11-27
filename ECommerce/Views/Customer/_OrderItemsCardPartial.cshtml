@@ -65,7 +65,7 @@
                 {
                     <form method="post" 
                           asp-controller="Customer" 
-                          asp-action="Orders" 
+                          asp-action="CancelOrder" 
                           asp-route-id="@Model.Id" onsubmit="return confirm('Are you sure you want to cancel this order? This action cannot be undone.');">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="px-4 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 text-sm font-semibold transition-colors flex items-center gap-2">
@@ -89,7 +89,7 @@
     {
         <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
             <div class="space-y-3">
-                @foreach (var item in Model.OrderItems.Take(3)) // Limit to 3 items for preview
+                @foreach (var item in Model.OrderItems.Take(3))
                 {
                     <a asp-controller="Customer"
                        asp-action="ProductDetails"
@@ -129,7 +129,10 @@
                 @if (Model.OrderItems.Count() > 3)
                 {
                     <div class="pt-2 text-center border-t border-gray-200/50">
-                        <a href="/customer/orders/details/@Model.Id" class="text-xs font-semibold text-gray-500 hover:text-gold transition-colors">
+                        <a asp-controller="Customer" 
+                           asp-action="OrderDetails" 
+                           asp-route-id="@Model.Id" 
+                           class="text-xs font-semibold text-gray-500 hover:text-gold transition-colors">
                             + @(Model.OrderItems.Count() - 3) more items...
                         </a>
                     </div>

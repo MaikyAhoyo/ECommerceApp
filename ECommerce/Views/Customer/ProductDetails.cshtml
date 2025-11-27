@@ -149,7 +149,9 @@
                         <div class="flex flex-wrap gap-2 mb-8">
                             @foreach (var category in Model.Categories)
                             {
-                                <a href="/customer/products?categoryId=@category.Id"
+                                <a asp-controller="Customer" 
+                                   asp-action="Products" 
+                                   asp-route-categoryId="@category.Id"
                                    class="px-3 py-1 rounded-lg border border-gray-200 text-sm text-gray-500 hover:border-gold hover:text-gold transition-colors">
                                     #@category.Name
                                 </a>
@@ -198,9 +200,8 @@
             </div>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-8">
-
-            <div class="lg:col-span-2">
+        <div class="flex flex-col gap-8">
+            <div class="w-full">
                 <div class="flex items-center justify-between mb-8">
                     <h3 class="font-playfair text-3xl font-bold text-primary">Customer Reviews</h3>
                     @if (User.Identity?.IsAuthenticated == true)
@@ -263,13 +264,13 @@
                 }
             </div>
 
-            <div class="lg:col-span-1">
+            <div class="w-full">
                 <h3 class="font-playfair text-2xl font-bold text-primary mb-8">You May Also Like</h3>
 
                 @if (Model.RelatedProducts.Any())
                 {
-                    <div class="flex flex-col gap-6">
-                        @foreach (var product in Model.RelatedProducts.Take(3))
+                    <div class="grid grid-cols-4 gap-6">
+                        @foreach (var product in Model.RelatedProducts)
                         {
                             @await Html.PartialAsync("_ProductCardPartial", product)
                         }
