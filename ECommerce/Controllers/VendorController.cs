@@ -289,6 +289,60 @@ namespace ECommerce.Controllers
             return RedirectToAction(nameof(MyProducts));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(int orderId, string newStatus)
+        {
+            int vendorId = GetCurrentVendorId();
+
+            // 1) Buscar la orden
+            var order = await _orderService.GetOrderWithDetailsAsync(orderId);
+
+            if (order == null)
+            {
+                TempData["Error"] = "Order not found.";
+                return RedirectToAction(nameof(MyOrders));
+            }
+
+            // 2) Validar que la orden pertenezca al vendor
+            var vendorProducts = await _productService.GetByVendorIdAsync(vendorId);
+            var vendorProductIds = vendorProducts.Select(p => p.Id).ToList();
+
+            bool belongsToVendor = order.OrderItems.Any(oi => vendorProductIds.Contains(oi.ProductId));
+
+            if (!belongsToVendor)
+            {
+                TempData["Error"] = "You don't have permission to update this order.";
+                return RedirectToAction(nameof(MyOrders));
+            }
+
+            // 3) Validar estatus permitido
+            var allowedStatuses = new List<string> { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
+
+            if (!allowedStatuses.Contains(newStatus))
+            {
+                TempData["Error"] = "Invalid status.";
+                return RedirectToAction(nameof(MyOrders));
+            }
+
+            // 4) Actualizar
+            order.Status = newStatus;
+
+            var updated = await _orderService.UpdateAsync(order);
+
+            if (!updated)
+            {
+                TempData["Error"] = "Could not update order status.";
+                return RedirectToAction(nameof(MyOrders));
+            }
+
+            TempData["Success"] = $"Order status updated to {newStatus}.";
+            return RedirectToAction(nameof(MyOrders));
+        }
+
+
+
+
         // POST: /vendor/products/update-stock/{id}
         [HttpPost("products/update-stock/{id}")]
         [ValidateAntiForgeryToken]
