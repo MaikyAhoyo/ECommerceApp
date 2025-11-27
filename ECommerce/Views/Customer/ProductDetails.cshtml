@@ -321,12 +321,6 @@
         }
 
         function addToCart(productId) {
-            if (typeof notificationModal === 'undefined') {
-                alert('Success: Item added to cart (Notification modal missing)');
-                // Fallback logic if modal isn't loaded
-                return;
-            }
-
             let quantity = parseInt(document.getElementById('quantity').value);
 
             fetch('/customer/cart/add', {
@@ -339,24 +333,13 @@
                     quantity: quantity
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    notificationModal.success(
-                        'Added to Cart!',
-                        data.message,
-                        () => {
-                            if(typeof updateCartCount === 'function') updateCartCount();
-                            document.getElementById('quantity').value = 1;
-                        }
-                    );
-                } else {
-                    notificationModal.error('Error', data.message);
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                notificationModal.error('Error', 'Connection failed');
             });
         }
     </script>
