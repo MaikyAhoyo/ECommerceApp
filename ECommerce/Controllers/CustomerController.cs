@@ -503,10 +503,59 @@ namespace ECommerce.Controllers
                 return RedirectToAction(nameof(Cart));
             }
 
+            cart = await _orderService.GetOrderWithDetailsAsync(cart.Id);
+
+            if (cart.OrderItems == null || !cart.OrderItems.Any())
+            {
+                TempData["Error"] = "Your cart is empty";
+                return RedirectToAction(nameof(Cart));
+            }
+
+            foreach (var item in cart.OrderItems)
+            {
+                var product = await _productService.GetByIdAsync(item.ProductId);
+
+                if (product == null)
+                {
+                    TempData["Error"] = $"Product {item.Product?.Name ?? "unknown"} no longer exists";
+                    return RedirectToAction(nameof(Cart));
+                }
+
+                if (product.Stock < item.Quantity)
+                {
+                    TempData["Error"] = $"Insufficient stock for {product.Name}. Only {product.Stock} available";
+                    return RedirectToAction(nameof(Cart));
+                }
+            }
+
+            foreach (var item in cart.OrderItems)
+            {
+                var product = await _productService.GetByIdAsync(item.ProductId);
+
+                product.Stock -= item.Quantity;
+
+                await _productService.UpdateAsync(product);
+
+                _logger.LogInformation(
+                    "Stock updated for product {ProductId}: {OldStock} -> {NewStock} (Order: {OrderId})",
+                    product.Id,
+                    product.Stock + item.Quantity,
+                    product.Stock,
+                    cart.Id
+                );
+            }
+
             var success = await _orderService.CheckoutOrderAsync(cart.Id);
 
             if (!success)
             {
+                foreach (var item in cart.OrderItems)
+                {
+                    var product = await _productService.GetByIdAsync(item.ProductId);
+                    product.Stock += item.Quantity;
+                    await _productService.UpdateAsync(product);
+                }
+
                 TempData["Error"] = "Error processing order";
                 return RedirectToAction(nameof(CheckoutAddressSelection));
             }
@@ -528,7 +577,16 @@ namespace ECommerce.Controllers
             }
             else
             {
-                TempData["Error"] = "Error processing payment";
+                foreach (var item in cart.OrderItems)
+                {
+                    var product = await _productService.GetByIdAsync(item.ProductId);
+                    product.Stock += item.Quantity;
+                    await _productService.UpdateAsync(product);
+                }
+
+                await _orderService.UpdateStatusAsync(cart.Id, "Cancelled");
+
+                TempData["Error"] = "Error processing payment. Stock has been restored.";
                 return RedirectToAction(nameof(CheckoutAddressSelection));
             }
         }
@@ -604,8 +662,19 @@ namespace ECommerce.Controllers
 
             if (cart.OrderItems == null || !cart.OrderItems.Any())
             {
-                TempData["Error"] = "Your cart is empty.";
+                TempData["Error"] = "Your cart is empty";
                 return RedirectToAction(nameof(Cart));
+            }
+
+            foreach (var item in cart.OrderItems)
+            {
+                var product = await _productService.GetByIdAsync(item.ProductId);
+
+                if (product == null || product.Stock < item.Quantity)
+                {
+                    TempData["Error"] = $"Insuficient stock for: {item.Product?.Name ?? "product"}";
+                    return RedirectToAction(nameof(Cart));
+                }
             }
 
             var subtotal = await _orderService.CalculateOrderTotalAsync(cart.Id);
@@ -632,6 +701,12 @@ namespace ECommerce.Controllers
                     UnitPrice = oi.UnitPrice
                 };
                 await _orderService.AddItemToOrderAsync(newOrderId, newItem);
+
+                var product = await _productService.GetByIdAsync(oi.ProductId);
+                product.Stock -= oi.Quantity;
+                await _productService.UpdateAsync(product);
+
+                _logger.LogInformation("Stock reduced for product {ProductId}: {Quantity} units", product.Id, oi.Quantity);
             }
 
             foreach (var oi in cart.OrderItems.ToList())
@@ -642,9 +717,9 @@ namespace ECommerce.Controllers
             cart.Total = 0;
             await _orderService.UpdateAsync(cart);
 
-            _logger.LogInformation("Order created {OrderId} for user {UserId}", newOrderId, userId);
+            _logger.LogInformation("Orde {OrderId} created for user {UserId}", newOrderId, userId);
 
-            TempData["Success"] = "Order created successfully!";
+            TempData["Success"] = "Order created successfully";
             return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
@@ -668,15 +743,37 @@ namespace ECommerce.Controllers
                 return RedirectToAction(nameof(OrderDetails), new { id });
             }
 
+            var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(id);
+
+            if (orderWithDetails?.OrderItems != null)
+            {
+                foreach (var item in orderWithDetails.OrderItems)
+                {
+                    var product = await _productService.GetByIdAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        product.Stock += item.Quantity;
+                        await _productService.UpdateAsync(product);
+
+                        _logger.LogInformation(
+                            "Stock restored for product {ProductId}: +{Quantity} units (Cancelled order {OrderId})",
+                            product.Id,
+                            item.Quantity,
+                            id
+                        );
+                    }
+                }
+            }
             var success = await _orderService.UpdateStatusAsync(id, "Cancelled");
 
             if (success)
-                TempData["Success"] = "Order cancelled successfully!";
+                TempData["Success"] = "Order cancelled successfully! Stock has been restored.";
             else
                 TempData["Error"] = "Error cancelling order";
 
             return RedirectToAction(nameof(OrderDetails), new { id });
         }
+
 
         public class CreateOrderRequest
         {
