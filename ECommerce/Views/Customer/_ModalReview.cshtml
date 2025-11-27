@@ -1,6 +1,6 @@
 ﻿@model dynamic
 
-<div id="reviewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-labelledby="reviewModalTitle" aria-modal="true">
+<div id="reviewModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center" role="dialog" aria-labelledby="reviewModalTitle" aria-modal="true">
 
     <div class="absolute inset-0 bg-primary/40 backdrop-blur-sm transition-opacity" data-action="close"></div>
 
@@ -10,9 +10,9 @@
             <div>
                 <h2 id="reviewModalTitle" class="font-playfair text-2xl font-bold text-primary flex items-center gap-2">
                     <i class="ph-fill ph-star text-gold"></i>
-                    Write a review
+                    Write a Review
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">Share your opinion with other customers</p>
+                <p class="text-sm text-gray-500 mt-1">Share your experience with others</p>
             </div>
             <button type="button" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors" data-action="close" aria-label="Close modal">
                 <i class="ph ph-x text-xl"></i>
@@ -26,50 +26,51 @@
                     <i class="ph-fill ph-package text-2xl"></i>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Product</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Product</p>
                     <p class="font-playfair font-bold text-primary text-lg leading-tight">@Model.ProductName</p>
                 </div>
             </div>
 
             <div class="mb-8 text-center">
-                <label class="block text-sm font-bold text-gray-700 mb-3">How would you rate this product?</label>
-                <div id="starContainer" class="flex justify-center gap-3" role="radiogroup" aria-label="Product rating">
+                <label class="block text-sm font-bold text-gray-700 mb-3">How would you rate it?</label>
+                <div id="starContainer" class="flex justify-center gap-2" role="radiogroup" aria-label="Rating">
                     @for (int i = 1; i <= 5; i++)
                     {
-                        <button type="button" class="star-btn text-4xl text-gray-200 hover:scale-110 transition-transform duration-200 focus:outline-none" data-rating="@i" role="radio" aria-checked="false" aria-label="@i stars">
+                        <button type="button" class="star-btn text-4xl text-gray-200 hover:scale-110 transition-transform duration-200 focus:outline-none p-1" data-rating="@i" role="radio" aria-checked="false" aria-label="@i stars">
                             <i class="ph-fill ph-star"></i>
                         </button>
                     }
                 </div>
                 <input type="hidden" id="reviewRating" value="0">
-                <p id="ratingError" class="text-red-500 text-xs font-semibold mt-2 hidden flex items-center justify-center gap-1">
-                    <i class="ph-fill ph-warning-circle"></i> Select a rating
+                <p id="ratingError" class="text-red-500 text-xs font-bold mt-2 hidden flex items-center justify-center gap-1">
+                    <i class="ph-fill ph-warning-circle"></i> Please select a rating
                 </p>
             </div>
 
             <div class="mb-2">
-                <label for="reviewComment" class="block text-sm font-bold text-gray-700 mb-2">Your Experience</label>
+                <label for="reviewComment" class="block text-sm font-bold text-gray-700 mb-2">Your Review</label>
                 <div class="relative">
-                    <textarea id="reviewComment" placeholder="Tell us what you liked and what we could improve..."
+                    <textarea id="reviewComment" placeholder="What did you like or dislike? What should other shoppers know?"
                               class="w-full h-32 p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:bg-white focus:border-gold focus:ring-4 focus:ring-gold/10 resize-none transition-all text-gray-700 placeholder-gray-400"
-                              maxlength="500" aria-describedby="charCount"></textarea>
+                              maxlength="500"></textarea>
                     <div class="absolute bottom-3 right-4 text-xs text-gray-400 bg-white/80 px-2 rounded-md backdrop-blur-sm">
                         <span id="charCount">0</span>/500
                     </div>
                 </div>
-                <p id="commentError" class="text-red-500 text-xs font-semibold mt-2 hidden flex items-center gap-1">
-                    <i class="ph-fill ph-warning-circle"></i> The comment cannot be empty
+                <p id="commentError" class="text-red-500 text-xs font-bold mt-2 hidden flex items-center gap-1">
+                    <i class="ph-fill ph-warning-circle"></i> Please write a comment
                 </p>
+                <p id="generalError" class="text-red-500 text-sm font-bold mt-3 text-center hidden"></p>
             </div>
         </div>
 
         <div class="px-8 py-6 bg-gray-50 border-t border-gray-100 flex gap-4">
             <button type="button" data-action="close"
-                    class="flex-1 px-6 py-3 border border-gray-300 text-gray-600 font-semibold rounded-xl hover:bg-white hover:border-gray-400 hover:text-primary transition-all">
+                    class="flex-1 px-6 py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-white hover:border-gray-400 hover:text-primary transition-all">
                 Cancel
             </button>
             <button type="button" id="submitReviewBtn"
-                    class="flex-[2] px-6 py-3 bg-primary text-white font-semibold rounded-xl shadow-lg hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                    class="flex-[2] px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
                 <span>Submit Review</span>
                 <i class="ph-bold ph-paper-plane-right"></i>
             </button>
@@ -82,6 +83,7 @@
         const productId = @Model.ProductId;
         let selectedRating = 0;
 
+        // Colors matching your Gold theme
         const CLASS_ACTIVE = ['text-gold', 'scale-110'];
         const CLASS_HOVER = ['text-yellow-300'];
         const CLASS_INACTIVE = ['text-gray-200'];
@@ -90,6 +92,8 @@
             const modal = document.getElementById('reviewModal');
             if (!modal) return;
             modal.classList.remove('hidden');
+
+            // Animation reset
             const card = modal.querySelector('.relative');
             card.classList.remove('opacity-0', 'scale-95');
 
@@ -105,12 +109,13 @@
             const modal = document.getElementById('reviewModal');
             if (!modal) return;
 
+            // Exit animation
             const card = modal.querySelector('.relative');
             card.classList.add('opacity-0', 'scale-95');
 
             setTimeout(() => {
                 modal.classList.add('hidden');
-                card.classList.remove('opacity-0', 'scale-95');
+                card.classList.remove('opacity-0', 'scale-95'); // Reset for next open
                 resetReviewForm();
             }, 200);
         }
@@ -129,6 +134,7 @@
 
             document.getElementById('ratingError')?.classList.add('hidden');
             document.getElementById('commentError')?.classList.add('hidden');
+            document.getElementById('generalError')?.classList.add('hidden');
 
             const submitBtn = document.getElementById('submitReviewBtn');
             if(submitBtn) {
@@ -158,6 +164,7 @@
         async function submitReview() {
             const rating = parseInt(document.getElementById('reviewRating').value || '0', 10);
             const comment = (document.getElementById('reviewComment').value || '').trim();
+            const generalError = document.getElementById('generalError');
 
             let hasError = false;
             const ratingError = document.getElementById('ratingError');
@@ -182,7 +189,7 @@
             const submitBtn = document.getElementById('submitReviewBtn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Enviando...';
+                submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Sending...';
             }
 
             const payload = {
@@ -204,23 +211,20 @@
                 const data = await response.json().catch(() => ({}));
 
                 if (response.ok) {
-                    if (typeof notificationModal !== 'undefined') {
-                        notificationModal.success('Thanks!', 'Your review has been published.', () => {
-                            closeReviewModal();
-                            location.reload();
-                        });
-                    } else {
-                        alert('Review submitted successfully!');
-                        closeReviewModal();
-                        location.reload();
-                    }
+                    // SUCCESS: Just reload the page.
+                    // The Controller should have set TempData["Success"] = "Review added!"
+                    // which will be displayed by your Layout after reload.
+                    location.reload();
                 } else {
+                    // Server Error
                     const msg = data?.message || 'Error submitting review';
-                    if (typeof notificationModal !== 'undefined') {
-                        notificationModal.error('Error', msg);
+                    if(generalError) {
+                        generalError.textContent = msg;
+                        generalError.classList.remove('hidden');
                     } else {
                         alert(msg);
                     }
+
                     if (submitBtn) {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<span>Submit Review</span><i class="ph-bold ph-paper-plane-right"></i>';
@@ -228,11 +232,13 @@
                 }
             } catch (err) {
                 console.error('Network error:', err);
-                if (typeof notificationModal !== 'undefined') {
-                    notificationModal.error('Connection', 'Error connecting to the server.');
+                if(generalError) {
+                    generalError.textContent = 'Connection error. Please try again.';
+                    generalError.classList.remove('hidden');
                 } else {
                     alert('Connection error');
                 }
+
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<span>Submit Review</span><i class="ph-bold ph-paper-plane-right"></i>';
@@ -240,7 +246,8 @@
             }
         }
 
-        function initReviewModal() {
+        // Initialize
+        function init() {
             const modal = document.getElementById('reviewModal');
             if (!modal) return;
 
@@ -250,6 +257,7 @@
             const charCount = document.getElementById('charCount');
             const submitBtn = document.getElementById('submitReviewBtn');
 
+            // Stars Interaction
             starButtons.forEach((btn, index) => {
                 const ratingValue = index + 1;
 
@@ -266,13 +274,10 @@
             });
 
             starContainer?.addEventListener('mouseleave', () => {
-                if (selectedRating > 0) {
-                    renderStarsUpTo(selectedRating, true);
-                } else {
-                    renderStarsUpTo(0, true);
-                }
+                renderStarsUpTo(selectedRating, true);
             });
 
+            // Char counter
             if (commentEl && charCount) {
                 commentEl.addEventListener('input', () => {
                     charCount.textContent = String(commentEl.value.length);
@@ -282,16 +287,16 @@
                 });
             }
 
+            // Submit
             submitBtn?.addEventListener('click', submitReview);
 
+            // Close actions
             modal.querySelectorAll('[data-action="close"]').forEach(btn => {
                 btn.addEventListener('click', closeReviewModal);
             });
 
             modal.addEventListener('click', (e) => {
-                if (e.target.getAttribute('data-action') === 'close' || e.target === modal) {
-                    closeReviewModal();
-                }
+                if (e.target.getAttribute('data-action') === 'close') closeReviewModal();
             });
 
             document.addEventListener('keydown', (e) => {
@@ -300,14 +305,15 @@
                 }
             });
 
+            // Expose globally
             window.openReviewModal = openReviewModal;
             window.closeReviewModal = closeReviewModal;
         }
 
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            initReviewModal();
+            init();
         } else {
-            document.addEventListener('DOMContentLoaded', initReviewModal);
+            document.addEventListener('DOMContentLoaded', init);
         }
     })();
 </script>
