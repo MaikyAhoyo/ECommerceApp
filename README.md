@@ -1,124 +1,242 @@
-# Documentación del Sistema E-Commerce
+# Manual Técnico de Referencia: Plataforma de Comercio Electrónico de Joyería (ECommerceApp)
 
-## 1. Visión General del Sistema
-
-Este sistema es una plataforma de comercio electrónico desarrollada con **ASP.NET Core MVC**. La aplicación sigue una arquitectura Modelo-Vista-Controlador (MVC) y gestiona tres roles principales de usuarios: **Administrador**, **Vendedor** y **Cliente**.
-
-### Tecnologías Clave
-
-- **Framework**: ASP.NET Core MVC
-- **Lenguaje**: C#
-- **Base de Datos**: Entity Framework Core (implícito por el uso de `IUserService` y modelos)
-- **Autenticación**: Cookie Authentication con roles (Claims)
-- **Seguridad**: BCrypt para hashing de contraseñas, protección CSRF.
+> **Versión del Documento:** 1.0  
+> **Fecha de Revisión:** 27 de Noviembre de 2025  
+> **Fuente:** Repositorio `MaikyAhoyo/ECommerceApp`
 
 ---
 
-## 2. Roles y Funcionalidades
+## Índice de Contenidos
 
-### 2.1 Administrador (Admin)
-
-El administrador tiene control total sobre la plataforma.
-
-- **Dashboard**: Vista general con métricas clave (Total de productos, órdenes, ingresos, usuarios).
-- **Gestión de Productos**: Listar, filtrar y eliminar productos de cualquier vendedor.
-- **Gestión de Órdenes**: Ver todas las órdenes, filtrar por estado o búsqueda.
-- **Gestión de Usuarios**:
-  - Listar todos los usuarios.
-  - Crear nuevos usuarios.
-  - Cambiar roles de usuarios.
-  - Eliminar usuarios.
-- **Gestión de Categorías**: Crear, editar y eliminar categorías de productos.
-- **Reportes**: Generar reportes de ventas por rango de fechas.
-
-### 2.2 Vendedor (Vendor)
-
-Los vendedores gestionan su propio inventario y ventas.
-
-- **Dashboard**: Métricas específicas del vendedor (Stock total, valor de inventario, productos con bajo stock).
-- **Gestión de Productos**:
-  - Crear nuevos productos.
-  - Editar productos existentes (precio, stock, descripción, etc.).
-  - Eliminar productos propios.
-  - Aplicar descuentos.
-- **Gestión de Órdenes**: Ver órdenes que contienen sus productos y actualizar el estado de las mismas (ej. de "Pending" a "Shipped").
-- **Reseñas**: Ver reseñas dejadas por clientes en sus productos.
-- **Reportes de Ventas**: Ver desempeño de ventas de sus propios productos.
-
-### 2.3 Cliente (Customer)
-
-Los usuarios finales que compran en la plataforma.
-
-- **Navegación**:
-  - Página de inicio con productos destacados.
-  - Catálogo de productos con filtros (precio, categoría, metal, búsqueda).
-  - Detalles de producto con reseñas y productos relacionados.
-- **Carrito de Compras**: Agregar/quitar productos, actualizar cantidades.
-- **Checkout**: Proceso de compra con selección de dirección de envío y método de pago.
-- **Historial de Órdenes**: Ver estado de órdenes pasadas y detalles.
-- **Cancelación**: Posibilidad de cancelar órdenes pendientes (restaurando stock automáticamente).
+1. [Introducción y Alcance](#1-introducción-y-alcance)
+2. [Arquitectura del Sistema](#2-arquitectura-del-sistema)
+3. [Pila Tecnológica](#3-pila-tecnológica)
+4. [Gestión de Roles y Seguridad](#4-gestión-de-roles-y-seguridad)
+5. [Componentes del Núcleo](#5-componentes-del-núcleo)
+6. [Infraestructura de Datos](#6-infraestructura-de-datos)
+7. [Flujos de Negocio Críticos](#7-flujos-de-negocio-críticos)
+8. [Arquitectura de Datos y ViewModels](#8-arquitectura-de-datos-y-viewmodels)
+9. [Conclusiones Clave](#9-conclusiones-clave)
+10. [Glosario Técnico](#10-glosario-técnico)
 
 ---
 
-## 3. Estructura de Vistas (Views)
+## 1. Introducción y Alcance
 
-La interfaz de usuario está organizada en carpetas correspondientes a los controladores:
+### 1.1 Propósito del Sistema
+La aplicación **ECommerceApp** es una solución de mercado digital (*Marketplace*) especializada en joyería, diseñada para facilitar la comercialización de productos de oro, plata y platino. El sistema opera bajo un modelo de **múltiples vendedores (multi-vendor)**, permitiendo una gestión centralizada del ciclo de vida del comercio electrónico, desde el descubrimiento de productos hasta el cumplimiento de pedidos y análisis de ventas.
 
-### 3.1 Vistas Públicas / Auth (`/Views/Auth`)
+### 1.2 Alcance Funcional
+El alcance del sistema abarca tres áreas operativas principales, cada una con interfaces dedicadas:
 
-- `Login`: Formulario de inicio de sesión.
-- `Register`: Formulario de registro de nuevos usuarios (Cliente o Vendedor).
-- `AccessDenied`: Página de error de permisos.
-
-### 3.2 Vistas de Administrador (`/Views/Admin`)
-
-- `Dashboard`: Panel principal.
-- `Products`: Tabla de gestión de productos.
-- `Orders`: Tabla de gestión de órdenes.
-- `Users`: Tabla de gestión de usuarios.
-- `Categories`: Gestión de categorías.
-- `Reports`: Visualización de reportes de ventas.
-
-### 3.3 Vistas de Vendedor (`/Views/Vendor`)
-
-- `Dashboard`: Panel principal del vendedor.
-- `MyProducts`: Listado de inventario propio.
-- `CreateProduct` / `EditProduct`: Formularios de gestión de productos.
-- `MyOrders`: Listado de órdenes relacionadas al vendedor.
-- `Reviews`: Listado de reseñas de sus productos.
-- `Reports`: Reportes de ventas del vendedor.
-
-### 3.4 Vistas de Cliente (`/Views/Customer`)
-
-- `Home`: Página principal.
-- `Products`: Catálogo con filtros.
-- `ProductDetails`: Vista detallada de un producto.
-- `Cart`: Vista del carrito de compras.
-- `Checkout`: Proceso de pago y envío.
-- `MyOrders`: Historial de compras del usuario.
-- `OrderDetails`: Detalle de una orden específica.
+* **Experiencia del Cliente:** Navegación, gestión de carrito, proceso de pago (*checkout*) con validación de stock, seguimiento de pedidos y sistema de reseñas.
+* **Gestión de Vendedores:** Portal para administración de inventario (CRUD), gestión de pedidos y paneles analíticos.
+* **Administración de Plataforma:** Supervisión global de usuarios y reportes del sistema.
 
 ---
 
-## 4. Flujos Principales
+## 2. Arquitectura del Sistema
 
-### 4.1 Flujo de Compra
+El sistema implementa un patrón de arquitectura **MVC (Modelo-Vista-Controlador)** de tres capas, diseñado para asegurar la separación de responsabilidades y la escalabilidad modular.
 
-1. Cliente navega y agrega productos al **Carrito**.
-2. Procede al **Checkout**.
-3. Selecciona **Dirección de Envío**.
-4. Confirma pago.
-5. Se crea la **Orden** (Estado: Pending) y se descuenta el **Stock**.
+### 2.1 Estructura Lógica
 
-### 4.2 Flujo de Gestión de Orden (Vendedor)
+1.  **Capa de Presentación (Controllers & Views):** Maneja la interacción del usuario y la lógica de presentación.
+2.  **Capa de Servicio (Services):** Encapsula la lógica de negocio compleja y actúa como intermediario.
+3.  **Capa de Datos (Data Layer):** Gestiona la persistencia y recuperación de información a través del ORM.
 
-1. Vendedor recibe notificación (visual) en **MyOrders**.
-2. Revisa los detalles de la orden.
-3. Prepara el paquete y actualiza el estado a **Shipped**.
-4. Finalmente actualiza a **Delivered**.
+```mermaid
+graph TD
+    subgraph "Capa de Presentación"
+    UI[Vista / UI] <-->|Datos| C[Controladores]
+    end
+    
+    subgraph "Capa de Servicios"
+    C <-->|DTOs/Modelos| S[Servicios (Lógica de Negocio)]
+    end
+    
+    subgraph "Capa de Datos"
+    S <-->|Entidades| EF[Entity Framework Core]
+    EF <-->|SQL| DB[(SQL Server)]
+    end
+    
+    style UI fill:#e1f5fe,stroke:#01579b
+    style S fill:#fff9c4,stroke:#fbc02d
+    style DB fill:#e0f2f1,stroke:#00695c
+```
 
-### 4.3 Flujo de Cancelación
+---
 
-1. Cliente cancela una orden en estado **Pending**.
-2. El sistema cambia el estado a **Cancelled**.
-3. El sistema **restaura automáticamente el stock** de los productos involucrados.
+## 3. Pila Tecnológica
+
+La infraestructura técnica se basa en el ecosistema Microsoft .NET, complementado con tecnologías estándar de frontend.
+
+| Componente | Tecnología Seleccionada | Detalle de Configuración |
+| :--- | :--- | :--- |
+| **Framework Backend** | ASP.NET Core MVC | Marco principal de la aplicación web. |
+| **Base de Datos** | SQL Server | Instancia: `MaikyAhoyo` |
+| **ORM** | Entity Framework Core | Abstracción de acceso a datos. |
+| **Autenticación** | ASP.NET Core Identity | Autenticación basada en Claims (`ClaimTypes.NameIdentifier`). |
+| **Frontend** | Tailwind CSS, jQuery | Estilizado utilitario e interactividad del lado del cliente. |
+
+---
+
+## 4. Gestión de Roles y Seguridad
+
+El sistema implementa un **Control de Acceso Basado en Roles (RBAC)** estricto. Cada rol interactúa con el sistema a través de controladores y rutas prefijadas específicas.
+
+### 4.1 Matriz de Roles y Capacidades
+
+| Rol | Controlador Primario | Prefijo de Ruta | Capacidades Principales |
+| :--- | :--- | :--- | :--- |
+| **Cliente** | `CustomerController` | `/customer` | Descubrimiento, compras, seguimiento, reseñas. |
+| **Vendedor** | `VendorController` | `/vendor` | Gestión de productos, inventario, dashboard. |
+| **Admin** | `AdminController` | `/admin` | Gestión de usuarios, reportes globales. |
+
+### 4.2 Flujo de Autenticación
+
+1.  **Registro:** El usuario se registra mediante `RegisterViewModel`. Se utiliza una bandera booleana `RegisterAsVendor` para determinar el rol inicial.
+2.  **Asignación:** El sistema asigna el rol correspondiente en la base de datos de Identity.
+3.  **Sesión:** Se generan *Claims* de autenticación, almacenando el ID de usuario en `ClaimTypes.NameIdentifier`.
+4.  **Verificación:** Los controladores recuperan el contexto del usuario mediante métodos auxiliares como `GetCurrentUserId()`.
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant V as Vista Registro
+    participant C as AuthController
+    participant ID as Identity DB
+    participant D as Dashboard
+
+    U->>V: Ingresa Datos
+    alt Es Vendedor
+        U->>V: Marca "RegisterAsVendor"
+    end
+    V->>C: POST RegisterViewModel
+    C->>C: Valida Modelo
+    C->>ID: CreateUserAsync()
+    alt Es Vendedor
+        C->>ID: AddToRole("Vendor")
+    else Es Cliente
+        C->>ID: AddToRole("Customer")
+    end
+    ID-->>C: Éxito
+    C->>C: Generar Claims (NameIdentifier)
+    C->>D: Redirigir según Rol
+```
+
+---
+
+## 5. Componentes del Núcleo
+
+### 5.1 Controladores (Capa de Presentación)
+Los controladores actúan como orquestadores principales, delegando la lógica a los servicios.
+* **CustomerController:** El componente más complejo, con más de 27 métodos de acción. Gestiona todo el flujo de compra.
+* **VendorController:** Maneja las operaciones administrativas de los vendedores (inventario y despachos).
+
+### 5.2 Capa de Servicios (Lógica de Negocio)
+El sistema define 7 interfaces clave para desacoplar la lógica:
+* `IProductService`: Catálogo y stock.
+* `IOrderService`: Ciclo de vida de pedidos y carritos.
+* `IReviewService`: Sistema de calificación (1-5 estrellas).
+* `IShippingAddressService`: Logística de direcciones.
+* `IPaymentService`: Abstracción de pasarelas de pago.
+* `ICategoryService`: Taxonomía de productos.
+* `IUserService`: Gestión de cuentas.
+
+### 5.3 Entidades de Dominio
+Las clases principales que modelan el negocio:
+* **Product:** Propiedades específicas como tipo de metal y pureza.
+* **Order:** Entidad dual (funciona como Carrito o Pedido según su estado).
+* **Otros:** `OrderItem`, `Review`, `User`, `ShippingAddress`, `Category`.
+
+---
+
+## 6. Infraestructura de Datos
+
+### 6.1 Configuración de Conexión
+La conexión a la base de datos se define en `appsettings.json`. Es crítica para el funcionamiento del ORM.
+
+**Ejemplo Técnico: Cadena de Conexión**
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=MaikyAhoyo;Database=Jewelry;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+}
+```
+
+**Análisis de Parámetros:**
+* `Trusted_Connection=True`: Utiliza Autenticación de Windows.
+* `TrustServerCertificate=True`: Deshabilita la validación SSL (común en desarrollo, riesgo en producción).
+* `MultipleActiveResultSets=true`: Permite múltiples consultas concurrentes en una sola conexión.
+
+---
+
+## 7. Flujos de Negocio Críticos
+
+### 7.1 Gestión de Stock y Concurrencia
+El proceso de checkout implementa una reducción de stock "optimista".
+1.  El usuario inicia el pago.
+2.  El sistema reduce el stock temporalmente.
+3.  **Validación:** Si el pago falla, se ejecuta una operación de *Rollback* para restaurar el inventario.
+
+### 7.2 Ciclo de Vida del Pedido
+La entidad `Order` transita por una máquina de estados definida:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Cart: Usuario agrega ítems
+    Cart --> Pending: Checkout / Pago Procesado
+    Pending --> Confirmed: Vendedor acepta pedido
+    Confirmed --> Shipped: Vendedor envía paquete
+    Shipped --> Delivered: Cliente recibe
+    Delivered --> [*]
+    
+    Pending --> Cancelled: Pago fallido / Cancelado
+    Cancelled --> [*]
+```
+
+### 7.3 Conversión Carrito-Pedido
+Técnicamente, no existe una tabla separada para "Carrito". Se utiliza la tabla `Orders` con el estado `Status="Cart"`. Al finalizar la compra, este registro simplemente actualiza su estado a `Pending`, optimizando el almacenamiento de datos.
+
+---
+
+## 8. Arquitectura de Datos y ViewModels
+
+Para mantener la integridad de los datos y evitar la exposición directa de las entidades de base de datos, se utiliza un sistema robusto de ViewModels, centralizados en el archivo `AllViewModels.cs`.
+
+### 8.1 Categorización de Modelos
+
+**Modelos de Cliente (Customer)** *Diseñados para la experiencia de compra:*
+* `CustomerProductsViewModel`: Listados con filtros y paginación.
+* `CustomerCartViewModel`: Cálculos de totales y líneas de pedido.
+* `CustomerCheckoutViewModel`: Agregación de direcciones y métodos de pago.
+
+**Modelos de Vendedor (Vendor)** *Enfocados en métricas y gestión:*
+* `VendorDashboardViewModel`: KPIs de ventas y estadísticas.
+* `VendorInventoryViewModel`: Control de stock y alertas.
+
+**Modelos de Producto y Reseñas**
+* `ProductCreateViewModel`: Formularios de alta con selección de categorías.
+* `ReviewCreateViewModel`: Sistema de feedback con validación de rango (1-5).
+
+---
+
+## 9. Conclusiones Clave
+
+* **Centralización de Lógica:** La alta dependencia en `CustomerController` (con más de 27 acciones) sugiere que es el núcleo operativo del sistema, centralizando la mayor parte de la lógica de cara al usuario.
+* **Eficiencia en Datos:** El uso dual de la entidad `Order` para manejar tanto carritos como pedidos confirmados simplifica el modelo de datos y reduce la redundancia.
+* **Seguridad por Diseño:** La segregación estricta de controladores por rol (`/admin`, `/vendor`, `/customer`) facilita la implementación de políticas de autorización y reduce la superficie de ataque.
+* **Escalabilidad:** La arquitectura de servicios (`IProductService`, etc.) permite reemplazar o mejorar la lógica de negocio sin afectar la capa de presentación, facilitando el mantenimiento futuro.
+
+---
+
+## 10. Glosario Técnico
+
+* **ASP.NET Core Identity:** Sistema de membresía que añade funcionalidad de inicio de sesión a aplicaciones ASP.NET Core.
+* **Claims:** Declaraciones sobre un usuario (como su nombre, rol o ID) que se utilizan para la autorización.
+* **Entity Framework Core (EF Core):** ORM ligero, extensible y multiplataforma de Microsoft.
+* **MARS (Multiple Active Result Sets):** Característica de SQL Server que permite la ejecución de múltiples lotes en una sola conexión.
+* **MVC (Modelo-Vista-Controlador):** Patrón de diseño que separa una aplicación en tres componentes principales lógicos.
+* **ORM (Object-Relational Mapper):** Técnica para convertir datos entre sistemas de tipos incompatibles en programación orientada a objetos (la base de datos y el código C#).
+* **ViewModel:** Modelo que representa los datos que se mostrarán en una Vista, desacoplando la UI del modelo de dominio de la base de datos.
