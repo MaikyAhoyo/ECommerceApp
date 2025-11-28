@@ -45,26 +45,6 @@ El sistema implementa un patrón de arquitectura **MVC (Modelo-Vista-Controlador
 2.  **Capa de Servicio (Services):** Encapsula la lógica de negocio compleja y actúa como intermediario.
 3.  **Capa de Datos (Data Layer):** Gestiona la persistencia y recuperación de información a través del ORM.
 
-```mermaid
-graph TD
-    subgraph "Capa de Presentación"
-    UI[Vista / UI] <-->|Datos| C[Controladores]
-    end
-    
-    subgraph "Capa de Servicios"
-    C <-->|DTOs/Modelos| S[Servicios (Lógica de Negocio)]
-    end
-    
-    subgraph "Capa de Datos"
-    S <-->|Entidades| EF[Entity Framework Core]
-    EF <-->|SQL| DB[(SQL Server)]
-    end
-    
-    style UI fill:#e1f5fe,stroke:#01579b
-    style S fill:#fff9c4,stroke:#fbc02d
-    style DB fill:#e0f2f1,stroke:#00695c
-```
-
 ---
 
 ## 3. Pila Tecnológica
