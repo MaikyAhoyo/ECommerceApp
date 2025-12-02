@@ -721,54 +721,32 @@ namespace ECommerce.Controllers
             cart.Total = 0;
             await _orderService.UpdateAsync(cart);
 
-            _logger.LogInformation("Orde {OrderId} created for user {UserId}", newOrderId, userId);
+            _logger.LogInformation("Order {OrderId} created for user {UserId}", newOrderId, userId);
 
             TempData["Success"] = "Order created successfully";
             return RedirectToAction(nameof(OrderDetails), new { id = newOrderId });
         }
 
 
-// POST: /customer/orders/cancel/{id}
-[HttpPost("orders/cancel/{id}")]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> CancelOrder(int id)
-{
-    int userId = GetCurrentUserId();
-    var order = await _orderService.GetByIdAsync(id);
-
-    if (order == null || order.UserId != userId)
-    {
-        TempData["Error"] = "Order not found";
-        return RedirectToAction(nameof(MyOrders));
-    }
-
-    if (order.Status != "Pending")
-    {
-        TempData["Error"] = "You can only cancel pending orders";
-        return RedirectToAction(nameof(OrderDetails), new { id });
-    }
-
-    var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(id);
-    
-    if (orderWithDetails?.OrderItems != null)
-    {
-        foreach (var item in orderWithDetails.OrderItems)
+        // POST: /customer/orders/cancel/{id}
+        [HttpPost("orders/cancel/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
         {
-            var product = await _productService.GetByIdAsync(item.ProductId);
-            if (product != null)
+            int userId = GetCurrentUserId();
+            var order = await _orderService.GetByIdAsync(id);
+
+            if (order == null || order.UserId != userId)
             {
-                product.Stock += item.Quantity;
-                await _productService.UpdateAsync(product);
-                
-                _logger.LogInformation(
-                    "Stock restored for product {ProductId}: +{Quantity} units (Cancelled order {OrderId})",
-                    product.Id,
-                    item.Quantity,
-                    id
-                );
+                TempData["Error"] = "Order not found";
+                return RedirectToAction(nameof(MyOrders));
             }
-        }
-    }
+
+            if (order.Status != "Pending")
+            {
+                TempData["Error"] = "You can only cancel pending orders";
+                return RedirectToAction(nameof(OrderDetails), new { id });
+            }
 
             var orderWithDetails = await _orderService.GetOrderWithDetailsAsync(id);
 
@@ -791,14 +769,14 @@ public async Task<IActionResult> CancelOrder(int id)
                     }
                 }
             }
+        
             var success = await _orderService.UpdateStatusAsync(id, "Cancelled");
-
             if (success)
-                TempData["Success"] = "Order cancelled successfully! Stock has been restored.";
+                TempData["Success"] = "Order cancelled successfully";
             else
                 TempData["Error"] = "Error cancelling order";
-
-
+            return RedirectToAction(nameof(MyOrders));
+        }
 
         public class CreateOrderRequest
         {
